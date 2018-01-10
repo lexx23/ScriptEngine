@@ -69,7 +69,7 @@ namespace UnitTests
         {
             IDictionary<ScriptModule, string> modules = new Dictionary<ScriptModule, string>();
             modules.Add(new ScriptModule("global", ModuleTypeEnum.STARTUP), OpenModule("Objects\\Cross object call\\global_module.scr"));
-            modules.Add(new ScriptModule("object", ModuleTypeEnum.COMMON, false), OpenModule("Objects\\Cross object call\\object_module.scr"));
+            modules.Add(new ScriptModule("object", ModuleTypeEnum.OBJECT, false), OpenModule("Objects\\Cross object call\\object_module.scr"));
 
             ScriptProgramm programm = CompileObjects(modules);
             ScriptInterpreter interpreter = new ScriptInterpreter(programm);
@@ -150,7 +150,7 @@ namespace UnitTests
         {
             IDictionary<ScriptModule, string> modules = new Dictionary<ScriptModule, string>();
             modules.Add(new ScriptModule("global", ModuleTypeEnum.STARTUP), OpenModule("Objects\\Object procedure as function call\\global_module.scr"));
-            modules.Add(new ScriptModule("object", ModuleTypeEnum.COMMON, false), OpenModule("Objects\\Object procedure as function call\\object_module.scr"));
+            modules.Add(new ScriptModule("object", ModuleTypeEnum.OBJECT, false), OpenModule("Objects\\Object procedure as function call\\object_module.scr"));
 
             ScriptProgramm programm = CompileObjects(modules);
             ScriptInterpreter interpreter = new ScriptInterpreter(programm);
@@ -165,7 +165,7 @@ namespace UnitTests
         {
             IDictionary<ScriptModule, string> modules = new Dictionary<ScriptModule, string>();
             modules.Add(new ScriptModule("global", ModuleTypeEnum.STARTUP), OpenModule("Objects\\Object not public call error\\global_module.scr"));
-            modules.Add(new ScriptModule("object", ModuleTypeEnum.COMMON, false), OpenModule("Objects\\Object not public call error\\object_module.scr"));
+            modules.Add(new ScriptModule("object", ModuleTypeEnum.OBJECT, false), OpenModule("Objects\\Object not public call error\\object_module.scr"));
 
             ScriptProgramm programm = CompileObjects(modules);
             ScriptInterpreter interpreter = new ScriptInterpreter(programm);
@@ -174,14 +174,13 @@ namespace UnitTests
         }
         #endregion
 
-        #region Function
-
+        #region Global
         [TestMethod]
         public void Interpreter_Global_Function_Call()
         {
             IDictionary<ScriptModule, string> modules = new Dictionary<ScriptModule, string>();
-            modules.Add(new ScriptModule("global", ModuleTypeEnum.STARTUP), OpenModule("Function\\Global function call\\global_module.scr"));
-            modules.Add(new ScriptModule("object", ModuleTypeEnum.COMMON, true), OpenModule("Function\\Global function call\\object_module.scr"));
+            modules.Add(new ScriptModule("global", ModuleTypeEnum.STARTUP), OpenModule("Global\\Function call\\global_module.scr"));
+            modules.Add(new ScriptModule("object", ModuleTypeEnum.COMMON, true), OpenModule("Global\\Function call\\object_module.scr"));
 
             ScriptProgramm programm = CompileObjects(modules);
             ScriptInterpreter interpreter = new ScriptInterpreter(programm);
@@ -236,6 +235,11 @@ namespace UnitTests
             Assert.AreEqual(106, interpreter.Debugger.RegisterGetValue("ф").Integer);
         }
 
+        #endregion
+
+
+
+        #region Function
 
         [TestMethod]
         public void Interpreter_Function_Assign_Result()

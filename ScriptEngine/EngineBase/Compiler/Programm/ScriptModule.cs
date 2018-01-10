@@ -28,11 +28,16 @@ namespace ScriptEngine.EngineBase.Compiler.Programm
             get => _code.Count;
         }
 
-        public ScriptModule(string name, ModuleTypeEnum type, bool compile_as_global = true)
+        public ScriptModule(string name, ModuleTypeEnum type, bool compile_as_global = false)
         {
             Name = name;
             Type = type;
             AsGlobal = compile_as_global;
+
+            // Стартовый модуль компилирую как глобальный.
+            if (type == ModuleTypeEnum.STARTUP)
+                AsGlobal = true;
+
             _module_scope = new ScriptScope() { Type = ScopeTypeEnum.MODULE, Name = name, Module = this };
 
             _vars = new Dictionary<string, Variable>();

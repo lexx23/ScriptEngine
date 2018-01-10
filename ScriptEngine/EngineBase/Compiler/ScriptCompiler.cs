@@ -91,6 +91,10 @@ namespace ScriptEngine.EngineBase.Compiler
             {
                 _module_entry_point = _current_module.ProgrammLine;
                 _scope = new ScriptScope() { Type = ScopeTypeEnum.PROCEDURE, Module = _current_module, Name = "<<entry_point>>" };
+
+                if (_current_module.Type == ModuleTypeEnum.COMMON)
+                    throw new Exception($"Данный [{_current_module.Name}] модуль может содержать только определения процедур и функций");
+
                 return;
             }
 
@@ -585,13 +589,11 @@ namespace ScriptEngine.EngineBase.Compiler
             foreach (KeyValuePair<string, Variable> var_kp in _deferred_var)
             {
                 // глобальный контекст
-                if (var_kp.Value.Scope.Type == ScopeTypeEnum.GLOBAL)
-                {
-                    var = _programm.GlobalVariableGet(var_kp.Value.Name);
+                var = _programm.GlobalVariableGet(var_kp.Value.Name);
+                if (var != null)
                     var_kp.Value.StackNumber = var.StackNumber;
-                }
                 else
-                    throw new ExceptionBase($"Переменная не определена [{var_kp.Value.Name}].");
+                    throw new ExceptionBase($"Переменная не определена [{var_kp.Value.Name}], модуль [{var_kp.Value.Scope.Module.Name}].");
             }
 
             _deferred_var.Clear();
@@ -1031,7 +1033,7 @@ namespace ScriptEngine.EngineBase.Compiler
 
         #endregion
 
-        #region Ключивые слова Если,Для
+        #region Ключевые слова Если,Для
 
         /// <summary>
         /// Парсин ключевого слова Если, ИначеЕсли.
@@ -1189,6 +1191,10 @@ namespace ScriptEngine.EngineBase.Compiler
 
             foreach (KeyValuePair<ScriptModule, string> module in modules)
             {
+                if (module.Key.AsGlobal && (module.Key.Type != ModuleTypeEnum.COMMON && module.Key.Type != ModuleTypeEnum.STARTUP))
+                    throw new Exception("Глобальным может быть только общий модуль.");
+
+
                 parser = new ParserClass(module.Key.Name, module.Value);
                 PrecompilerClass precompiler = new PrecompilerClass(parser.GetEnumerator(), defines);
                 _iterator = precompiler.GetEnumerator();

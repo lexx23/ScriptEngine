@@ -7,6 +7,7 @@ namespace ScriptEngine.EngineBase.Compiler.Programm
     public enum ModuleTypeEnum
     {
         STARTUP,
+        OBJECT,
         COMMON,
         DICTIONARY
     }

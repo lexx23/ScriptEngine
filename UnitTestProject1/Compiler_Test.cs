@@ -44,6 +44,22 @@ namespace UnitTests
         #endregion
 
 
+        #region Global
+
+        [TestMethod]
+        [ExpectedException(typeof(Exception))]
+        public void Compile_Global_Common_With_Code_Error()
+        {
+            IDictionary<ScriptModule, string> modules = new Dictionary<ScriptModule, string>();
+            modules.Add(new ScriptModule("global", ModuleTypeEnum.STARTUP), OpenModule("Global\\Common with code error\\global_module.scr"));
+            modules.Add(new ScriptModule("object", ModuleTypeEnum.COMMON, true), OpenModule("Global\\Common with code error\\object_module.scr"));
+
+            CompileObjects(modules);
+        }
+
+        #endregion
+
+
         #region Objects
 
         [TestMethod]
@@ -51,7 +67,7 @@ namespace UnitTests
         {
             IDictionary<ScriptModule, string> modules = new Dictionary<ScriptModule, string>();
             modules.Add(new ScriptModule("global", ModuleTypeEnum.STARTUP), OpenModule("Objects\\Cross object call\\global_module.scr"));
-            modules.Add(new ScriptModule("object", ModuleTypeEnum.COMMON,false), OpenModule("Objects\\Cross object call\\object_module.scr"));
+            modules.Add(new ScriptModule("object", ModuleTypeEnum.OBJECT,false), OpenModule("Objects\\Cross object call\\object_module.scr"));
 
             CompileObjects(modules);
         }

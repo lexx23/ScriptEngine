@@ -65,6 +65,12 @@ namespace ScriptEngine.EngineBase.Interpreter
                     _context.Global.SetValue(object_var, CreateObject(module_kv.Key, module_kv.Value));
                 }
 
+                if (module_kv.Value.Type == ModuleTypeEnum.OBJECT)
+                {
+                    Variable object_var = _programm.GlobalVariableGet(module_kv.Key);
+                    _context.Global.SetValue(object_var, CreateObject(module_kv.Key, module_kv.Value));
+                }
+
                 if (module_kv.Value.Type == ModuleTypeEnum.STARTUP)
                     startup_module = module_kv.Value.Name;
             }

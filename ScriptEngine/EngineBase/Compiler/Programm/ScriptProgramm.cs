@@ -47,6 +47,9 @@ namespace ScriptEngine.EngineBase.Compiler.Programm
 
             if (!module.AsGlobal && module.Type == ModuleTypeEnum.COMMON)
                 GlobalVariableAdd(module.Name, new VariableValue(ValueTypeEnum.OBJECT, module.Name));
+
+            if (module.Type == ModuleTypeEnum.OBJECT)
+                GlobalVariableAdd(module.Name, new VariableValue(ValueTypeEnum.OBJECT, module.Name));
         }
 
         /// <summary>

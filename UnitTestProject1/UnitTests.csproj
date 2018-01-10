@@ -7,6 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Scripts\Interpreter\Function\Global function call\**" />
+    <EmbeddedResource Remove="Scripts\Interpreter\Function\Global function call\**" />
+    <None Remove="Scripts\Interpreter\Function\Global function call\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="Scripts\Preprocessor\regions.scr" />
   </ItemGroup>
 
@@ -112,13 +118,19 @@
     <None Update="Scripts\Interpreter\Function\assign_result.scr">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Scripts\Interpreter\Function\Global function call\global_module.scr">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Scripts\Interpreter\Function\Global function call\object_module.scr">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Update="Scripts\Interpreter\Function\recursive_call.scr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Scripts\Compiler\Global\Common with code error\global_module.scr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Scripts\Compiler\Global\Common with code error\object_module.scr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Scripts\Interpreter\Global\Function call\global_module.scr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Scripts\Interpreter\Global\Function call\object_module.scr">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Scripts\Interpreter\If\If.scr">
@@ -167,7 +179,6 @@
 
   <ItemGroup>
     <Folder Include="Scripts\Compiler\Objects\Object function type\" />
-    <Folder Include="Scripts\Interpreter\Function\Global function call\" />
     <Folder Include="Scripts\Interpreter\Objects\Object not public call error\" />
   </ItemGroup>
 
