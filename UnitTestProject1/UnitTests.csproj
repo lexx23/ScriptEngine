@@ -112,6 +112,12 @@
     <None Update="Scripts\Interpreter\Function\assign_result.scr">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Scripts\Interpreter\Function\Global function call\global_module.scr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Scripts\Interpreter\Function\Global function call\object_module.scr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Scripts\Interpreter\Function\recursive_call.scr">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -161,6 +167,7 @@
 
   <ItemGroup>
     <Folder Include="Scripts\Compiler\Objects\Object function type\" />
+    <Folder Include="Scripts\Interpreter\Function\Global function call\" />
     <Folder Include="Scripts\Interpreter\Objects\Object not public call error\" />
   </ItemGroup>
 

@@ -19,7 +19,7 @@ namespace ScriptEngine.EngineBase.Compiler
         private ScriptScope _scope;
         private ScriptModule _current_module;
         private IDictionary<string, Variable> _deferred_var;
-        private IDictionary<string, Function> _deferred_function;
+        private IList<Function> _deferred_function;
         private int _module_entry_point;
         private int _function_entry_point;
 
@@ -52,7 +52,7 @@ namespace ScriptEngine.EngineBase.Compiler
         {
             _programm = new ScriptProgramm();
             _deferred_var = new Dictionary<string, Variable>();
-            _deferred_function = new Dictionary<string, Function>();
+            _deferred_function = new List<Function>();
 
             _expression_op_codes = new Dictionary<TokenSubTypeEnum, op_code>();
             _expression_op_codes.Add(TokenSubTypeEnum.P_MUL, new op_code { code = OP_CODES.OP_MUL, type = OP_TYPE.RESULT_OPTIMIZATION, level = 1 });
@@ -72,7 +72,6 @@ namespace ScriptEngine.EngineBase.Compiler
             _op_codes.Add(OP_CODES.OP_JMP, new op_code { code = OP_CODES.OP_JMP, type = OP_TYPE.WO_RESULT });
             _op_codes.Add(OP_CODES.OP_IFNOT, new op_code { code = OP_CODES.OP_IFNOT, type = OP_TYPE.WO_RESULT });
             _op_codes.Add(OP_CODES.OP_NOT, new op_code { code = OP_CODES.OP_NOT, type = OP_TYPE.RESULT_OPTIMIZATION });
-            //_op_codes.Add(OP_CODES.OP_NEG, new op_code { code = OP_CODES.OP_NEG, type = OP_TYPE.RESULT });
             _op_codes.Add(OP_CODES.OP_PUSH, new op_code { code = OP_CODES.OP_PUSH, type = OP_TYPE.WO_RESULT });
             _op_codes.Add(OP_CODES.OP_POP, new op_code { code = OP_CODES.OP_POP, type = OP_TYPE.RESULT });
             _op_codes.Add(OP_CODES.OP_RETURN, new op_code { code = OP_CODES.OP_RETURN, type = OP_TYPE.RESULT });
@@ -806,6 +805,14 @@ namespace ScriptEngine.EngineBase.Compiler
             if (work_function.Type == FunctionTypeEnum.PROCEDURE && work_function.Type != function.Type)
                 throw new ExceptionBase(function.CodeInformation, $"Обращение к процедуре [{function.Name}] как к функции.");
 
+            // Патч вызова функции. Указываю правильный модуль.
+            if (work_function.Scope.Module != function.Scope.Module)
+            {
+                ScriptStatement statement = function.Scope.Module.StatementGet(function.EntryPoint);
+                statement.Variable3 = _programm.StaticVariableAdd(new VariableValue(ValueTypeEnum.STRING, work_function.Scope.Module.Name));
+            }
+
+
             if (function.Param.Count == work_function.Param.Count)
                 return;
 
@@ -826,12 +833,6 @@ namespace ScriptEngine.EngineBase.Compiler
             if (param_count < work_function.Param.Count)
                 throw new ExceptionBase(work_function.CodeInformation, $"Недостаточно фактических параметров [{work_function.Name}].");
 
-            // Патч вызова функции. Указываю правильный модуль.
-            if (work_function.Scope.Module != function.Scope.Module)
-            {
-                ScriptStatement statement = _current_module.StatementGet(function.EntryPoint);
-                statement.Variable3 = _programm.StaticVariableAdd(new VariableValue(ValueTypeEnum.STRING, work_function.Scope.Name));
-            }
         }
 
         /// <summary>
@@ -883,7 +884,7 @@ namespace ScriptEngine.EngineBase.Compiler
                     ParseFunctionCallParam(function);
 
                 // Добавить в отложенные функции для последующей проверки.
-                _deferred_function[token.Content + "_" + _scope.Name + "_" + function.Param?.Count] = function;
+                _deferred_function.Add(function);
 
                 // Добавить в код передачу параметров через стек.
                 foreach (Variable var in function.Param)
@@ -907,9 +908,9 @@ namespace ScriptEngine.EngineBase.Compiler
         /// </summary>
         public void ProcessDifferedFunctions()
         {
-            foreach (KeyValuePair<string, Function> function_vp in _deferred_function)
+            foreach (Function function in _deferred_function)
             {
-                CheckFunctionCall(function_vp.Value);
+                CheckFunctionCall(function);
             }
 
             _deferred_function.Clear();

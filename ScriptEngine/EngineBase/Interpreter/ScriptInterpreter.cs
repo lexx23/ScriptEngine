@@ -475,7 +475,7 @@ namespace ScriptEngine.EngineBase.Interpreter
                         v3 = GetValue(statement.Variable3);
                         result = new VariableValue();
                         result.Type = ValueTypeEnum.BOOLEAN;
-                        result.Boolean = v2.ToBoolean() == v3.ToBoolean();
+                        result.Boolean = v2 == v3;
                         SetValue(statement.Variable1, result);
                         break;
                     case OP_CODES.OP_UNEQ:
@@ -483,7 +483,7 @@ namespace ScriptEngine.EngineBase.Interpreter
                         v3 = GetValue(statement.Variable3);
                         result = new VariableValue();
                         result.Type = ValueTypeEnum.BOOLEAN;
-                        result.Boolean = v2.ToBoolean() != v3.ToBoolean();
+                        result.Boolean = v2 != v3;
                         SetValue(statement.Variable1, result);
                         break;
 
@@ -514,10 +514,7 @@ namespace ScriptEngine.EngineBase.Interpreter
                         v3 = GetValue(statement.Variable3);
                         SetValue(statement.Variable1, v2 / v3);
                         break;
-                    case OP_CODES.OP_NEG:
-                        v2 = GetValue(statement.Variable2);
-                        SetValue(statement.Variable1, v2.Clone() * -1);
-                        break;
+
 
                 }
                 _instruction++;

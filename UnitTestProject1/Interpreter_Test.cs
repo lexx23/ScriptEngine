@@ -177,6 +177,67 @@ namespace UnitTests
         #region Function
 
         [TestMethod]
+        public void Interpreter_Global_Function_Call()
+        {
+            IDictionary<ScriptModule, string> modules = new Dictionary<ScriptModule, string>();
+            modules.Add(new ScriptModule("global", ModuleTypeEnum.STARTUP), OpenModule("Function\\Global function call\\global_module.scr"));
+            modules.Add(new ScriptModule("object", ModuleTypeEnum.COMMON, true), OpenModule("Function\\Global function call\\object_module.scr"));
+
+            ScriptProgramm programm = CompileObjects(modules);
+            ScriptInterpreter interpreter = new ScriptInterpreter(programm);
+            interpreter.Debugger.AddBreakpoint("global", 6);
+            interpreter.Debugger.AddBreakpoint("global", 20);
+
+            interpreter.Debugger.AddBreakpoint("global", 28);
+            interpreter.Debugger.AddBreakpoint("global", 36);
+            interpreter.Debugger.AddBreakpoint("global", 44);
+            interpreter.Debugger.AddBreakpoint("global", 52);
+
+            interpreter.Debug();
+            Assert.AreEqual(6, interpreter.CurrentLine);
+            Assert.AreEqual("global", interpreter.CurrentModuleName);
+
+            Assert.AreEqual(100, interpreter.Debugger.RegisterGetValue("Количество").Integer);
+            Assert.AreEqual(100, interpreter.Debugger.RegisterGetValue("колво").Integer);
+            interpreter.Debugger.StepInto();
+
+            Assert.AreEqual(2, interpreter.CurrentLine);
+            Assert.AreEqual("object", interpreter.CurrentModuleName);
+            Assert.AreEqual(100, interpreter.Debugger.RegisterGetValue("Количество").Integer);
+            interpreter.Debugger.StepOver();
+            Assert.AreEqual(101, interpreter.Debugger.RegisterGetValue("Количество").Integer);
+
+            interpreter.Debugger.Continue();
+
+            Assert.AreEqual("global", interpreter.CurrentModuleName);
+            Assert.AreEqual(20, interpreter.CurrentLine);
+            Assert.AreEqual(115, interpreter.Debugger.RegisterGetValue("колво").Integer);
+            Assert.AreEqual(105, interpreter.Debugger.RegisterGetValue("Количество").Integer);
+            interpreter.Debugger.Continue();
+
+
+            Assert.AreEqual(28, interpreter.CurrentLine);
+            Assert.AreEqual("global", interpreter.CurrentModuleName);
+            Assert.AreEqual(-1, interpreter.Debugger.RegisterGetValue("ф").Integer);
+            interpreter.Debugger.Continue();
+
+            Assert.AreEqual(36, interpreter.CurrentLine);
+            Assert.AreEqual("global", interpreter.CurrentModuleName);
+            Assert.AreEqual(1, interpreter.Debugger.RegisterGetValue("ф").Integer);
+            interpreter.Debugger.Continue();
+
+            Assert.AreEqual(44, interpreter.CurrentLine);
+            Assert.AreEqual("global", interpreter.CurrentModuleName);
+            Assert.AreEqual(-1, interpreter.Debugger.RegisterGetValue("ф").Integer);
+            interpreter.Debugger.Continue();
+
+            Assert.AreEqual(52, interpreter.CurrentLine);
+            Assert.AreEqual("global", interpreter.CurrentModuleName);
+            Assert.AreEqual(106, interpreter.Debugger.RegisterGetValue("ф").Integer);
+        }
+
+
+        [TestMethod]
         public void Interpreter_Function_Assign_Result()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();

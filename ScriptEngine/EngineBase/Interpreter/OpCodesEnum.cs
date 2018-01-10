@@ -18,8 +18,6 @@ namespace ScriptEngine.EngineBase.Interpreter
         OP_MUL,
         // Деление
         OP_DIV,
-        // Изменить знак переменной на - 
-        OP_NEG,
 
         // Переход без условий
         OP_JMP,
