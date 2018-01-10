@@ -216,9 +216,6 @@ namespace ScriptEngine.EngineBase.Interpreter
 
             work_function = module.FunctionGet(function.Name);
 
-            if (work_function.Public == false)
-                work_function = null;
-
             if (work_function == null)
                 throw new ExceptionBase(function.CodeInformation, $"Процедура или функция с именем [{function.Name}] не определена, у обьекта [{module.Name}].");
 
@@ -267,6 +264,10 @@ namespace ScriptEngine.EngineBase.Interpreter
                 throw new ExceptionBase(statement.CodeInformation, $"Значение не является значением объектного типа [{function.Name}]");
 
             Function work_function = CheckObjectFunctionCall(object_call.Object.Type, function);
+
+            if (!work_function.Public)
+                throw new ExceptionBase(statement.CodeInformation, $"Функция [{function.Name}] не имеет ключевого слова Экспорт, и не доступна.");
+
             _context.ModuleContexts.SetModuleContext(object_call.Object.Context,_instruction);
             FunctionCall(work_function,true);
         }
@@ -282,6 +283,9 @@ namespace ScriptEngine.EngineBase.Interpreter
                 throw new ExceptionBase(statement.CodeInformation, $"Значение не является значением объектного типа [{var_name.Content}]");
 
             Variable var = object_call.Object.Type.VariableGet(var_name.Content, object_call.Object.Type.ModuleScope);
+            if(!var.Public)
+                throw new ExceptionBase(statement.CodeInformation, $"[{var_name.Content}] не имеет ключевого слова Экспорт, и не доступна.");
+
             VariableValue value = object_call.Object.Context.Context.GetValue(var);
             SetValue(statement.Variable1,value);
         }

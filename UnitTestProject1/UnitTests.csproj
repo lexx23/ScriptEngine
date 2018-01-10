@@ -7,8 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Scripts\Compiler\Objects\Object function type\**" />
     <Compile Remove="Scripts\Interpreter\Function\Global function call\**" />
+    <EmbeddedResource Remove="Scripts\Compiler\Objects\Object function type\**" />
     <EmbeddedResource Remove="Scripts\Interpreter\Function\Global function call\**" />
+    <None Remove="Scripts\Compiler\Objects\Object function type\**" />
     <None Remove="Scripts\Interpreter\Function\Global function call\**" />
   </ItemGroup>
 
@@ -56,6 +59,12 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Scripts\Compiler\Objects\Cross object call\object_module.scr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Scripts\Interpreter\Objects\Not public method call\global_module.scr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Scripts\Interpreter\Objects\Not public method call\object_module.scr">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Scripts\Compiler\Procedure\procedure_as_function_error5.scr">
@@ -178,7 +187,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Scripts\Compiler\Objects\Object function type\" />
+    <Folder Include="Scripts\Interpreter\Objects\Not public method call\" />
     <Folder Include="Scripts\Interpreter\Objects\Object not public call error\" />
   </ItemGroup>
 

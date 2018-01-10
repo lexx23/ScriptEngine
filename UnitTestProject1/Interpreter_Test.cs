@@ -65,7 +65,7 @@ namespace UnitTests
         #region Object
 
         [TestMethod]
-        public void Interpreter_Cross_Object_Call()
+        public void Interpreter_Objects_CrossObjectCall()
         {
             IDictionary<ScriptModule, string> modules = new Dictionary<ScriptModule, string>();
             modules.Add(new ScriptModule("global", ModuleTypeEnum.STARTUP), OpenModule("Objects\\Cross object call\\global_module.scr"));
@@ -146,7 +146,7 @@ namespace UnitTests
 
         [TestMethod]
         [ExpectedException(typeof(ExceptionBase))]
-        public void Object_Procedure_As_Function_Error()
+        public void Interpreter_Objects_ProcedureAsFunction_Error()
         {
             IDictionary<ScriptModule, string> modules = new Dictionary<ScriptModule, string>();
             modules.Add(new ScriptModule("global", ModuleTypeEnum.STARTUP), OpenModule("Objects\\Object procedure as function call\\global_module.scr"));
@@ -161,7 +161,7 @@ namespace UnitTests
 
         [TestMethod]
         [ExpectedException(typeof(ExceptionBase))]
-        public void Object_Not_Public_Function_Call_Error()
+        public void Interpreter_Objects_NotPublicFunctionCall_Error()
         {
             IDictionary<ScriptModule, string> modules = new Dictionary<ScriptModule, string>();
             modules.Add(new ScriptModule("global", ModuleTypeEnum.STARTUP), OpenModule("Objects\\Object not public call error\\global_module.scr"));
@@ -172,11 +172,27 @@ namespace UnitTests
             interpreter.Run();
 
         }
+
+
+        [TestMethod]
+        [ExpectedException(typeof(ExceptionBase))]
+        public void Interpreter_Objects_NotPublicMethodCall_Error()
+        {
+            IDictionary<ScriptModule, string> modules = new Dictionary<ScriptModule, string>();
+            modules.Add(new ScriptModule("global", ModuleTypeEnum.STARTUP), OpenModule("Objects\\Not public method call\\global_module.scr"));
+            modules.Add(new ScriptModule("object", ModuleTypeEnum.OBJECT, false), OpenModule("Objects\\Not public method call\\object_module.scr"));
+
+            ScriptProgramm programm = CompileObjects(modules);
+            ScriptInterpreter interpreter = new ScriptInterpreter(programm);
+            interpreter.Run();
+
+        }
+
         #endregion
 
         #region Global
         [TestMethod]
-        public void Interpreter_Global_Function_Call()
+        public void Interpreter_GlobalFunctionCall()
         {
             IDictionary<ScriptModule, string> modules = new Dictionary<ScriptModule, string>();
             modules.Add(new ScriptModule("global", ModuleTypeEnum.STARTUP), OpenModule("Global\\Function call\\global_module.scr"));
@@ -242,7 +258,7 @@ namespace UnitTests
         #region Function
 
         [TestMethod]
-        public void Interpreter_Function_Assign_Result()
+        public void Interpreter_FunctionAssignResult()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
             files.Add("function", "Function\\assign_result.scr");
@@ -261,7 +277,7 @@ namespace UnitTests
         }
 
         [TestMethod]
-        public void Interpreter_Function_Recursive_Call()
+        public void Interpreter_FunctionRecursiveCall()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
             files.Add("function", "Function\\recursive_call.scr");

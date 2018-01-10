@@ -63,7 +63,7 @@ namespace UnitTests
         #region Objects
 
         [TestMethod]
-        public void Compile_Cross_Object_Call()
+        public void ompile_Objects_CrossObjectCall()
         {
             IDictionary<ScriptModule, string> modules = new Dictionary<ScriptModule, string>();
             modules.Add(new ScriptModule("global", ModuleTypeEnum.STARTUP), OpenModule("Objects\\Cross object call\\global_module.scr"));
@@ -71,7 +71,6 @@ namespace UnitTests
 
             CompileObjects(modules);
         }
-
 
         #endregion
 
