@@ -20,6 +20,7 @@ namespace ScriptEngine.EngineBase.Compiler
         private ScriptModule _current_module;
         private IDictionary<string, Variable> _deferred_var;
         private IList<Function> _deferred_function;
+        private IList<IList<int>> _loop;
         private int _module_entry_point;
         private int _function_entry_point;
 
@@ -53,6 +54,7 @@ namespace ScriptEngine.EngineBase.Compiler
             _programm = new ScriptProgramm();
             _deferred_var = new Dictionary<string, Variable>();
             _deferred_function = new List<Function>();
+            _loop = new List<IList<int>>();
 
             _expression_op_codes = new Dictionary<TokenSubTypeEnum, op_code>();
             _expression_op_codes.Add(TokenSubTypeEnum.P_MUL, new op_code { code = OP_CODES.OP_MUL, type = OP_TYPE.RESULT_OPTIMIZATION, level = 1 });
@@ -1021,22 +1023,28 @@ namespace ScriptEngine.EngineBase.Compiler
 
         #region Ключевые слова Если,Для,Пока
 
-        private void ParseLoopCommands(int loop_start,ref IList<int> break_list)
+        private bool ParseLoopCommands()
         {
-            if (_iterator.CheckToken(TokenTypeEnum.IDENTIFIER, TokenSubTypeEnum.I_CONTINUE))
+            TokenClass token;
+            token = _iterator.Current;
+            if (_iterator.CheckToken(TokenTypeEnum.IDENTIFIER, TokenSubTypeEnum.I_CONTINUE) || _iterator.CheckToken(TokenTypeEnum.IDENTIFIER, TokenSubTypeEnum.I_BREAK))
             {
-                Variable jmp_static = _programm.StaticVariableAdd(new VariableValue(loop_start));
-                EmitCode(OP_CODES.OP_JMP, jmp_static, null);
-                _iterator.ExpectToken(TokenTypeEnum.PUNCTUATION, TokenSubTypeEnum.P_SEMICOLON);
-                return;
+                if(_loop.Count == 0)
+                    throw new ExceptionBase(_iterator.Current.CodeInformation, "Оператор Продолжить (Continue) и Прервать (Break) может употребляться только внутри цикла.");
+
+
+                if (token.SubType == TokenSubTypeEnum.I_CONTINUE)
+                    _loop[_loop.Count - 1].Add(_current_module.ProgrammLine * -1);
+                else
+                    _loop[_loop.Count - 1].Add(_current_module.ProgrammLine);
+
+
+                EmitCode(OP_CODES.OP_JMP, null, null);
+                _iterator.IsTokenType(TokenTypeEnum.PUNCTUATION, TokenSubTypeEnum.P_SEMICOLON);
+                return true;
             }
 
-            if (_iterator.CheckToken(TokenTypeEnum.IDENTIFIER, TokenSubTypeEnum.I_BREAK))
-            {
-                break_list.Add(_current_module.ProgrammLine);
-                EmitCode(OP_CODES.OP_JMP, null, null);
-                _iterator.ExpectToken(TokenTypeEnum.PUNCTUATION, TokenSubTypeEnum.P_SEMICOLON);
-            }
+            return false;
         }
 
 
@@ -1051,48 +1059,58 @@ namespace ScriptEngine.EngineBase.Compiler
                 ScriptStatement statement;
                 Variable expression = null;
                 IList<int> break_list = new List<int>();
-                int jmp,while_line;
+                int continue_line,patch_if_line;
 
                 // Установить точку входа модуля.
                 SetModuleEntryPoint();
 
                 if (_iterator.CheckToken(TokenTypeEnum.IDENTIFIER, TokenSubTypeEnum.I_LOOP))
                     throw new ExceptionBase(_iterator.Current.CodeInformation, "Ожидается выражение.");
-
-                jmp = _current_module.ProgrammLine;
+                
+                // Сохранить начало выполнения условия.
+                continue_line = _current_module.ProgrammLine;
                 expression = ParseExpression((int)Priority.TOP);
-                while_line = _current_module.ProgrammLine;
+                // Сохранить позицию условия.
+                patch_if_line = _current_module.ProgrammLine;
                 EmitCode(OP_CODES.OP_IFNOT, expression, null);
 
                 _iterator.ExpectToken(TokenTypeEnum.IDENTIFIER, TokenSubTypeEnum.I_LOOP);
 
-                // Идентификаторы для остановки парсинга.
-                HashSet<TokenSubTypeEnum> stop = new HashSet<TokenSubTypeEnum>()
+                // Добавить новый массив для добавления позиций Продолжить, Прервать.
+                _loop.Add(new List<int>());
+
+                // Парсинг тела цикла.
+                ParseModuleBody(TokenSubTypeEnum.I_ENDLOOP);
+
+                _iterator.ExpectToken(TokenTypeEnum.IDENTIFIER, TokenSubTypeEnum.I_ENDLOOP);
+                _iterator.IsTokenType(TokenTypeEnum.PUNCTUATION, TokenSubTypeEnum.P_SEMICOLON);
+
+                // Переход в начало цикла.
+                EmitCode(OP_CODES.OP_JMP, _programm.StaticVariableAdd(new VariableValue(continue_line)), null);
+
+                // Обработка операторов Продолжить, Прервать.
+                foreach (int patch_line  in _loop[_loop.Count - 1])
+                {
+                    if (patch_line < 0)
                     {
-                        TokenSubTypeEnum.I_CONTINUE,
-                        TokenSubTypeEnum.I_BREAK,
-                        TokenSubTypeEnum.I_ENDLOOP
-                    };
-
-                do
-                {
-                    ParseModuleBody(stop);
-
-                    ParseLoopCommands(jmp,ref break_list);
+                        // Продолжить.
+                        statement = _current_module.StatementGet(patch_line * -1);
+                        statement.Variable2 = _programm.StaticVariableAdd(new VariableValue(continue_line));
+                    }
+                    else
+                    {
+                        // Прервать.
+                        statement = _current_module.StatementGet(patch_line);
+                        statement.Variable2 = _programm.StaticVariableAdd(new VariableValue(_current_module.ProgrammLine));
+                    }
                 }
-                while (!_iterator.CheckToken(TokenTypeEnum.IDENTIFIER, TokenSubTypeEnum.I_ENDLOOP));
 
-                Variable jmp_static = _programm.StaticVariableAdd(new VariableValue(jmp));
-                EmitCode(OP_CODES.OP_JMP, jmp_static, null);
+                // Удалить массив.
+                _loop.RemoveAt(_loop.Count - 1);
 
-                statement = _current_module.StatementGet(while_line);
+                // Исправить переход для условия.
+                statement = _current_module.StatementGet(patch_if_line);
                 statement.Variable3 = _programm.StaticVariableAdd(new VariableValue(_current_module.ProgrammLine));
-
-                foreach (int jmp_line in break_list)
-                {
-                    statement = _current_module.StatementGet(jmp_line);
-                    statement.Variable3 = _programm.StaticVariableAdd(new VariableValue(_current_module.ProgrammLine));
-                }
 
                 return true;
             }
@@ -1236,6 +1254,9 @@ namespace ScriptEngine.EngineBase.Compiler
 
 
                 if (ParseWhile())
+                    continue;
+
+                if (ParseLoopCommands())
                     continue;
 
                 // Парсим вызов методов, свойств, а так же присвоение значений.

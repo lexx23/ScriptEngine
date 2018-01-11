@@ -22,6 +22,47 @@ namespace UnitTests
             Compile(files);
         }
 
+        [TestMethod]
+        [ExpectedException(typeof(ExceptionBase))]
+        public void Compile_WhileError()
+        {
+            IDictionary<string, string> files = new Dictionary<string, string>();
+            files.Add("while", "While\\while_error.scr");
+
+            Compile(files);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ExceptionBase))]
+        public void Compile_WhileError2()
+        {
+            IDictionary<string, string> files = new Dictionary<string, string>();
+            files.Add("while", "While\\while_error2.scr");
+
+            Compile(files);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ExceptionBase))]
+        public void Compile_LoopWordsError()
+        {
+            IDictionary<string, string> files = new Dictionary<string, string>();
+            files.Add("while", "While\\loop_words_error.scr");
+
+            Compile(files);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ExceptionBase))]
+        public void Compile_LoopWordsError2()
+        {
+            IDictionary<string, string> files = new Dictionary<string, string>();
+            files.Add("while", "While\\loop_words_error2.scr");
+
+            Compile(files);
+        }
+
+
         #endregion
 
         #region If

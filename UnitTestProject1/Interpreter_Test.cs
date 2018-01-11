@@ -25,6 +25,8 @@ namespace UnitTests
             interpreter.Debugger.AddBreakpoint("while", 4);
             interpreter.Debugger.AddBreakpoint("while", 9);
             interpreter.Debugger.AddBreakpoint("while", 20);
+            interpreter.Debugger.AddBreakpoint("while", 37);
+            interpreter.Debugger.AddBreakpoint("while", 51);
             interpreter.Debug();
 
             Assert.AreEqual(4, interpreter.CurrentLine);
@@ -38,6 +40,17 @@ namespace UnitTests
 
             Assert.AreEqual(20, interpreter.CurrentLine);
             Assert.AreEqual(50, interpreter.Debugger.RegisterGetValue("ф").Integer);
+            interpreter.Debugger.Continue();
+
+
+            Assert.AreEqual(37, interpreter.CurrentLine);
+            Assert.AreEqual(400, interpreter.Debugger.RegisterGetValue("ф").Integer);
+            Assert.AreEqual(0, interpreter.Debugger.RegisterGetValue("б").Integer);
+            interpreter.Debugger.Continue();
+
+            Assert.AreEqual(51, interpreter.CurrentLine);
+            Assert.AreEqual(401, interpreter.Debugger.RegisterGetValue("ф").Integer);
+            Assert.AreEqual(199, interpreter.Debugger.RegisterGetValue("б").Integer);
             interpreter.Debugger.Continue();
         }
         #endregion
