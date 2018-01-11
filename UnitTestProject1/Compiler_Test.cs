@@ -11,6 +11,59 @@ namespace UnitTests
     [TestClass]
     public class Compiler_Test
     {
+        #region For
+
+        [TestMethod]
+        public void Compile_For()
+        {
+            IDictionary<string, string> files = new Dictionary<string, string>();
+            files.Add("for", "For\\for.scr");
+
+            Compile(files);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ExceptionBase))]
+        public void Compile_ForError()
+        {
+            IDictionary<string, string> files = new Dictionary<string, string>();
+            files.Add("for", "For\\for_error.scr");
+
+            Compile(files);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ExceptionBase))]
+        public void Compile_ForError2()
+        {
+            IDictionary<string, string> files = new Dictionary<string, string>();
+            files.Add("for", "For\\for_error2.scr");
+
+            Compile(files);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ExceptionBase))]
+        public void Compile_ForError3()
+        {
+            IDictionary<string, string> files = new Dictionary<string, string>();
+            files.Add("for", "For\\for_error3.scr");
+
+            Compile(files);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ExceptionBase))]
+        public void Compile_ForError4()
+        {
+            IDictionary<string, string> files = new Dictionary<string, string>();
+            files.Add("for", "For\\for_error4.scr");
+
+            Compile(files);
+        }
+
+        #endregion
+
         #region While
 
         [TestMethod]

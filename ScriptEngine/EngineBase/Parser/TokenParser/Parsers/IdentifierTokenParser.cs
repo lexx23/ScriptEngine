@@ -40,6 +40,10 @@ namespace ScriptEngine.EngineBase.Parser.TokenParser.Parsers
             _table.Add("EndIf", TokenSubTypeEnum.I_ENDIF);
             _table.Add("КонецЕсли", TokenSubTypeEnum.I_ENDIF);
 
+            _table.Add("Для", TokenSubTypeEnum.I_FOR);
+            _table.Add("For", TokenSubTypeEnum.I_FOR);
+            _table.Add("По", TokenSubTypeEnum.I_TO);
+            _table.Add("To", TokenSubTypeEnum.I_TO);
             _table.Add("Пока", TokenSubTypeEnum.I_WHILE);
             _table.Add("While", TokenSubTypeEnum.I_WHILE);
             _table.Add("Цикл", TokenSubTypeEnum.I_LOOP);

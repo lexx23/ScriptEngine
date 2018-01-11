@@ -266,7 +266,7 @@ namespace ScriptEngine.EngineBase.Interpreter
             Function work_function = CheckObjectFunctionCall(object_call.Object.Type, function);
 
             if (!work_function.Public)
-                throw new ExceptionBase(statement.CodeInformation, $"Функция [{function.Name}] не имеет ключевого слова Экспорт, и не доступна.");
+                throw new ExceptionBase(statement.CodeInformation, $"Функция [{function.Name}] не имеет оператора Экспорт, и не доступна.");
 
             _context.ModuleContexts.SetModuleContext(object_call.Object.Context,_instruction);
             FunctionCall(work_function,true);
@@ -284,7 +284,7 @@ namespace ScriptEngine.EngineBase.Interpreter
 
             Variable var = object_call.Object.Type.VariableGet(var_name.Content, object_call.Object.Type.ModuleScope);
             if(!var.Public)
-                throw new ExceptionBase(statement.CodeInformation, $"Переменная [{var_name.Content}] не имеет ключевого слова Экспорт, и не доступна.");
+                throw new ExceptionBase(statement.CodeInformation, $"Переменная [{var_name.Content}] не имеет оператора Экспорт, и не доступна.");
 
             VariableValue value = object_call.Object.Context.Context.GetValue(var);
             SetValue(statement.Variable1,value);

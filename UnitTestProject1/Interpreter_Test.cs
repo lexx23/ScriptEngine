@@ -12,6 +12,48 @@ namespace UnitTests
     [TestClass]
     public class Interpreter_Test
     {
+        #region For
+
+        [TestMethod]
+        public void Interpreter_For()
+        {
+            IDictionary<string, string> files = new Dictionary<string, string>();
+            files.Add("for", "For\\for.scr");
+
+            ScriptProgramm programm = Compile(files);
+            ScriptInterpreter interpreter = new ScriptInterpreter(programm);
+            interpreter.Debugger.AddBreakpoint("for", 7);
+            interpreter.Debugger.AddBreakpoint("for", 14);
+            interpreter.Debugger.AddBreakpoint("for", 25);
+            interpreter.Debugger.AddBreakpoint("for", 36);
+            interpreter.Debug();
+
+            Assert.AreEqual(7, interpreter.CurrentLine);
+            Assert.AreEqual(6, interpreter.Debugger.RegisterGetValue("ф").Integer);
+            Assert.AreEqual(8, interpreter.Debugger.RegisterGetValue("б").Integer);
+            interpreter.Debugger.Continue();
+
+
+            Assert.AreEqual(14, interpreter.CurrentLine);
+            Assert.AreEqual(2, interpreter.Debugger.RegisterGetValue("ф").Integer);
+            Assert.AreEqual(4, interpreter.Debugger.RegisterGetValue("б").Integer);
+            interpreter.Debugger.Continue();
+
+            Assert.AreEqual(25, interpreter.CurrentLine);
+            Assert.AreEqual(101, interpreter.Debugger.RegisterGetValue("ф").Integer);
+            Assert.AreEqual(50, interpreter.Debugger.RegisterGetValue("б").Integer);
+            interpreter.Debugger.Continue();
+
+            Assert.AreEqual(36, interpreter.CurrentLine);
+            Assert.AreEqual(51, interpreter.Debugger.RegisterGetValue("ф").Integer);
+            Assert.AreEqual(50, interpreter.Debugger.RegisterGetValue("б").Integer);
+            interpreter.Debugger.Continue();
+
+        }
+        #endregion
+
+
+
         #region While
 
         [TestMethod]

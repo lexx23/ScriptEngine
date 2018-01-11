@@ -39,19 +39,19 @@ namespace ScriptEngine.EngineBase.Compiler.Types
             if (left.Type != right.Type)
                 return false;
 
-            switch (left.Type)
+            switch (CommonType(left, right))
             {
                 case ValueTypeEnum.STRING:
                     return left.Content == right.Content;
 
                 case ValueTypeEnum.NUMBER:
-                    return left.Integer == right.Integer;
+                    return left.ToInt() == right.ToInt();
 
                 case ValueTypeEnum.FLOAT:
-                    return left.Float == right.Float;
+                    return left.ToFloat() == right.ToFloat();
 
                 case ValueTypeEnum.BOOLEAN:
-                    return left.Boolean == right.Boolean;
+                    return left.ToBoolean() == right.ToBoolean();
             }
             return false;
         }
@@ -78,15 +78,21 @@ namespace ScriptEngine.EngineBase.Compiler.Types
         {
             VariableValue result = new VariableValue();
             result.Type = ValueTypeEnum.BOOLEAN;
-            CommonType(left, right);
-            switch (left.Type)
+            switch (CommonType(left, right))
             {
                 case ValueTypeEnum.NUMBER:
-                    result.Boolean = left.Integer > right.Integer;
+                    result.Boolean = left.ToInt() > right.ToInt();
+                    result.Content = result.ToString();
                     return result;
 
                 case ValueTypeEnum.FLOAT:
-                    result.Boolean = left.Float > right.Float;
+                    result.Boolean = left.ToFloat() > right.ToFloat();
+                    result.Content = result.ToString();
+                    return result;
+
+                case ValueTypeEnum.BOOLEAN:
+                    result.Boolean = left.ToInt() > right.ToInt();
+                    result.Content = result.ToString();
                     return result;
             }
 
@@ -103,15 +109,21 @@ namespace ScriptEngine.EngineBase.Compiler.Types
         {
             VariableValue result = new VariableValue();
             result.Type = ValueTypeEnum.BOOLEAN;
-            CommonType(left, right);
-            switch (left.Type)
+            switch (CommonType(left, right))
             {
                 case ValueTypeEnum.NUMBER:
-                    result.Boolean = left.Integer >= right.Integer;
+                    result.Boolean = left.ToInt() >= right.ToInt();
+                    result.Content = result.ToString();
                     return result;
 
                 case ValueTypeEnum.FLOAT:
-                    result.Boolean = left.Float >= right.Float;
+                    result.Boolean = left.ToFloat() >= right.ToFloat();
+                    result.Content = result.ToString();
+                    return result;
+
+                case ValueTypeEnum.BOOLEAN:
+                    result.Boolean = left.ToInt() >= right.ToInt();
+                    result.Content = result.ToString();
                     return result;
             }
 
@@ -128,15 +140,21 @@ namespace ScriptEngine.EngineBase.Compiler.Types
         {
             VariableValue result = new VariableValue();
             result.Type = ValueTypeEnum.BOOLEAN;
-            CommonType(left, right);
-            switch (left.Type)
+            switch (CommonType(left, right))
             {
                 case ValueTypeEnum.NUMBER:
-                    result.Boolean = left.Integer < right.Integer;
+                    result.Boolean = left.ToInt() < right.ToInt();
+                    result.Content = result.ToString();
                     return result;
 
                 case ValueTypeEnum.FLOAT:
-                    result.Boolean = left.Float < right.Float;
+                    result.Boolean = left.ToFloat() < right.ToFloat();
+                    result.Content = result.ToString();
+                    return result;
+
+                case ValueTypeEnum.BOOLEAN:
+                    result.Boolean = left.ToInt() < right.ToInt();
+                    result.Content = result.ToString();
                     return result;
             }
 
@@ -153,15 +171,21 @@ namespace ScriptEngine.EngineBase.Compiler.Types
         {
             VariableValue result = new VariableValue();
             result.Type = ValueTypeEnum.BOOLEAN;
-            CommonType(left, right);
-            switch (left.Type)
+            switch (CommonType(left, right))
             {
                 case ValueTypeEnum.NUMBER:
-                    result.Boolean = left.Integer <= right.Integer;
+                    result.Boolean = left.ToInt() <= right.ToInt();
+                    result.Content = result.ToString();
                     return result;
 
                 case ValueTypeEnum.FLOAT:
-                    result.Boolean = left.Float <= right.Float;
+                    result.Boolean = left.ToFloat() <= right.ToFloat();
+                    result.Content = result.ToString();
+                    return result;
+
+                case ValueTypeEnum.BOOLEAN:
+                    result.Boolean = left.ToInt() <= right.ToInt();
+                    result.Content = result.ToString();
                     return result;
             }
 
@@ -179,22 +203,24 @@ namespace ScriptEngine.EngineBase.Compiler.Types
         public static VariableValue operator +(VariableValue left, VariableValue right)
         {
             VariableValue result = new VariableValue();
-            CommonType(left, right);
-            switch (left.Type)
+
+            switch (CommonType(left, right))
             {
                 case ValueTypeEnum.STRING:
                     result.Type = ValueTypeEnum.STRING;
-                    result.Content = left.Content + right.Content;
+                    result.Content = left.ToString() + right.ToString();
                     return result;
 
                 case ValueTypeEnum.NUMBER:
                     result.Type = ValueTypeEnum.NUMBER;
-                    result.Integer = left.Integer + right.Integer;
+                    result.Integer = left.ToInt() + right.ToInt();
+                    result.Content = result.ToString();
                     return result;
 
                 case ValueTypeEnum.FLOAT:
                     result.Type = ValueTypeEnum.FLOAT;
-                    result.Float = left.Float + right.Float;
+                    result.Float = left.ToFloat() + right.ToFloat();
+                    result.Content = result.ToString();
                     return result;
             }
 
@@ -210,17 +236,18 @@ namespace ScriptEngine.EngineBase.Compiler.Types
         public static VariableValue operator -(VariableValue left, VariableValue right)
         {
             VariableValue result = new VariableValue();
-            CommonType(left, right);
-            switch (left.Type)
+            switch (CommonType(left, right))
             {
                 case ValueTypeEnum.NUMBER:
                     result.Type = ValueTypeEnum.NUMBER;
-                    result.Integer = left.Integer - right.Integer;
+                    result.Integer = left.ToInt() - right.ToInt();
+                    result.Content = result.ToString();
                     return result;
 
                 case ValueTypeEnum.FLOAT:
                     result.Type = ValueTypeEnum.FLOAT;
-                    result.Float = left.Float - right.Float;
+                    result.Float = left.ToFloat() - right.ToFloat();
+                    result.Content = result.ToString();
                     return result;
             }
 
@@ -236,18 +263,17 @@ namespace ScriptEngine.EngineBase.Compiler.Types
         public static VariableValue operator *(VariableValue left, VariableValue right)
         {
             VariableValue result = new VariableValue();
-            CommonType(left, right);
-            switch (left.Type)
+            switch (CommonType(left, right))
             {
                 case ValueTypeEnum.NUMBER:
                     result.Type = ValueTypeEnum.NUMBER;
-                    result.Integer = left.Integer * right.Integer;
+                    result.Integer = left.ToInt() * right.ToInt();
                     result.Content = result.ToString();
                     return result;
 
                 case ValueTypeEnum.FLOAT:
                     result.Type = ValueTypeEnum.FLOAT;
-                    result.Float = left.Float * right.Float;
+                    result.Float = left.ToFloat() * right.ToFloat();
                     result.Content = result.ToString();
                     return result;
             }
@@ -263,20 +289,21 @@ namespace ScriptEngine.EngineBase.Compiler.Types
         /// <returns></returns>
         public static VariableValue operator *(VariableValue left, int right)
         {
+            VariableValue result = new VariableValue();
+
             VariableValue right_tmp = new VariableValue();
             right_tmp.Type = ValueTypeEnum.NUMBER;
-            CommonType(left, right_tmp);
-            switch (left.Type)
+            switch (CommonType(left, right_tmp))
             {
                 case ValueTypeEnum.NUMBER:
-                    left.Integer *= right;
-                    left.Content = left.ToString();
-                    return left;
+                    result.Integer = left.ToInt() * right;
+                    result.Content = result.ToString();
+                    return result;
 
                 case ValueTypeEnum.FLOAT:
-                    left.Float *= right;
-                    left.Content = left.ToString();
-                    return left;
+                    result.Float = left.ToFloat() * right;
+                    result.Content = result.ToString();
+                    return result;
             }
 
             throw new ExceptionBase($"Невозможно выполнить произведение {left.Content} и {right.ToString()}.");
@@ -291,17 +318,18 @@ namespace ScriptEngine.EngineBase.Compiler.Types
         public static VariableValue operator /(VariableValue left, VariableValue right)
         {
             VariableValue result = new VariableValue();
-            CommonType(left, right);
-            switch (left.Type)
+            switch (CommonType(left, right))
             {
                 case ValueTypeEnum.NUMBER:
                     result.Type = ValueTypeEnum.NUMBER;
-                    result.Integer = left.Integer / right.Integer;
+                    result.Integer = left.ToInt() / right.ToInt();
+                    result.Content = result.ToString();
                     return result;
 
                 case ValueTypeEnum.FLOAT:
                     result.Type = ValueTypeEnum.FLOAT;
-                    result.Float = left.Float / right.Float;
+                    result.Float = left.ToFloat() / right.ToFloat();
+                    result.Content = result.ToString();
                     return result;
             }
 
@@ -317,28 +345,23 @@ namespace ScriptEngine.EngineBase.Compiler.Types
         /// </summary>
         /// <param name="left"></param>
         /// <param name="right"></param>
-        public static void CommonType(VariableValue left, VariableValue right)
+        public static ValueTypeEnum CommonType(VariableValue left, VariableValue right)
         {
             if (left.Type == right.Type)
-                return;
+                return left.Type;
 
             if (left.Type == ValueTypeEnum.FLOAT)
-            {
-                right = right.ConvertTo(ValueTypeEnum.FLOAT);
-                return;
-            }
+                return left.Type;
+
 
             if (right.Type == ValueTypeEnum.FLOAT)
-            {
-                left = left.ConvertTo(ValueTypeEnum.FLOAT);
-                return;
-            }
+                return right.Type;
 
-            right = right.ConvertTo(left.Type);
+            return left.Type;
         }
 
         /// <summary>
-        /// Преобразовать в строку
+        /// Преобразовать в строку, не изменяя тип переменной.
         /// </summary>
         /// <returns></returns>
         public override string ToString()
@@ -365,7 +388,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types
         }
 
         /// <summary>
-        /// Преобразовать в число с плавающей точкой
+        /// Преобразовать в число с плавающей точкой, не изменяя тип переменной.
         /// </summary>
         /// <returns></returns>
         public float ToFloat()
@@ -403,7 +426,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types
         }
 
         /// <summary>
-        /// Преобразовать в число
+        /// Преобразовать в число, не изменяя тип переменной.
         /// </summary>
         /// <returns></returns>
         public int ToInt()
@@ -441,7 +464,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types
         }
 
         /// <summary>
-        /// Преобразовать в логический тип
+        /// Преобразовать в логический тип, не изменяя тип переменной.
         /// </summary>
         /// <returns></returns>
         public bool ToBoolean()
@@ -471,8 +494,41 @@ namespace ScriptEngine.EngineBase.Compiler.Types
             return false;
         }
 
+
+
         /// <summary>
-        /// Преобразование значения к необходимому типу
+        /// Преобразовать указанный тип, не изменяя тип переменной.
+        /// </summary>
+        /// <returns></returns>
+        public bool ToType(ValueTypeEnum type)
+        {
+            if (Type == ValueTypeEnum.NULL)
+                throw new ExceptionBase($"Значение с типом Null невозможно преобразовать в {type}.");
+
+            switch (type)
+            {
+                case ValueTypeEnum.STRING:
+                    if (Content.ToLower() == "ложь" || Content.ToLower() == "false")
+                        return false;
+                    if (Content.ToLower() == "истина" || Content.ToLower() == "true")
+                        return true;
+                    throw new ExceptionBase($"Невозможно преобразовать [{Content}] в логическое значение.");
+
+                case ValueTypeEnum.NUMBER:
+                    return Integer != 0;
+
+                case ValueTypeEnum.FLOAT:
+                    return Float != 0.0;
+
+                case ValueTypeEnum.BOOLEAN:
+                    return Boolean;
+
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Преобразование значения к необходимому типу. И зменяется тип значения.
         /// </summary>
         /// <param name="type"></param>
         /// <returns></returns>
