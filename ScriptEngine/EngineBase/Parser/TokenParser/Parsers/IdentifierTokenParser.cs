@@ -40,6 +40,18 @@ namespace ScriptEngine.EngineBase.Parser.TokenParser.Parsers
             _table.Add("EndIf", TokenSubTypeEnum.I_ENDIF);
             _table.Add("КонецЕсли", TokenSubTypeEnum.I_ENDIF);
 
+            _table.Add("Пока", TokenSubTypeEnum.I_WHILE);
+            _table.Add("While", TokenSubTypeEnum.I_WHILE);
+            _table.Add("Цикл", TokenSubTypeEnum.I_LOOP);
+            _table.Add("Do", TokenSubTypeEnum.I_LOOP);
+            _table.Add("КонецЦикла", TokenSubTypeEnum.I_ENDLOOP);
+            _table.Add("EndDo", TokenSubTypeEnum.I_ENDLOOP);
+
+            _table.Add("Продолжить", TokenSubTypeEnum.I_CONTINUE);
+            _table.Add("Сontınue", TokenSubTypeEnum.I_CONTINUE);
+            _table.Add("Прервать", TokenSubTypeEnum.I_BREAK);
+            _table.Add("Break", TokenSubTypeEnum.I_BREAK);
+
             _table.Add("Перем", TokenSubTypeEnum.I_VARDEF);
             _table.Add("Var", TokenSubTypeEnum.I_VARDEF);
 

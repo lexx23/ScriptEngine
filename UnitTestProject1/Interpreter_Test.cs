@@ -12,6 +12,37 @@ namespace UnitTests
     [TestClass]
     public class Interpreter_Test
     {
+        #region While
+
+        [TestMethod]
+        public void Interpreter_While()
+        {
+            IDictionary<string, string> files = new Dictionary<string, string>();
+            files.Add("while", "While\\while.scr");
+
+            ScriptProgramm programm = Compile(files);
+            ScriptInterpreter interpreter = new ScriptInterpreter(programm);
+            interpreter.Debugger.AddBreakpoint("while", 4);
+            interpreter.Debugger.AddBreakpoint("while", 9);
+            interpreter.Debugger.AddBreakpoint("while", 20);
+            interpreter.Debug();
+
+            Assert.AreEqual(4, interpreter.CurrentLine);
+            Assert.AreEqual(100, interpreter.Debugger.RegisterGetValue("ф").Integer);
+            interpreter.Debugger.Continue();
+
+            Assert.AreEqual(9, interpreter.CurrentLine);
+            Assert.AreEqual(0, interpreter.Debugger.RegisterGetValue("ф").Integer);
+            Assert.AreEqual(100, interpreter.Debugger.RegisterGetValue("б").Integer);
+            interpreter.Debugger.Continue();
+
+            Assert.AreEqual(20, interpreter.CurrentLine);
+            Assert.AreEqual(50, interpreter.Debugger.RegisterGetValue("ф").Integer);
+            interpreter.Debugger.Continue();
+        }
+        #endregion
+
+
         #region If
 
         [TestMethod]
@@ -60,6 +91,39 @@ namespace UnitTests
             Assert.AreEqual(70, interpreter.CurrentLine);
             Assert.AreEqual(1, interpreter.Debugger.RegisterGetValue("ф").Integer);
         }
+
+
+        [TestMethod]
+        public void Interpreter_IfNasted()
+        {
+            IDictionary<string, string> files = new Dictionary<string, string>();
+            files.Add("if", "If\\if_nasted.scr");
+
+            ScriptProgramm programm = Compile(files);
+            ScriptInterpreter interpreter = new ScriptInterpreter(programm);
+            interpreter.Debugger.AddBreakpoint("if", 11);
+            interpreter.Debugger.AddBreakpoint("if", 25);
+            interpreter.Debugger.AddBreakpoint("if", 41);
+            interpreter.Debugger.AddBreakpoint("if", 58);
+            interpreter.Debug();
+
+            Assert.AreEqual(11, interpreter.CurrentLine);
+            Assert.AreEqual(1, interpreter.Debugger.RegisterGetValue("ф").Integer);
+            interpreter.Debug();
+
+            Assert.AreEqual(25, interpreter.CurrentLine);
+            Assert.AreEqual(1, interpreter.Debugger.RegisterGetValue("ф").Integer);
+            interpreter.Debug();
+
+            Assert.AreEqual(41, interpreter.CurrentLine);
+            Assert.AreEqual(3, interpreter.Debugger.RegisterGetValue("ф").Integer);
+            interpreter.Debug();
+
+            Assert.AreEqual(58, interpreter.CurrentLine);
+            Assert.AreEqual(4, interpreter.Debugger.RegisterGetValue("ф").Integer);
+            interpreter.Debug();
+        }
+
         #endregion
 
         #region Object
@@ -372,7 +436,9 @@ namespace UnitTests
 
             ScriptProgramm programm = Compile(files);
             ScriptInterpreter interpreter = new ScriptInterpreter(programm);
+            interpreter.Debugger.AddBreakpoint("var", 9);
             interpreter.Debugger.AddBreakpoint("var", 13);
+            interpreter.Debug();
             interpreter.Debug();
 
             Assert.AreEqual(4, interpreter.Debugger.RegisterGetValue("в1").Integer);

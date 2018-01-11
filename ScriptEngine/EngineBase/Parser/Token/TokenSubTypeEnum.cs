@@ -25,6 +25,17 @@ namespace ScriptEngine.EngineBase.Parser.Token
         [StringValue("КонецЕсли { EndIf }")]
         I_ENDIF,
 
+        [StringValue("Пока { While }")]
+        I_WHILE,
+        [StringValue("Цикл { Do }")]
+        I_LOOP,
+        [StringValue("КонецЦикла { EndDo }")]
+        I_ENDLOOP,
+        [StringValue("Продолжить { Continue }")]
+        I_CONTINUE,
+        [StringValue("Пррервать { Break }")]
+        I_BREAK,
+
         [StringValue("Функция { Function }")]
         I_FUNCTION,
         [StringValue("КонецФункции { EndFunction }")]

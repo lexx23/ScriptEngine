@@ -602,7 +602,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types
         public override int GetHashCode()
         {
             var hashCode = 873661529;
-            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Content);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(ToString());
             return hashCode;
         }
     }

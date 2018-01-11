@@ -11,6 +11,19 @@ namespace UnitTests
     [TestClass]
     public class Compiler_Test
     {
+        #region While
+
+        [TestMethod]
+        public void Compile_While()
+        {
+            IDictionary<string, string> files = new Dictionary<string, string>();
+            files.Add("while", "While\\while.scr");
+
+            Compile(files);
+        }
+
+        #endregion
+
         #region If
 
         [TestMethod]
@@ -24,7 +37,7 @@ namespace UnitTests
 
         [TestMethod]
         [ExpectedException(typeof(ExceptionBase))]
-        public void Compile_If_Error()
+        public void Compile_IfError()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
             files.Add("if", "If\\if_error.scr");
@@ -34,10 +47,20 @@ namespace UnitTests
 
         [TestMethod]
         [ExpectedException(typeof(ExceptionBase))]
-        public void Compile_If_Error2()
+        public void Compile_IfError2()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
             files.Add("if", "If\\if_error2.scr");
+
+            Compile(files);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ExceptionBase))]
+        public void Compile_IfError3()
+        {
+            IDictionary<string, string> files = new Dictionary<string, string>();
+            files.Add("if", "If\\if_error3.scr");
 
             Compile(files);
         }
@@ -48,7 +71,7 @@ namespace UnitTests
 
         [TestMethod]
         [ExpectedException(typeof(Exception))]
-        public void Compile_Global_Common_With_Code_Error()
+        public void Compile_Global_CommonWithCodeError()
         {
             IDictionary<ScriptModule, string> modules = new Dictionary<ScriptModule, string>();
             modules.Add(new ScriptModule("global", ModuleTypeEnum.STARTUP), OpenModule("Global\\Common with code error\\global_module.scr"));
@@ -63,7 +86,7 @@ namespace UnitTests
         #region Objects
 
         [TestMethod]
-        public void ompile_Objects_CrossObjectCall()
+        public void Сompile_Objects_CrossObjectCall()
         {
             IDictionary<ScriptModule, string> modules = new Dictionary<ScriptModule, string>();
             modules.Add(new ScriptModule("global", ModuleTypeEnum.STARTUP), OpenModule("Objects\\Cross object call\\global_module.scr"));
@@ -86,7 +109,7 @@ namespace UnitTests
         }
 
         [TestMethod]
-        public void Compile_Assign_Function_Result()
+        public void Compile_Function_AssignResult()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
             files.Add("function", "Function\\assign_result.scr");
@@ -96,7 +119,7 @@ namespace UnitTests
 
         [TestMethod]
         [ExpectedException(typeof(ExceptionBase))]
-        public void Compile_Function_Empty_Return()
+        public void Compile_Function_EmptyReturn()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
             files.Add("function", "Function\\function_empty_return.scr");
@@ -127,7 +150,7 @@ namespace UnitTests
 
         [TestMethod]
         [ExpectedException(typeof(ExceptionBase))]
-        public void Compile_Procedure_Return_Error()
+        public void Compile_Procedure_ReturnError()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
             files.Add("procedure", "Procedure\\return_error.scr");
@@ -137,7 +160,7 @@ namespace UnitTests
 
         [TestMethod]
         [ExpectedException(typeof(ExceptionBase))]
-        public void Compile_Procedure_As_Function_Error()
+        public void Compile_Procedure_AsFunctionError()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
             files.Add("procedure", "Procedure\\procedure_as_function_error.scr");
@@ -147,7 +170,7 @@ namespace UnitTests
 
         [TestMethod]
         [ExpectedException(typeof(ExceptionBase))]
-        public void Compile_Procedure_Call_Not_Found()
+        public void Compile_Procedure_CallNotFoundError()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
             files.Add("procedure", "Procedure\\procedure_call_not_found.scr");
@@ -158,7 +181,7 @@ namespace UnitTests
 
         [TestMethod]
         [ExpectedException(typeof(ExceptionBase))]
-        public void Compile_Procedure_As_Function_Error2()
+        public void Compile_Procedure_AsFunctionError2()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
             files.Add("procedure", "Procedure\\procedure_as_function_error2.scr");
@@ -168,7 +191,7 @@ namespace UnitTests
 
         [TestMethod]
         [ExpectedException(typeof(ExceptionBase))]
-        public void Compile_Procedure_As_Function_Error3()
+        public void Compile_Procedure_AsFunctionError3()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
             files.Add("procedure", "Procedure\\procedure_as_function_error3.scr");
@@ -178,7 +201,7 @@ namespace UnitTests
 
         [TestMethod]
         [ExpectedException(typeof(ExceptionBase))]
-        public void Compile_Procedure_As_Function_Error4()
+        public void Compile_Procedure_AsFunctionError4()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
             files.Add("procedure", "Procedure\\procedure_as_function_error4.scr");
@@ -188,7 +211,7 @@ namespace UnitTests
 
         [TestMethod]
         [ExpectedException(typeof(ExceptionBase))]
-        public void Compile_Procedure_As_Function_Error5()
+        public void Compile_Procedure_AsFunctionError5()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
             files.Add("procedure", "Procedure\\procedure_as_function_error5.scr");
@@ -198,7 +221,7 @@ namespace UnitTests
 
         [TestMethod]
         [ExpectedException(typeof(ExceptionBase))]
-        public void Compile_Procedure_Error_Param_Count()
+        public void Compile_Procedure_ParamCountError()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
             files.Add("procedure", "Procedure\\procedure_error_param_count.scr");
@@ -209,7 +232,7 @@ namespace UnitTests
 
         [TestMethod]
         [ExpectedException(typeof(ExceptionBase))]
-        public void Compile_Procedure_Error_Param_Count2()
+        public void Compile_Procedure_ParamCountError2()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
             files.Add("procedure", "Procedure\\procedure_error_param_count2.scr");
@@ -219,7 +242,7 @@ namespace UnitTests
 
 
         [TestMethod]
-        public void Compile_Procedure_Var_Order()
+        public void Compile_Procedure_VarOrder()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
             files.Add("procedure", "Procedure\\procedure_var_order.scr");
@@ -230,7 +253,7 @@ namespace UnitTests
 
         [TestMethod]
         [ExpectedException(typeof(ExceptionBase))]
-        public void Compile_Procedure_Var_Order_Error()
+        public void Compile_Procedure_VarOrderError()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
             files.Add("procedure", "Procedure\\procedure_var_order_error.scr");
@@ -241,7 +264,7 @@ namespace UnitTests
 
         [TestMethod]
         [ExpectedException(typeof(ExceptionBase))]
-        public void Compile_Procedure_Repeat_Error()
+        public void Compile_Procedure_RepeatError()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
             files.Add("procedure", "Procedure\\procedure_var_repeat_error.scr");
@@ -265,7 +288,7 @@ namespace UnitTests
 
         [TestMethod]
         [ExpectedException(typeof(ExceptionBase))]
-        public void Compile_Var_Repeat_Error()
+        public void Compile_Var_RepeatError()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
             files.Add("repeat", "Var\\var_repeat_error.scr");
@@ -276,7 +299,7 @@ namespace UnitTests
 
         [TestMethod]
         [ExpectedException(typeof(ExceptionBase))]
-        public void Compile_Var_Order_Error()
+        public void Compile_Var_OrderError()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
             files.Add("order", "Var\\var_order_error.scr");
@@ -287,7 +310,7 @@ namespace UnitTests
 
         [TestMethod]
         [ExpectedException(typeof(ExceptionBase))]
-        public void Compile_Var_Order_Error2()
+        public void Compile_Var_OrderError2()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
             files.Add("order", "Var\\var_order_error2.scr");
@@ -296,7 +319,7 @@ namespace UnitTests
         }
 
         [TestMethod]
-        public void Compile_Var_All_Types()
+        public void Compile_Var_AllTypes()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
             files.Add("var", "Var\\var_all_types.scr");

@@ -284,7 +284,7 @@ namespace ScriptEngine.EngineBase.Interpreter
 
             Variable var = object_call.Object.Type.VariableGet(var_name.Content, object_call.Object.Type.ModuleScope);
             if(!var.Public)
-                throw new ExceptionBase(statement.CodeInformation, $"[{var_name.Content}] не имеет ключевого слова Экспорт, и не доступна.");
+                throw new ExceptionBase(statement.CodeInformation, $"Переменная [{var_name.Content}] не имеет ключевого слова Экспорт, и не доступна.");
 
             VariableValue value = object_call.Object.Context.Context.GetValue(var);
             SetValue(statement.Variable1,value);
@@ -421,7 +421,15 @@ namespace ScriptEngine.EngineBase.Interpreter
                         ObjectResoleVariable(statement);
                         break;
 
-
+                    case OP_CODES.OP_IF:
+                        v2 = GetValue(statement.Variable2);
+                        v3 = GetValue(statement.Variable3);
+                        if (v2.Boolean)
+                        {
+                            _instruction = v3.Integer;
+                            continue;
+                        }
+                        break;
                     case OP_CODES.OP_IFNOT:
                         v2 = GetValue(statement.Variable2);
                         v3 = GetValue(statement.Variable3);

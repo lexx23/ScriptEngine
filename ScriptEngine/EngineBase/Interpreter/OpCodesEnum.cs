@@ -21,6 +21,8 @@ namespace ScriptEngine.EngineBase.Interpreter
 
         // Переход без условий
         OP_JMP,
+        // Переход если истина
+        OP_IF,
         // Переход если ложь
         OP_IFNOT,
         // Логическое равенство

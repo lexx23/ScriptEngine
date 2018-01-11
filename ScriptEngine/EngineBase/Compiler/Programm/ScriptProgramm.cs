@@ -155,6 +155,7 @@ namespace ScriptEngine.EngineBase.Compiler.Programm
             if (StaticVariableExist(value))
             {
                 tmp_var = _static_vars[value];
+                tmp_var.Users++;
                 return tmp_var;
             }
 

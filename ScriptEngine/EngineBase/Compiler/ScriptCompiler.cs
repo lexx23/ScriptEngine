@@ -71,6 +71,7 @@ namespace ScriptEngine.EngineBase.Compiler
             _op_codes = new Dictionary<OP_CODES, op_code>();
             _op_codes.Add(OP_CODES.OP_JMP, new op_code { code = OP_CODES.OP_JMP, type = OP_TYPE.WO_RESULT });
             _op_codes.Add(OP_CODES.OP_IFNOT, new op_code { code = OP_CODES.OP_IFNOT, type = OP_TYPE.WO_RESULT });
+            _op_codes.Add(OP_CODES.OP_IF, new op_code { code = OP_CODES.OP_IF, type = OP_TYPE.WO_RESULT });
             _op_codes.Add(OP_CODES.OP_NOT, new op_code { code = OP_CODES.OP_NOT, type = OP_TYPE.RESULT_OPTIMIZATION });
             _op_codes.Add(OP_CODES.OP_PUSH, new op_code { code = OP_CODES.OP_PUSH, type = OP_TYPE.WO_RESULT });
             _op_codes.Add(OP_CODES.OP_POP, new op_code { code = OP_CODES.OP_POP, type = OP_TYPE.RESULT });
@@ -188,14 +189,7 @@ namespace ScriptEngine.EngineBase.Compiler
             }
 
             if (result != null)
-            {
-                _programm.StaticVariableDelete(left);
-
-                if (right != null)
-                    _programm.StaticVariableDelete(right);
-
                 return _programm.StaticVariableAdd(result);
-            }
 
             return null;
         }
@@ -230,15 +224,15 @@ namespace ScriptEngine.EngineBase.Compiler
                 if (result != null)
                     return result;
                 else
-                    result = _current_module.VariableAdd("", false, _scope);
+                    result =  _current_module.VariableAdd("", false, _scope);
             }
             else
             if (code.type == OP_TYPE.RESULT)
                 result = _current_module.VariableAdd("", false, _scope);
 
-            if (left != null)
+            if (left != null && left.Status != VariableStatusEnum.CONSTANTVARIABLE)
                 left.Users++;
-            if (right != null)
+            if (right != null && right.Status != VariableStatusEnum.CONSTANTVARIABLE)
                 right.Users++;
 
             ScriptStatement statement;
@@ -301,17 +295,9 @@ namespace ScriptEngine.EngineBase.Compiler
                 {
                     if (var.Value.Type != ValueTypeEnum.NUMBER && var.Value.Type != ValueTypeEnum.FLOAT)
                         throw new ExceptionBase(_iterator.Current.CodeInformation, $"Неожиданный символ ({sign.Content}).");
-
-                    if (sign.SubType == TokenSubTypeEnum.P_SUB)
-                    {
-                        if (var.Users > 1)
-                            var = _programm.StaticVariableAdd(var.Value.Clone() * -1);
-                        else
-                            var.Value = var.Value * -1;
-                    }
                 }
-                else
-                    // В остальных случаях добавляем в код команду изменения знака.
+
+                if (sign.SubType == TokenSubTypeEnum.P_SUB)
                     var = EmitCode(_expression_op_codes[TokenSubTypeEnum.P_MUL], var, _programm.StaticVariableAdd(new VariableValue(-1)));
             }
 
@@ -1033,7 +1019,85 @@ namespace ScriptEngine.EngineBase.Compiler
 
         #endregion
 
-        #region Ключевые слова Если,Для
+        #region Ключевые слова Если,Для,Пока
+
+        private void ParseLoopCommands(int loop_start,ref IList<int> break_list)
+        {
+            if (_iterator.CheckToken(TokenTypeEnum.IDENTIFIER, TokenSubTypeEnum.I_CONTINUE))
+            {
+                Variable jmp_static = _programm.StaticVariableAdd(new VariableValue(loop_start));
+                EmitCode(OP_CODES.OP_JMP, jmp_static, null);
+                _iterator.ExpectToken(TokenTypeEnum.PUNCTUATION, TokenSubTypeEnum.P_SEMICOLON);
+                return;
+            }
+
+            if (_iterator.CheckToken(TokenTypeEnum.IDENTIFIER, TokenSubTypeEnum.I_BREAK))
+            {
+                break_list.Add(_current_module.ProgrammLine);
+                EmitCode(OP_CODES.OP_JMP, null, null);
+                _iterator.ExpectToken(TokenTypeEnum.PUNCTUATION, TokenSubTypeEnum.P_SEMICOLON);
+            }
+        }
+
+
+        /// <summary>
+        /// Парсин ключевого слова Пока, КонецЦикла.
+        /// </summary>
+        /// <returns></returns>
+        private bool ParseWhile()
+        {
+            if (_iterator.CheckToken(TokenTypeEnum.IDENTIFIER, TokenSubTypeEnum.I_WHILE))
+            {
+                ScriptStatement statement;
+                Variable expression = null;
+                IList<int> break_list = new List<int>();
+                int jmp,while_line;
+
+                // Установить точку входа модуля.
+                SetModuleEntryPoint();
+
+                if (_iterator.CheckToken(TokenTypeEnum.IDENTIFIER, TokenSubTypeEnum.I_LOOP))
+                    throw new ExceptionBase(_iterator.Current.CodeInformation, "Ожидается выражение.");
+
+                jmp = _current_module.ProgrammLine;
+                expression = ParseExpression((int)Priority.TOP);
+                while_line = _current_module.ProgrammLine;
+                EmitCode(OP_CODES.OP_IFNOT, expression, null);
+
+                _iterator.ExpectToken(TokenTypeEnum.IDENTIFIER, TokenSubTypeEnum.I_LOOP);
+
+                // Идентификаторы для остановки парсинга.
+                HashSet<TokenSubTypeEnum> stop = new HashSet<TokenSubTypeEnum>()
+                    {
+                        TokenSubTypeEnum.I_CONTINUE,
+                        TokenSubTypeEnum.I_BREAK,
+                        TokenSubTypeEnum.I_ENDLOOP
+                    };
+
+                do
+                {
+                    ParseModuleBody(stop);
+
+                    ParseLoopCommands(jmp,ref break_list);
+                }
+                while (!_iterator.CheckToken(TokenTypeEnum.IDENTIFIER, TokenSubTypeEnum.I_ENDLOOP));
+
+                Variable jmp_static = _programm.StaticVariableAdd(new VariableValue(jmp));
+                EmitCode(OP_CODES.OP_JMP, jmp_static, null);
+
+                statement = _current_module.StatementGet(while_line);
+                statement.Variable3 = _programm.StaticVariableAdd(new VariableValue(_current_module.ProgrammLine));
+
+                foreach (int jmp_line in break_list)
+                {
+                    statement = _current_module.StatementGet(jmp_line);
+                    statement.Variable3 = _programm.StaticVariableAdd(new VariableValue(_current_module.ProgrammLine));
+                }
+
+                return true;
+            }
+            return false;
+        }
 
         /// <summary>
         /// Парсин ключевого слова Если, ИначеЕсли.
@@ -1081,11 +1145,11 @@ namespace ScriptEngine.EngineBase.Compiler
                         TokenSubTypeEnum.I_ENDIF
                     };
 
-                    // Если КонецЕсли или конец файла, то выход из цикла.
-                    if (_iterator.CheckToken(TokenTypeEnum.IDENTIFIER, TokenSubTypeEnum.I_ENDIF) || _iterator.Current.SubType == TokenSubTypeEnum.EOF)
-                        break;
-
                     ParseModuleBody(stop);
+
+                    // Если КонецЕсли или конец файла, то выход из цикла.
+                    if (_iterator.Current.SubType == TokenSubTypeEnum.I_ENDIF || _iterator.Current.SubType == TokenSubTypeEnum.EOF)
+                        break;
 
                     // Выход после выполнения кода условия.
                     jmp.Add(_current_module.ProgrammLine);
@@ -1100,7 +1164,6 @@ namespace ScriptEngine.EngineBase.Compiler
                         line = int.MinValue;
 
                         ParseModuleBody(TokenSubTypeEnum.I_ENDIF);
-                        _iterator.ExpectToken(TokenTypeEnum.IDENTIFIER, TokenSubTypeEnum.I_ENDIF);
                         break;
                     }
 
@@ -1119,7 +1182,8 @@ namespace ScriptEngine.EngineBase.Compiler
                     statement = _current_module.StatementGet(index);
                     statement.Variable2 = _programm.StaticVariableAdd(new VariableValue(_current_module.ProgrammLine));
                 }
-
+                _iterator.ExpectToken(TokenTypeEnum.IDENTIFIER, TokenSubTypeEnum.I_ENDIF);
+                _iterator.IsTokenType(TokenTypeEnum.PUNCTUATION, TokenSubTypeEnum.P_SEMICOLON);
                 return true;
             }
             return false;
@@ -1168,6 +1232,10 @@ namespace ScriptEngine.EngineBase.Compiler
                 }
 
                 if (ParseIf())
+                    continue;
+
+
+                if (ParseWhile())
                     continue;
 
                 // Парсим вызов методов, свойств, а так же присвоение значений.
