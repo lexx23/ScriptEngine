@@ -18,6 +18,8 @@ namespace ScriptEngine.EngineBase.Interpreter
         OP_MUL,
         // Деление
         OP_DIV,
+        // Остаток от деления
+        OP_MOD,
 
         // Переход без условий
         OP_JMP,

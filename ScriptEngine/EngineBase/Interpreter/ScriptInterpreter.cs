@@ -1,4 +1,5 @@
 ﻿using ScriptEngine.EngineBase.Compiler.Programm;
+using ScriptEngine.EngineBase.Compiler.Programm.Parts;
 using ScriptEngine.EngineBase.Compiler.Types;
 using ScriptEngine.EngineBase.Compiler.Types.Function;
 using ScriptEngine.EngineBase.Compiler.Types.Variable;
@@ -64,13 +65,13 @@ namespace ScriptEngine.EngineBase.Interpreter
             {
                 if (module_kv.Value.Type == ModuleTypeEnum.COMMON && !module_kv.Value.AsGlobal)
                 {
-                    IVariable object_var = _programm.GlobalVariableGet(module_kv.Key);
+                    IVariable object_var = _programm.GlobalVariables.Get(module_kv.Key);
                     _context.Global.SetValue(object_var, CreateObject(module_kv.Key, module_kv.Value));
                 }
 
                 if (module_kv.Value.Type == ModuleTypeEnum.OBJECT)
                 {
-                    IVariable object_var = _programm.GlobalVariableGet(module_kv.Key);
+                    IVariable object_var = _programm.GlobalVariables.Get(module_kv.Key);
                     _context.Global.SetValue(object_var, CreateObject(module_kv.Key, module_kv.Value));
                 }
 
@@ -98,7 +99,7 @@ namespace ScriptEngine.EngineBase.Interpreter
             Value var = new Value
             {
                 Type = ValueTypeEnum.OBJECT,
-                Object = new VariableValueObject(type, object_context)
+                Object = new ValueObject(type, object_context)
             };
 
             Execute();
@@ -130,7 +131,7 @@ namespace ScriptEngine.EngineBase.Interpreter
             function = _context.ModuleContexts.Current.Module.Functions.Get(name);
 
             if (function == null)
-                function = _programm.GlobalFunctionGet(name);
+                function = _programm.GlobalFunctions.Get(name);
 
             if (function == null)
                 throw new Exception($"Функция [{name}] не найдена.");
@@ -526,7 +527,11 @@ namespace ScriptEngine.EngineBase.Interpreter
                         v3 = GetValue(statement.Variable3);
                         SetValue(statement.Variable1, v2 / v3);
                         break;
-
+                    case OP_CODES.OP_MOD:
+                        v2 = GetValue(statement.Variable2);
+                        v3 = GetValue(statement.Variable3);
+                        SetValue(statement.Variable1, v2 % v3);
+                        break;
 
                 }
                 _instruction++;

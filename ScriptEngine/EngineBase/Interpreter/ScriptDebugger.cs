@@ -148,7 +148,7 @@ namespace ScriptEngine.EngineBase.Interpreter
             if (var != null)
                 return _interpreter._context.ModuleContexts.Current.Context.GetValue(var);
 
-            var = _interpreter._programm.GlobalVariableGet(name);
+            var = _interpreter._programm.GlobalVariables.Get(name);
             if (var != null)
                 return _interpreter._context.Global.GetValue(var);
 

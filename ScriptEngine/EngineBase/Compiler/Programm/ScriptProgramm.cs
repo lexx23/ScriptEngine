@@ -1,4 +1,5 @@
-﻿using ScriptEngine.EngineBase.Compiler.Types;
+﻿using ScriptEngine.EngineBase.Compiler.Programm.Parts;
+using ScriptEngine.EngineBase.Compiler.Types;
 using ScriptEngine.EngineBase.Compiler.Types.Function;
 using ScriptEngine.EngineBase.Compiler.Types.Variable;
 using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
@@ -13,15 +14,18 @@ namespace ScriptEngine.EngineBase.Compiler.Programm
     public class ScriptProgramm
     {
         private IDictionary<string, ScriptModule> _modules;
-        private IDictionary<string, IVariable> _global_vars;
-        private IDictionary<string, IFunction> _global_functions;
-        private IDictionary<Value, IVariable> _static_vars;
+        private GlobalFunctions _global_functions;
+        private GlobalVariables _global_variables;
+        private StaticVariables _static_variables;
         private ScriptScope _global_scope;
 
-
+        public GlobalFunctions GlobalFunctions { get => _global_functions; }
+        public GlobalVariables GlobalVariables { get => _global_variables; }
+        public StaticVariables StaticVariables { get => _static_variables; }
         public IDictionary<string, ScriptModule> Modules { get => _modules; }
 
         public ScriptScope GlobalScope { get => _global_scope; }
+
         public ScriptModule this[string name]
         {
             get => _modules[name];
@@ -33,10 +37,9 @@ namespace ScriptEngine.EngineBase.Compiler.Programm
             _modules = new Dictionary<string, ScriptModule>();
             _global_scope = new ScriptScope() { Name = "global", Type = ScopeTypeEnum.GLOBAL };
 
-            _static_vars = new Dictionary<Value, IVariable>();
-
-            _global_vars = new Dictionary<string, IVariable>();
-            _global_functions = new Dictionary<string, IFunction>();
+            _global_functions = new GlobalFunctions();
+            _global_variables = new GlobalVariables(_global_scope);
+            _static_variables = new StaticVariables();
         }
 
         /// <summary>
@@ -48,10 +51,10 @@ namespace ScriptEngine.EngineBase.Compiler.Programm
             _modules.Add(module.Name, module);
 
             if (!module.AsGlobal && module.Type == ModuleTypeEnum.COMMON)
-                GlobalVariableAdd(module.Name, new Value(ValueTypeEnum.OBJECT, module.Name));
+                GlobalVariables.Add(module.Name, new Value(ValueTypeEnum.OBJECT, module.Name));
 
             if (module.Type == ModuleTypeEnum.OBJECT)
-                GlobalVariableAdd(module.Name, new Value(ValueTypeEnum.OBJECT, module.Name));
+                GlobalVariables.Add(module.Name, new Value(ValueTypeEnum.OBJECT, module.Name));
         }
 
         /// <summary>
@@ -64,144 +67,6 @@ namespace ScriptEngine.EngineBase.Compiler.Programm
             return _modules.ContainsKey(module_name);
         }
 
-        #region GlobalFunctions
-        /// <summary>
-        /// Добавление глобальной функции. Если такая функция существует, то вернуть null.
-        /// </summary>
-        /// <param name="name"></param>
-        /// <param name="module"></param>
-        /// <param name="type"></param>
-        /// <returns></returns>
-        public IFunction GlobalFunctionAdd(string name)
-        {
-            IFunction function;
-
-            if (!_global_functions.ContainsKey(name + "-" + _global_scope.Name))
-            {
-                function = new Function() { Name = name };
-                _global_functions.Add(name + "-" + _global_scope.Name, function);
-                return function;
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Получить глобальную функцию.
-        /// </summary>
-        /// <param name="name"></param>
-        /// <returns></returns>
-        public IFunction GlobalFunctionGet(string name)
-        {
-            if (_global_functions.ContainsKey(name + "-" + _global_scope.Name))
-                return _global_functions[name + "-" + _global_scope.Name];
-
-            return null;
-        }
-        #endregion
-
-        #region GlobalVariable
-        /// <summary>
-        /// Добавить глобальную переменную. Если переменная с таким именем существует, то вернуть null.
-        /// </summary>
-        /// <param name="name"></param>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        public IVariable GlobalVariableAdd(string name, Value value = null)
-        {
-            if (name == string.Empty)
-                name = "<<var_" + _global_vars.Count.ToString() + ">>";
-
-            if (_global_vars.ContainsKey(name + "-" + _global_scope.Name))
-                return null;
-
-            IVariable var = new Variable()
-            {
-                Name = name,
-                Value = value,
-                Status = VariableStatusEnum.STACKVARIABLE,
-                Users = 1,
-                Scope = _global_scope,
-                StackNumber = _global_scope.VarCount
-            };
-
-            _global_scope.VarCount++;
-            _global_vars.Add(name + "-" + _global_scope.Name, var);
-            return var;
-        }
-
-
-        /// <summary>
-        /// Получить глобальную переменную.
-        /// </summary>
-        /// <param name="name"></param>
-        /// <returns></returns>
-        public IVariable GlobalVariableGet(string name)
-        {
-            if (_global_vars.ContainsKey(name + "-" + _global_scope.Name))
-                return _global_vars[name + "-" + _global_scope.Name];
-            return null;
-        }
-        #endregion
-
-        #region StaticVariable
-
-        /// <summary>
-        /// Добавить статическую переменную. Если переменная с таким значением существует, то вернуть увеличить счетчик ее использования.
-        /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        public IVariable StaticVariableAdd(Value value)
-        {
-            IVariable tmp_var;
-            if (StaticVariableExist(value))
-            {
-                tmp_var = _static_vars[value];
-                tmp_var.Users++;
-                return tmp_var;
-            }
-
-            tmp_var = new Variable();
-            tmp_var.Name = "<<static>>";
-            tmp_var.Status = VariableStatusEnum.CONSTANTVARIABLE;
-            tmp_var.Value = value;
-
-            _static_vars.Add(value, tmp_var);
-
-            return tmp_var;
-        }
-
-        /// <summary>
-        /// Проверка существования статической переменной.
-        /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        public bool StaticVariableExist(Value value)
-        {
-            return _static_vars.ContainsKey(value);
-
-        }
-
-        /// <summary>
-        /// Удалить статическую переменную.
-        /// </summary>
-        /// <param name="variable"></param>
-        /// <param name="scope"></param>
-        public void StaticVariableDelete(IVariable variable)
-        {
-            IVariable tmp_var;
-
-            if (StaticVariableExist(variable.Value))
-            {
-                tmp_var = _static_vars[variable.Value];
-                tmp_var.Users--;
-                if (tmp_var.Users <= 0)
-                    _static_vars.Remove(variable.Value);
-            }
-
-            return;
-        }
-        #endregion
     }
 
 

@@ -95,6 +95,7 @@ namespace ScriptEngine.EngineBase.Parser.Token
         P_MUL,
         [StringValue("деление { / }")]
         P_DIV,
+        [StringValue("модуль { % }")]
         P_MOD,
 
         [StringValue("плюс { + }")]

@@ -15,7 +15,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
         public float Float { get; set; }
         public bool Boolean { get; set; }
         public DateTime Date { get; set; }
-        public VariableValueObject Object { get; set; }
+        public ValueObject Object { get; set; }
 
 
         #region Логические операции с значением
@@ -336,6 +336,32 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
             throw new ExceptionBase($"Невозможно выполнить деление {left.Content} и {right.Content}.");
         }
 
+        /// <summary>
+        /// Остаток от деления
+        /// </summary>
+        /// <param name="left"></param>
+        /// <param name="right"></param>
+        /// <returns></returns>
+        public static Value operator %(Value left, Value right)
+        {
+            Value result = new Value();
+            switch (CommonType(left, right))
+            {
+                case ValueTypeEnum.NUMBER:
+                    result.Type = ValueTypeEnum.FLOAT;
+                    result.Float = left.ToFloat() % right.ToFloat();
+                    result.Content = result.ToString();
+                    return result;
+
+                case ValueTypeEnum.FLOAT:
+                    result.Type = ValueTypeEnum.FLOAT;
+                    result.Float = left.ToFloat() % right.ToFloat();
+                    result.Content = result.ToString();
+                    return result;
+            }
+
+            throw new ExceptionBase($"Невозможно выполнить деление {left.Content} и {right.Content}.");
+        }
         #endregion
 
         #region Преобразование значения

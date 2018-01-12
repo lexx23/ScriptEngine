@@ -3,7 +3,7 @@ using ScriptEngine.EngineBase.Compiler.Types.Function;
 using ScriptEngine.EngineBase.Compiler.Types.Variable;
 using System.Collections.Generic;
 
-namespace ScriptEngine.EngineBase.Compiler.Programm
+namespace ScriptEngine.EngineBase.Compiler.Programm.Parts
 {
     public class ScriptModule
     {

@@ -1,4 +1,5 @@
 ﻿using ScriptEngine.EngineBase.Compiler.Programm;
+using ScriptEngine.EngineBase.Compiler.Programm.Parts;
 using ScriptEngine.EngineBase.Compiler.Types;
 using ScriptEngine.EngineBase.Compiler.Types.Function;
 using ScriptEngine.EngineBase.Compiler.Types.Variable;
@@ -67,6 +68,7 @@ namespace ScriptEngine.EngineBase.Compiler
 
             _expression_op_codes = new Dictionary<TokenSubTypeEnum, op_code>();
             _expression_op_codes.Add(TokenSubTypeEnum.P_MUL, new op_code { code = OP_CODES.OP_MUL, type = OP_TYPE.RESULT_OPTIMIZATION, level = 1 });
+            _expression_op_codes.Add(TokenSubTypeEnum.P_MOD, new op_code { code = OP_CODES.OP_MOD, type = OP_TYPE.RESULT_OPTIMIZATION, level = 1 });
             _expression_op_codes.Add(TokenSubTypeEnum.P_DIV, new op_code { code = OP_CODES.OP_DIV, type = OP_TYPE.RESULT_OPTIMIZATION, level = 1 });
             _expression_op_codes.Add(TokenSubTypeEnum.P_ADD, new op_code { code = OP_CODES.OP_ADD, type = OP_TYPE.RESULT_OPTIMIZATION, level = 2 });
             _expression_op_codes.Add(TokenSubTypeEnum.P_SUB, new op_code { code = OP_CODES.OP_SUB, type = OP_TYPE.RESULT_OPTIMIZATION, level = 2 });
@@ -198,10 +200,13 @@ namespace ScriptEngine.EngineBase.Compiler
                 case OP_CODES.OP_DIV:
                     result = left.Value / right.Value;
                     break;
+                case OP_CODES.OP_MOD:
+                    result = left.Value % right.Value;
+                    break;
             }
 
             if (result != null)
-                return _programm.StaticVariableAdd(result);
+                return _programm.StaticVariables.Add(result);
 
             return null;
         }
@@ -316,7 +321,7 @@ namespace ScriptEngine.EngineBase.Compiler
                 }
 
                 if (sign.SubType == TokenSubTypeEnum.P_SUB)
-                    var = EmitCode(_expression_op_codes[TokenSubTypeEnum.P_MUL], var, _programm.StaticVariableAdd(new Value(-1)));
+                    var = EmitCode(_expression_op_codes[TokenSubTypeEnum.P_MUL], var, _programm.StaticVariables.Add(new Value(-1)));
             }
 
             // Обработка логическое НЕ
@@ -399,7 +404,7 @@ namespace ScriptEngine.EngineBase.Compiler
 
             Value value = new Value(type, token.Content);
 
-            return _programm.StaticVariableAdd(value);
+            return _programm.StaticVariables.Add(value);
         }
 
         /// <summary>
@@ -423,7 +428,7 @@ namespace ScriptEngine.EngineBase.Compiler
                 return var;
 
             // Проверка что это глобальная переменная.
-            var = _programm.GlobalVariableGet(token.Content);
+            var = _programm.GlobalVariables.Get(token.Content);
             if (var != null)
                 return var;
 
@@ -527,7 +532,7 @@ namespace ScriptEngine.EngineBase.Compiler
 
                         if (_current_module.AsGlobal)
                         {
-                            if (_programm.GlobalVariableAdd(var.Content) == null)
+                            if (_programm.GlobalVariables.Add(var.Content) == null)
                                 throw new ExceptionBase(var.CodeInformation, $"Переменная с указанным именем уже определена ({var.Content})");
                         }
                         else
@@ -536,7 +541,7 @@ namespace ScriptEngine.EngineBase.Compiler
                     }
                     else
                     {
-                        if (_programm.GlobalVariableGet(var.Content) != null)
+                        if (_programm.GlobalVariables.Get(var.Content) != null)
                             throw new ExceptionBase(var.CodeInformation, $"Переменная с указанным именем уже определена ({var.Content})");
 
                         if (_current_module.Variables.Add(var.Content, false, _scope) == null)
@@ -592,7 +597,7 @@ namespace ScriptEngine.EngineBase.Compiler
             foreach (KeyValuePair<string, IVariable> var_kp in _deferred_var)
             {
                 // глобальный контекст
-                var = _programm.GlobalVariableGet(var_kp.Value.Name);
+                var = _programm.GlobalVariables.Get(var_kp.Value.Name);
                 if (var != null)
                     var_kp.Value.StackNumber = var.StackNumber;
                 else
@@ -739,14 +744,14 @@ namespace ScriptEngine.EngineBase.Compiler
                 IFunction function;
 
                 // Проверка дубляжа.
-                if (_programm.GlobalFunctionGet(function_name.Content) != null || _current_module.Functions.Get(function_name.Content) != null)
+                if (_programm.GlobalFunctions.Get(function_name.Content) != null || _current_module.Functions.Get(function_name.Content) != null)
                     throw new ExceptionBase(function_name.CodeInformation, $"Процедура или функция с указанным именем уже определена ({function_name.Content})");
 
                 // Если есть оператор Экспорт. Тогда в зависимости от типа модуля и его параметров, добовляем функцию в глобальный модуль или делаем ее "публичной", доступной для обращения через обьект этого модуля.
                 if (_iterator.CheckToken(TokenTypeEnum.IDENTIFIER, TokenSubTypeEnum.I_EXPORT))
                 {
                     if (_current_module.AsGlobal)
-                        function = _programm.GlobalFunctionAdd(function_name.Content);
+                        function = _programm.GlobalFunctions.Add(function_name.Content);
                     else
                         function = _current_module.Functions.Add(function_name.Content, true, old_scope);
                 }
@@ -803,7 +808,7 @@ namespace ScriptEngine.EngineBase.Compiler
 
             // Ищем в глобальном модуле
             if (work_function == null)
-                work_function = _programm.GlobalFunctionGet(function.Name);
+                work_function = _programm.GlobalFunctions.Get(function.Name);
 
             if (work_function == null)
                 throw new ExceptionBase(function.CodeInformation, $"Процедура или функция с именем [{function.Name}] не определена.");
@@ -816,7 +821,7 @@ namespace ScriptEngine.EngineBase.Compiler
             if (work_function.Scope.Module != function.Scope.Module)
             {
                 ScriptStatement statement = function.Scope.Module.StatementGet(function.EntryPoint);
-                statement.Variable3 = _programm.StaticVariableAdd(new Value(ValueTypeEnum.STRING, work_function.Scope.Module.Name));
+                statement.Variable3 = _programm.StaticVariables.Add(new Value(ValueTypeEnum.STRING, work_function.Scope.Module.Name));
             }
 
 
@@ -897,7 +902,7 @@ namespace ScriptEngine.EngineBase.Compiler
                 foreach (IVariable var in function.Param)
                     EmitCode(OP_CODES.OP_PUSH, var, null);
 
-                IVariable function_name = _programm.StaticVariableAdd(new Value(ValueTypeEnum.STRING, function.Name));
+                IVariable function_name = _programm.StaticVariables.Add(new Value(ValueTypeEnum.STRING, function.Name));
 
                 // Добавить в код вызов функции из модуля по ее имени. 
                 function.EntryPoint = _current_module.ProgrammLine;
@@ -954,7 +959,7 @@ namespace ScriptEngine.EngineBase.Compiler
                 foreach (IVariable var in function.Param)
                     EmitCode(OP_CODES.OP_PUSH, var, null);
 
-                IVariable function_name_var = _programm.StaticVariableAdd(new Value(function_number));
+                IVariable function_name_var = _programm.StaticVariables.Add(new Value(function_number));
 
                 // Вызов функции обьекта.
                 EmitCode(OP_CODES.OP_OBJECT_CALL, object_call, function_name_var);
@@ -983,7 +988,7 @@ namespace ScriptEngine.EngineBase.Compiler
                     // Обращение к методу или свойству.
                     if (!ParseObjectFunctionCall(token, object_call, function_type, ref object_call, ref function))
                     {
-                        var = _programm.StaticVariableAdd(new Value(ValueTypeEnum.STRING, token.Content));
+                        var = _programm.StaticVariables.Add(new Value(ValueTypeEnum.STRING, token.Content));
                         object_call = EmitCode(OP_CODES.OP_OBJECT_RESOLVE_VAR, object_call, var);
 
                         // Проверка и изменение типа вызова обьекта, с процедуры на функцию.
@@ -1113,9 +1118,8 @@ namespace ScriptEngine.EngineBase.Compiler
                 EmitCode(OP_CODES.OP_IFNOT, result, null);
 
                 // Увеличить переменную на 1.
-                result = EmitCode(OP_CODES.OP_ADD, var, _programm.StaticVariableAdd(new Value(1)));
+                result = EmitCode(OP_CODES.OP_ADD, var, _programm.StaticVariables.Add(new Value(1)));
                 EmitCode(OP_CODES.OP_STORE, var, result);
-
 
 
 
@@ -1132,7 +1136,7 @@ namespace ScriptEngine.EngineBase.Compiler
                 _iterator.IsTokenType(TokenTypeEnum.PUNCTUATION, TokenSubTypeEnum.P_SEMICOLON);
 
                 // Переход в начало цикла.
-                EmitCode(OP_CODES.OP_JMP, _programm.StaticVariableAdd(new Value(continue_line)), null);
+                EmitCode(OP_CODES.OP_JMP, _programm.StaticVariables.Add(new Value(continue_line)), null);
 
                 // Обработка операторов Продолжить, Прервать.
                 foreach (int patch_line in _loop[_loop.Count - 1])
@@ -1141,13 +1145,13 @@ namespace ScriptEngine.EngineBase.Compiler
                     {
                         // Продолжить.
                         statement = _current_module.StatementGet(patch_line * -1);
-                        statement.Variable2 = _programm.StaticVariableAdd(new Value(continue_line));
+                        statement.Variable2 = _programm.StaticVariables.Add(new Value(continue_line));
                     }
                     else
                     {
                         // Прервать.
                         statement = _current_module.StatementGet(patch_line);
-                        statement.Variable2 = _programm.StaticVariableAdd(new Value(_current_module.ProgrammLine));
+                        statement.Variable2 = _programm.StaticVariables.Add(new Value(_current_module.ProgrammLine));
                     }
                 }
 
@@ -1156,7 +1160,7 @@ namespace ScriptEngine.EngineBase.Compiler
 
                 // Исправить переход для условия.
                 statement = _current_module.StatementGet(patch_if_line);
-                statement.Variable3 = _programm.StaticVariableAdd(new Value(_current_module.ProgrammLine));
+                statement.Variable3 = _programm.StaticVariables.Add(new Value(_current_module.ProgrammLine));
 
                 // Снять запрет.
                 expression.Users = 2;
@@ -1205,7 +1209,7 @@ namespace ScriptEngine.EngineBase.Compiler
                 _iterator.IsTokenType(TokenTypeEnum.PUNCTUATION, TokenSubTypeEnum.P_SEMICOLON);
 
                 // Переход в начало цикла.
-                EmitCode(OP_CODES.OP_JMP, _programm.StaticVariableAdd(new Value(continue_line)), null);
+                EmitCode(OP_CODES.OP_JMP, _programm.StaticVariables.Add(new Value(continue_line)), null);
 
                 // Обработка операторов Продолжить, Прервать.
                 foreach (int patch_line in _loop[_loop.Count - 1])
@@ -1214,13 +1218,13 @@ namespace ScriptEngine.EngineBase.Compiler
                     {
                         // Продолжить.
                         statement = _current_module.StatementGet(patch_line * -1);
-                        statement.Variable2 = _programm.StaticVariableAdd(new Value(continue_line));
+                        statement.Variable2 = _programm.StaticVariables.Add(new Value(continue_line));
                     }
                     else
                     {
                         // Прервать.
                         statement = _current_module.StatementGet(patch_line);
-                        statement.Variable2 = _programm.StaticVariableAdd(new Value(_current_module.ProgrammLine));
+                        statement.Variable2 = _programm.StaticVariables.Add(new Value(_current_module.ProgrammLine));
                     }
                 }
 
@@ -1229,7 +1233,7 @@ namespace ScriptEngine.EngineBase.Compiler
 
                 // Исправить переход для условия.
                 statement = _current_module.StatementGet(patch_if_line);
-                statement.Variable3 = _programm.StaticVariableAdd(new Value(_current_module.ProgrammLine));
+                statement.Variable3 = _programm.StaticVariables.Add(new Value(_current_module.ProgrammLine));
 
                 return true;
             }
@@ -1272,7 +1276,7 @@ namespace ScriptEngine.EngineBase.Compiler
                     if (line != int.MinValue)
                     {
                         statement = _current_module.StatementGet(line);
-                        statement.Variable3 = _programm.StaticVariableAdd(new Value(_current_module.ProgrammLine));
+                        statement.Variable3 = _programm.StaticVariables.Add(new Value(_current_module.ProgrammLine));
                     }
 
                     line = _current_module.ProgrammLine;
@@ -1304,7 +1308,7 @@ namespace ScriptEngine.EngineBase.Compiler
                     {
                         // Фикс перехода с предыдущего Если или ИначеЕсли
                         statement = _current_module.StatementGet(line);
-                        statement.Variable3 = _programm.StaticVariableAdd(new Value(_current_module.ProgrammLine));
+                        statement.Variable3 = _programm.StaticVariables.Add(new Value(_current_module.ProgrammLine));
                         line = int.MinValue;
 
                         ParseModuleBody(TokenSubTypeEnum.I_ENDIF);
@@ -1317,14 +1321,14 @@ namespace ScriptEngine.EngineBase.Compiler
                 if (line != int.MinValue)
                 {
                     statement = _current_module.StatementGet(line);
-                    statement.Variable3 = _programm.StaticVariableAdd(new Value(_current_module.ProgrammLine));
+                    statement.Variable3 = _programm.StaticVariables.Add(new Value(_current_module.ProgrammLine));
                 }
 
                 // Установить Jmp актуальную строку кода для выхода.
                 foreach (int index in jmp)
                 {
                     statement = _current_module.StatementGet(index);
-                    statement.Variable2 = _programm.StaticVariableAdd(new Value(_current_module.ProgrammLine));
+                    statement.Variable2 = _programm.StaticVariables.Add(new Value(_current_module.ProgrammLine));
                 }
                 _iterator.ExpectToken(TokenTypeEnum.IDENTIFIER, TokenSubTypeEnum.I_ENDIF);
                 _iterator.IsTokenType(TokenTypeEnum.PUNCTUATION, TokenSubTypeEnum.P_SEMICOLON);
@@ -1372,7 +1376,7 @@ namespace ScriptEngine.EngineBase.Compiler
                 jmp_statement = _current_module.StatementGet(_current_module.ProgrammLine - 1);
 
                 // Патч перехода условия.
-                if_statement.Variable3 = _programm.StaticVariableAdd(new Value(_current_module.ProgrammLine));
+                if_statement.Variable3 = _programm.StaticVariables.Add(new Value(_current_module.ProgrammLine));
 
                 // Результат для false.
                 _iterator.ExpectToken(TokenTypeEnum.PUNCTUATION, TokenSubTypeEnum.P_COMMA);
@@ -1384,7 +1388,7 @@ namespace ScriptEngine.EngineBase.Compiler
                 EmitCode(OP_CODES.OP_STORE, result, false_result);
                 // Защита от очистки заначения.
                 result.Users = 1;
-                jmp_statement.Variable2 = _programm.StaticVariableAdd(new Value(_current_module.ProgrammLine));
+                jmp_statement.Variable2 = _programm.StaticVariables.Add(new Value(_current_module.ProgrammLine));
 
 
                 _iterator.ExpectToken(TokenTypeEnum.PUNCTUATION, TokenSubTypeEnum.P_PARENTHESESCLOSE);
@@ -1464,10 +1468,11 @@ namespace ScriptEngine.EngineBase.Compiler
                 else
                 {
                     jmp_statement = _current_module.StatementGet(value.Item2);
-                    jmp_statement.Variable2 = _programm.StaticVariableAdd(new Value(line));
+                    jmp_statement.Variable2 = _programm.StaticVariables.Add(new Value(line));
                 }
             }
-            _goto_labels.Clear();
+
+            _goto_jmp.Clear();
             _goto_labels.Clear();
         }
 

@@ -1,5 +1,6 @@
 ﻿using ScriptEngine.EngineBase.Compiler;
 using ScriptEngine.EngineBase.Compiler.Programm;
+using ScriptEngine.EngineBase.Compiler.Programm.Parts;
 using System;
 using System.Collections.Generic;
 using System.IO;

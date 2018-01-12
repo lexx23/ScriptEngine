@@ -1,6 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ScriptEngine.EngineBase.Compiler;
 using ScriptEngine.EngineBase.Compiler.Programm;
+using ScriptEngine.EngineBase.Compiler.Programm.Parts;
 using ScriptEngine.EngineBase.Exceptions;
 using ScriptEngine.EngineBase.Interpreter;
 using System;
@@ -559,10 +560,11 @@ namespace UnitTests
 
             ScriptProgramm programm = Compile(files);
             ScriptInterpreter interpreter = new ScriptInterpreter(programm);
-            interpreter.Debugger.AddBreakpoint("var", 9);
-            interpreter.Debugger.AddBreakpoint("var", 13);
+            interpreter.Debugger.AddBreakpoint("var", 14);
+            interpreter.Debugger.AddBreakpoint("var", 15);
+            interpreter.Debugger.AddBreakpoint("var", 16);
             interpreter.Debug();
-            interpreter.Debug();
+
 
             Assert.AreEqual(4, interpreter.Debugger.RegisterGetValue("в1").Integer);
             Assert.AreEqual(298.6875, interpreter.Debugger.RegisterGetValue("а1").Float);
@@ -571,7 +573,11 @@ namespace UnitTests
             Assert.AreEqual(2396.125, interpreter.Debugger.RegisterGetValue("а3").Float);
             Assert.AreEqual(494.6875, interpreter.Debugger.RegisterGetValue("а4").Float);
             Assert.AreEqual(-494.6875, interpreter.Debugger.RegisterGetValue("а5").Float);
+            interpreter.Debug();
 
+            Assert.AreEqual(0.6, interpreter.Debugger.RegisterGetValue("а6").Float,3);
+            interpreter.Debug();
+            Assert.AreEqual(1, interpreter.Debugger.RegisterGetValue("а7").Float,3);
         }
 
         #endregion

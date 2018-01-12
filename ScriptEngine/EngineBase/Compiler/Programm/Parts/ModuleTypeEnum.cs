@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace ScriptEngine.EngineBase.Compiler.Programm
+namespace ScriptEngine.EngineBase.Compiler.Programm.Parts
 {
     public enum ModuleTypeEnum
     {

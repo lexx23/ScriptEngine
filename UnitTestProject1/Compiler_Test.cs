@@ -1,6 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ScriptEngine.EngineBase.Compiler;
 using ScriptEngine.EngineBase.Compiler.Programm;
+using ScriptEngine.EngineBase.Compiler.Programm.Parts;
 using ScriptEngine.EngineBase.Exceptions;
 using System;
 using System.Collections.Generic;
