@@ -9,7 +9,7 @@ namespace ScriptEngine.EngineBase.Parser.TokenParser.Parsers
     /// </summary>
     public class NumberTokenParser : ITokenParser
     {
-        public bool Parse(SourceIterator iterator, out TokenClass token)
+        public bool Parse(SourceIterator iterator, out IToken token)
         {
             token = null;
             string content = string.Empty;

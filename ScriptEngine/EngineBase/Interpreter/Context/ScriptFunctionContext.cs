@@ -1,4 +1,5 @@
 ﻿using ScriptEngine.EngineBase.Compiler.Types;
+using ScriptEngine.EngineBase.Compiler.Types.Function;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -18,7 +19,7 @@ namespace ScriptEngine.EngineBase.Interpreter.Context
         }
 
         // Создать новый контекст функции.
-        public void CreateFunctionContext(Function function, int position)
+        public void CreateFunctionContext(IFunction function, int position)
         {
             // Сохранить контекст функции.
             _history.Push((position, _function_context));

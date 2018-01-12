@@ -43,7 +43,7 @@ namespace ScriptEngine.EngineBase.Parser
         /// Получить следующующий токен.
         /// </summary>
         /// <returns></returns>
-        internal bool NextToken(out TokenClass token)
+        internal bool NextToken(out IToken token)
         {
             token = null;
             return _factory.Parse(_iterator,out token);
@@ -54,10 +54,10 @@ namespace ScriptEngine.EngineBase.Parser
         /// Список найденых токенов.
         /// </summary>
         /// <returns>Список найденых лексем и их токенов</returns>
-        public IList<TokenClass> GetAllTokens()
+        public IList<IToken> GetAllTokens()
         {
-            TokenClass token = null;
-            IList<TokenClass> token_list = new List<TokenClass>();
+            IToken token = null;
+            IList<IToken> token_list = new List<IToken>();
 
             do
             {

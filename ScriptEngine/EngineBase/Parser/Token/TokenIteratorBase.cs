@@ -10,16 +10,16 @@ namespace ScriptEngine.EngineBase.Parser.Token
     /// <summary>
     /// Итератор токенов исходного года.
     /// </summary>
-    public abstract class TokenIteratorBase : IEnumerator<TokenClass>
+    public abstract class TokenIteratorBase : IEnumerator<IToken>
     {
-        protected TokenClass _token;
+        protected IToken _token;
         protected ParserClass _parser;
 
 
         /// <summary>
         /// Текущий токен.
         /// </summary>
-        public TokenClass Current { get => _token; }
+        public IToken Current { get => _token; }
 
         object IEnumerator.Current { get => (object)Current; }
 

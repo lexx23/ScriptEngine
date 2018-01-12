@@ -1,4 +1,6 @@
 ﻿using ScriptEngine.EngineBase.Compiler.Types;
+using ScriptEngine.EngineBase.Compiler.Types.Variable;
+using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -7,7 +9,7 @@ namespace ScriptEngine.EngineBase.Interpreter.Context
 {
     public class ScriptSimpleContext
     {
-        private IList<VariableValue> _vars;
+        private IList<Value> _vars;
 
         public int Count { get => _vars.Count; }
         public string Name { get; set; }
@@ -16,7 +18,7 @@ namespace ScriptEngine.EngineBase.Interpreter.Context
         public ScriptSimpleContext(string name,int size)
         {
             Name = name;
-            _vars = new List<VariableValue>();
+            _vars = new List<Value>();
 
             while (size > 0)
             {
@@ -25,9 +27,9 @@ namespace ScriptEngine.EngineBase.Interpreter.Context
             }
         }
 
-        public void ClearValue(Variable variable)
+        public void ClearValue(IVariable variable)
         {
-             _vars[variable.StackNumber] = new VariableValue(ValueTypeEnum.NULL, "");
+             _vars[variable.StackNumber] = new Value(ValueTypeEnum.NULL, "");
         }
 
 
@@ -36,7 +38,7 @@ namespace ScriptEngine.EngineBase.Interpreter.Context
         /// </summary>
         /// <param name="variable"></param>
         /// <param name="value"></param>
-        public void SetValue(Variable variable, VariableValue value)
+        public void SetValue(IVariable variable, Value value)
         {
             if(_vars[variable.StackNumber] != null)
                 _vars[variable.StackNumber].SetValue(value);
@@ -49,7 +51,7 @@ namespace ScriptEngine.EngineBase.Interpreter.Context
         /// </summary>
         /// <param name="variable"></param>
         /// <returns></returns>
-        public VariableValue GetValue(Variable variable)
+        public Value GetValue(IVariable variable)
         {
             return _vars[variable.StackNumber];
         }

@@ -41,7 +41,7 @@ namespace ScriptEngine.EngineBase.Parser.TokenParser
         /// </summary>
         /// <param name="iterator"></param>
         /// <returns></returns>
-        public bool Parse(SourceIterator iterator,out TokenClass token) 
+        public bool Parse(SourceIterator iterator,out IToken token) 
         {
             token = null;
             if (_tokens.Count == 0)

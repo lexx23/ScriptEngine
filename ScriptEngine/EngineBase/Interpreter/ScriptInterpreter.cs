@@ -1,5 +1,8 @@
 ﻿using ScriptEngine.EngineBase.Compiler.Programm;
 using ScriptEngine.EngineBase.Compiler.Types;
+using ScriptEngine.EngineBase.Compiler.Types.Function;
+using ScriptEngine.EngineBase.Compiler.Types.Variable;
+using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
 using ScriptEngine.EngineBase.Exceptions;
 using ScriptEngine.EngineBase.Interpreter.Context;
 using System;
@@ -15,7 +18,7 @@ namespace ScriptEngine.EngineBase.Interpreter
         internal ScriptGlobalContext _context;
 
         private ScriptDebugger _debugger;
-        private Queue<VariableValue> _stack;
+        private Queue<Value> _stack;
         private int _current_line;
 
         public ScriptDebugger Debugger { get => _debugger; }
@@ -29,7 +32,7 @@ namespace ScriptEngine.EngineBase.Interpreter
             _instruction = int.MaxValue;
 
             _debugger = new ScriptDebugger(this);
-            _stack = new Queue<VariableValue>();
+            _stack = new Queue<Value>();
             _context = new ScriptGlobalContext(_programm.GlobalScope.VarCount);
         }
 
@@ -61,13 +64,13 @@ namespace ScriptEngine.EngineBase.Interpreter
             {
                 if (module_kv.Value.Type == ModuleTypeEnum.COMMON && !module_kv.Value.AsGlobal)
                 {
-                    Variable object_var = _programm.GlobalVariableGet(module_kv.Key);
+                    IVariable object_var = _programm.GlobalVariableGet(module_kv.Key);
                     _context.Global.SetValue(object_var, CreateObject(module_kv.Key, module_kv.Value));
                 }
 
                 if (module_kv.Value.Type == ModuleTypeEnum.OBJECT)
                 {
-                    Variable object_var = _programm.GlobalVariableGet(module_kv.Key);
+                    IVariable object_var = _programm.GlobalVariableGet(module_kv.Key);
                     _context.Global.SetValue(object_var, CreateObject(module_kv.Key, module_kv.Value));
                 }
 
@@ -86,13 +89,13 @@ namespace ScriptEngine.EngineBase.Interpreter
         /// <param name="name"></param>
         /// <param name="type"></param>
         /// <returns></returns>
-        private VariableValue CreateObject(string name, ScriptModule type)
+        private Value CreateObject(string name, ScriptModule type)
         {
             ScriptModuleContext object_context = _context.ModuleContexts.CreateModuleContext(name, type);
 
             FunctionCall("<<entry_point>>", type.Name);
 
-            VariableValue var = new VariableValue
+            Value var = new Value
             {
                 Type = ValueTypeEnum.OBJECT,
                 Object = new VariableValueObject(type, object_context)
@@ -110,7 +113,7 @@ namespace ScriptEngine.EngineBase.Interpreter
         /// <param name="name"></param>
         public void FunctionCall(string name, string module_name)
         {
-            Function function;
+            IFunction function;
             bool change_context = false;
 
             if (module_name != string.Empty)
@@ -124,7 +127,7 @@ namespace ScriptEngine.EngineBase.Interpreter
                 _context.ModuleContexts.SetModuleContext(module_name,_instruction);
             }
 
-            function = _context.ModuleContexts.Current.Module.FunctionGet(name);
+            function = _context.ModuleContexts.Current.Module.Functions.Get(name);
 
             if (function == null)
                 function = _programm.GlobalFunctionGet(name);
@@ -140,7 +143,7 @@ namespace ScriptEngine.EngineBase.Interpreter
         /// </summary>
         /// <param name="function"></param>
         /// <returns></returns>
-        private Variable FunctionCall(Function function, bool change_context)
+        private IVariable FunctionCall(IFunction function, bool change_context)
         {
             int tmp_instruction;
 
@@ -154,9 +157,9 @@ namespace ScriptEngine.EngineBase.Interpreter
             _instruction = function.EntryPoint;
 
             // добавить из стека в текущий (новый) контекст, переменные функции
-            VariableValue stack_param;
+            Value stack_param;
             if (function.Param != null)
-                foreach (Variable function_param in function.Param)
+                foreach (IVariable function_param in function.Param)
                 {
                     if (_stack.Count > 0)
                     {
@@ -169,7 +172,7 @@ namespace ScriptEngine.EngineBase.Interpreter
                                 _context.ModuleContexts.Current.Function.Context.SetValue(function_param, stack_param);
                         }
                         else
-                            _context.ModuleContexts.Current.Function.Context.SetValue(function_param, new VariableValue(ValueTypeEnum.NULL, ""));
+                            _context.ModuleContexts.Current.Function.Context.SetValue(function_param, new Value(ValueTypeEnum.NULL, ""));
                     }
                     else
                         _context.ModuleContexts.Current.Function.Context.SetValue(function_param, function_param.Value?.Clone());
@@ -183,9 +186,9 @@ namespace ScriptEngine.EngineBase.Interpreter
         /// <summary>
         /// Выход из функции return
         /// </summary>
-        public void FunctionReturn(Variable return_var)
+        public void FunctionReturn(IVariable return_var)
         {
-            VariableValue var = null;
+            Value var = null;
 
             // забираем возвращаемое значение из текущего контекста
             if (return_var != null)
@@ -210,11 +213,11 @@ namespace ScriptEngine.EngineBase.Interpreter
         /// <param name="function"></param>
         /// <param name="param"></param>
         /// <param name="module"></param>
-        private Function CheckObjectFunctionCall(ScriptModule module, Function function)
+        private IFunction CheckObjectFunctionCall(ScriptModule module, IFunction function)
         {
-            Function work_function;
+            IFunction work_function;
 
-            work_function = module.FunctionGet(function.Name);
+            work_function = module.Functions.Get(function.Name);
 
             if (work_function == null)
                 throw new ExceptionBase(function.CodeInformation, $"Процедура или функция с именем [{function.Name}] не определена, у обьекта [{module.Name}].");
@@ -255,15 +258,15 @@ namespace ScriptEngine.EngineBase.Interpreter
         /// <param name="statement"></param>
         private void ObjectCall(ScriptStatement statement)
         {
-            VariableValue object_call = GetValue(statement.Variable2);
-            VariableValue function_index = GetValue(statement.Variable3);
+            Value object_call = GetValue(statement.Variable2);
+            Value function_index = GetValue(statement.Variable3);
 
-            Function function = _context.ModuleContexts.Current.Module.ObjectCallGet(function_index.ToInt());
+            IFunction function = _context.ModuleContexts.Current.Module.ObjectCallGet(function_index.ToInt());
 
             if (object_call == null || object_call.Type != ValueTypeEnum.OBJECT || object_call.Object == null)
                 throw new ExceptionBase(statement.CodeInformation, $"Значение не является значением объектного типа [{function.Name}]");
 
-            Function work_function = CheckObjectFunctionCall(object_call.Object.Type, function);
+            IFunction work_function = CheckObjectFunctionCall(object_call.Object.Type, function);
 
             if (!work_function.Public)
                 throw new ExceptionBase(statement.CodeInformation, $"Функция [{function.Name}] не имеет оператора Экспорт, и не доступна.");
@@ -275,18 +278,18 @@ namespace ScriptEngine.EngineBase.Interpreter
 
         private void ObjectResoleVariable(ScriptStatement statement)
         {
-            VariableValue var_name;
+           Value var_name;
             var_name = GetValue(statement.Variable3);
 
-            VariableValue object_call = GetValue(statement.Variable2);
+            Value object_call = GetValue(statement.Variable2);
             if (object_call == null || object_call.Type != ValueTypeEnum.OBJECT || object_call.Object == null)
                 throw new ExceptionBase(statement.CodeInformation, $"Значение не является значением объектного типа [{var_name.Content}]");
 
-            Variable var = object_call.Object.Type.VariableGet(var_name.Content, object_call.Object.Type.ModuleScope);
+            IVariable var = object_call.Object.Type.Variables.Get(var_name.Content, object_call.Object.Type.ModuleScope);
             if(!var.Public)
                 throw new ExceptionBase(statement.CodeInformation, $"Переменная [{var_name.Content}] не имеет оператора Экспорт, и не доступна.");
 
-            VariableValue value = object_call.Object.Context.Context.GetValue(var);
+            Value value = object_call.Object.Context.Context.GetValue(var);
             SetValue(statement.Variable1,value);
         }
 
@@ -295,7 +298,7 @@ namespace ScriptEngine.EngineBase.Interpreter
         /// </summary>
         /// <param name="variable"></param>
         /// <param name="value"></param>
-        private void ClearValue(Variable variable)
+        private void ClearValue(IVariable variable)
         {
             if (variable.Scope.Type == ScopeTypeEnum.MODULE)
             {
@@ -316,7 +319,7 @@ namespace ScriptEngine.EngineBase.Interpreter
         /// </summary>
         /// <param name="variable"></param>
         /// <param name="value"></param>
-        private void SetValue(Variable variable, VariableValue value)
+        private void SetValue(IVariable variable, Value value)
         {
             if (variable.Scope.Type == ScopeTypeEnum.GLOBAL)
             {
@@ -342,7 +345,7 @@ namespace ScriptEngine.EngineBase.Interpreter
         /// </summary>
         /// <param name="variable"></param>
         /// <returns></returns>
-        private VariableValue GetValue(Variable variable)
+        private Value GetValue(IVariable variable)
         {
             if (variable.Status == VariableStatusEnum.CONSTANTVARIABLE)
                 return variable.Value;
@@ -368,7 +371,7 @@ namespace ScriptEngine.EngineBase.Interpreter
         internal void Execute()
         {
             ScriptStatement statement;
-            VariableValue v2, v3,result;
+            Value v2, v3,result;
 
             while (_instruction < _context.ModuleContexts.Current.Module.Code.Count)
             {
@@ -391,7 +394,7 @@ namespace ScriptEngine.EngineBase.Interpreter
                         if (_stack.Count > 0)
                             v2 = _stack.Dequeue();
                         else
-                            v2 = new VariableValue(ValueTypeEnum.NULL, "");
+                            v2 = new Value(ValueTypeEnum.NULL, "");
                         SetValue(statement.Variable1, v2);
                         break;
 
@@ -421,7 +424,6 @@ namespace ScriptEngine.EngineBase.Interpreter
                         ObjectResoleVariable(statement);
                         break;
 
-                        break;
                     case OP_CODES.OP_IFNOT:
                         v2 = GetValue(statement.Variable2);
                         v3 = GetValue(statement.Variable3);
@@ -459,7 +461,7 @@ namespace ScriptEngine.EngineBase.Interpreter
                         break;
                     case OP_CODES.OP_NOT:
                         v2 = GetValue(statement.Variable2);
-                        result = new VariableValue();
+                        result = new Value();
                         result.Type = ValueTypeEnum.BOOLEAN;
                         result.Boolean = !v2.ToBoolean();
                         SetValue(statement.Variable1, result);
@@ -467,7 +469,7 @@ namespace ScriptEngine.EngineBase.Interpreter
                     case OP_CODES.OP_OR:
                         v2 = GetValue(statement.Variable2);
                         v3 = GetValue(statement.Variable3);
-                        result = new VariableValue();
+                        result = new Value();
                         result.Type = ValueTypeEnum.BOOLEAN;
                         result.Boolean = v2.ToBoolean() || v3.ToBoolean();
                         SetValue(statement.Variable1, result);
@@ -475,7 +477,7 @@ namespace ScriptEngine.EngineBase.Interpreter
                     case OP_CODES.OP_AND:
                         v2 = GetValue(statement.Variable2);
                         v3 = GetValue(statement.Variable3);
-                        result = new VariableValue();
+                        result = new Value();
                         result.Type = ValueTypeEnum.BOOLEAN;
                         result.Boolean = v2.ToBoolean() && v3.ToBoolean();
                         SetValue(statement.Variable1, result);
@@ -483,7 +485,7 @@ namespace ScriptEngine.EngineBase.Interpreter
                     case OP_CODES.OP_EQ:
                         v2 = GetValue(statement.Variable2);
                         v3 = GetValue(statement.Variable3);
-                        result = new VariableValue();
+                        result = new Value();
                         result.Type = ValueTypeEnum.BOOLEAN;
                         result.Boolean = v2 == v3;
                         SetValue(statement.Variable1, result);
@@ -491,7 +493,7 @@ namespace ScriptEngine.EngineBase.Interpreter
                     case OP_CODES.OP_UNEQ:
                         v2 = GetValue(statement.Variable2);
                         v3 = GetValue(statement.Variable3);
-                        result = new VariableValue();
+                        result = new Value();
                         result.Type = ValueTypeEnum.BOOLEAN;
                         result.Boolean = v2 != v3;
                         SetValue(statement.Variable1, result);

@@ -103,10 +103,10 @@ namespace ScriptEngine.EngineBase.Parser.Precompiler
         /// Список найденых токенов.
         /// </summary>
         /// <returns>Список найденых лексем и их токенов</returns>
-        public IList<TokenClass> GetAllTokens()
+        public IList<IToken> GetAllTokens()
         {
-            TokenClass token = null;
-            IList<TokenClass> token_list = new List<TokenClass>();
+            IToken token = null;
+            IList<IToken> token_list = new List<IToken>();
             TokenIteratorBase iterator = GetEnumerator();
             do
             {

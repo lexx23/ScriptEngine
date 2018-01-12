@@ -1,4 +1,5 @@
-﻿using ScriptEngine.EngineBase.Praser.Token;
+﻿using ScriptEngine.EngineBase.Parser.Token;
+using ScriptEngine.EngineBase.Praser.Token;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -19,7 +20,7 @@ namespace ScriptEngine.EngineBase.Parser.Precompiler
             _stack = new Stack<PrecompilerStackStruct>();
         }
 
-        public void Push(TokenClass token)
+        public void Push(IToken token)
         {
 
             _stack.Push(new PrecompilerStackStruct
@@ -29,7 +30,7 @@ namespace ScriptEngine.EngineBase.Parser.Precompiler
             });
         }
 
-        public void Push(TokenClass token, bool skip_value,bool run=false)
+        public void Push(IToken token, bool skip_value,bool run=false)
         {
             _stack.Push(new PrecompilerStackStruct
             {

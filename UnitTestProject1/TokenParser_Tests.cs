@@ -1,6 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ScriptEngine.EngineBase.Exceptions;
 using ScriptEngine.EngineBase.Parser;
+using ScriptEngine.EngineBase.Parser.Token;
 using ScriptEngine.EngineBase.Praser.Token;
 using System;
 using System.Collections.Generic;
@@ -11,7 +12,7 @@ namespace UnitTests
     [TestClass]
     public class TokenParser_Tests
     {
-        private IList<TokenClass> LoadFile(string name)
+        private IList<IToken> LoadFile(string name)
         {
             string source = string.Empty;
 
@@ -36,7 +37,7 @@ namespace UnitTests
         [TestMethod]
         public void String_Simple()
         {
-            IList<TokenClass> tokens;
+            IList<IToken> tokens;
 
             tokens = LoadFile("string_simple.scr");
             Assert.AreEqual(2, tokens.Count);
@@ -56,7 +57,7 @@ namespace UnitTests
         [TestMethod]
         public void String_Double_Quote()
         {
-            IList<TokenClass> tokens;
+            IList<IToken> tokens;
 
             tokens = LoadFile("double_quote.scr");
             Assert.AreEqual(3, tokens.Count);

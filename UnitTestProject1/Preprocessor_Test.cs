@@ -3,6 +3,7 @@ using ScriptEngine.EngineBase;
 using ScriptEngine.EngineBase.Exceptions;
 using ScriptEngine.EngineBase.Parser;
 using ScriptEngine.EngineBase.Parser.Precompiler;
+using ScriptEngine.EngineBase.Parser.Token;
 using ScriptEngine.EngineBase.Praser.Token;
 using System;
 using System.Collections.Generic;
@@ -17,7 +18,7 @@ namespace UnitTests
         [TestMethod]
         public void Preprocessor_Region()
         {
-            IList<TokenClass> tokens;
+            IList<IToken> tokens;
             tokens = LoadFile("regions.scr",null);
             Assert.AreEqual(1, tokens.Count);
         }
@@ -26,7 +27,7 @@ namespace UnitTests
         [Description("Проверка логики работы Если Тест1")]
         public void Preprocessor_If1()
         {
-            IList<TokenClass> tokens;
+            IList<IToken> tokens;
             Dictionary<string, bool> defines = new Dictionary<string, bool>();
             defines.Add("НаКлиенте",true);
 
@@ -41,7 +42,7 @@ namespace UnitTests
         [Description("Проверка логики работы Если Тест2")]
         public void Preprocessor_If2()
         {
-            IList<TokenClass> tokens;
+            IList<IToken> tokens;
             Dictionary<string, bool> defines = new Dictionary<string, bool>();
             defines.Add("НаСервере", true);
 
@@ -55,7 +56,7 @@ namespace UnitTests
         [Description("Проверка логики работы Если Тест3")]
         public void Preprocessor_If3()
         {
-            IList<TokenClass> tokens;
+            IList<IToken> tokens;
             tokens = LoadFile("if_simple.scr", null);
             Assert.AreEqual(2, tokens.Count);
 
@@ -66,7 +67,7 @@ namespace UnitTests
         [Description("Проверка логики работы Если Тест4")]
         public void Preprocessor_If4()
         {
-            IList<TokenClass> tokens;
+            IList<IToken> tokens;
             Dictionary<string, bool> defines = new Dictionary<string, bool>();
             defines.Add("НаСервере", true);
             defines.Add("НаКлиенте", true);
@@ -81,7 +82,7 @@ namespace UnitTests
         [Description("Проверка логики работы Если Тест1_1")]
         public void Preprocessor_If1_1()
         {
-            IList<TokenClass> tokens;
+            IList<IToken> tokens;
             Dictionary<string, bool> defines = new Dictionary<string, bool>();
             defines.Add("НаКлиенте", true);
             defines.Add("НаКлиенте1", true);
@@ -98,7 +99,7 @@ namespace UnitTests
         [Description("Проверка логики работы Если Тест1_1")]
         public void Preprocessor_If1_2()
         {
-            IList<TokenClass> tokens;
+            IList<IToken> tokens;
             Dictionary<string, bool> defines = new Dictionary<string, bool>();
             defines.Add("НаКлиенте", true);
             defines.Add("НаКлиенте1", true);
@@ -115,7 +116,7 @@ namespace UnitTests
         [Description("Проверка логики работы Если Тест1_3")]
         public void Preprocessor_If1_3()
         {
-            IList<TokenClass> tokens;
+            IList<IToken> tokens;
             Dictionary<string, bool> defines = new Dictionary<string, bool>();
             defines.Add("НаКлиенте", true);
             defines.Add("НаКлиенте2", true);
@@ -144,7 +145,7 @@ namespace UnitTests
         }
 
 
-        private IList<TokenClass> LoadFile(string name,IDictionary<string,bool> defines)
+        private IList<IToken> LoadFile(string name,IDictionary<string,bool> defines)
         {
             string source = string.Empty;
 

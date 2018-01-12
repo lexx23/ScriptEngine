@@ -78,7 +78,7 @@ namespace ScriptEngine.EngineBase.Parser.Precompiler.Directives
         /// <returns></returns>
         private bool ProcessIf()
         {
-            TokenClass token = _iterator.Current.Clone();
+            IToken token = _iterator.Current.Clone();
             if (_iterator.CheckToken(TokenTypeEnum.IDENTIFIER, TokenSubTypeEnum.I_IF))
             {
 
@@ -124,7 +124,7 @@ namespace ScriptEngine.EngineBase.Parser.Precompiler.Directives
         /// <returns></returns>
         private bool ProcessElse()
         {
-            TokenClass token = _iterator.Current.Clone();
+            IToken token = _iterator.Current.Clone();
             if (_iterator.CheckToken(TokenTypeEnum.IDENTIFIER, TokenSubTypeEnum.I_ELSE))
             {
                 PrecompilerStackStruct directive = _stack.Peek();
@@ -150,7 +150,7 @@ namespace ScriptEngine.EngineBase.Parser.Precompiler.Directives
         private bool ProcessElseIf()
         {
             bool result;
-            TokenClass token = _iterator.Current.Clone();
+            IToken token = _iterator.Current.Clone();
             if (_iterator.CheckToken(TokenTypeEnum.IDENTIFIER, TokenSubTypeEnum.I_ELSEIF))
             {
                 if (_stack.Count == 0 || (_stack.Peek().Token.SubType != TokenSubTypeEnum.I_IF && _stack.Peek().Token.SubType != TokenSubTypeEnum.I_ELSEIF))

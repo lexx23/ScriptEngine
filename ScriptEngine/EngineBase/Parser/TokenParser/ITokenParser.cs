@@ -1,6 +1,5 @@
 ﻿
-
-using ScriptEngine.EngineBase.Praser.Token;
+using ScriptEngine.EngineBase.Parser.Token;
 
 namespace ScriptEngine.EngineBase.Parser.TokenParser
 {
@@ -14,7 +13,7 @@ namespace ScriptEngine.EngineBase.Parser.TokenParser
         /// </summary>
         /// <param name="iterator"></param>
         /// <returns></returns>
-        bool Parse(SourceIterator iterator, out TokenClass token);
+        bool Parse(SourceIterator iterator, out IToken token);
 
     }
 }

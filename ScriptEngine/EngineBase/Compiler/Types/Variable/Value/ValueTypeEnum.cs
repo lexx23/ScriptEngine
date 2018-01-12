@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace ScriptEngine.EngineBase.Compiler.Types
+namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
 {
     public enum ValueTypeEnum
     {

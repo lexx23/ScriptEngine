@@ -4,9 +4,9 @@ using System;
 using System.Collections.Generic;
 
 
-namespace ScriptEngine.EngineBase.Compiler.Types
+namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
 {
-    public class VariableValue
+    public class Value
     {
         public ValueTypeEnum Type { get; set; }
 
@@ -25,7 +25,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types
         /// <param name="left"></param>
         /// <param name="right"></param>
         /// <returns></returns>
-        public static bool operator ==(VariableValue left, VariableValue right)
+        public static bool operator ==(Value left, Value right)
         {
             if (object.ReferenceEquals(left, null) == true && object.ReferenceEquals(right, null) == true)
                 return true;
@@ -62,7 +62,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types
         /// <param name="left"></param>
         /// <param name="right"></param>
         /// <returns></returns>
-        public static bool operator !=(VariableValue left, VariableValue right)
+        public static bool operator !=(Value left, Value right)
         {
             return !(left == right);
         }
@@ -74,9 +74,9 @@ namespace ScriptEngine.EngineBase.Compiler.Types
         /// <param name="left"></param>
         /// <param name="right"></param>
         /// <returns></returns>
-        public static VariableValue operator >(VariableValue left, VariableValue right)
+        public static Value operator >(Value left, Value right)
         {
-            VariableValue result = new VariableValue();
+            Value result = new Value();
             result.Type = ValueTypeEnum.BOOLEAN;
             switch (CommonType(left, right))
             {
@@ -105,9 +105,9 @@ namespace ScriptEngine.EngineBase.Compiler.Types
         /// <param name="left"></param>
         /// <param name="right"></param>
         /// <returns></returns>
-        public static VariableValue operator >=(VariableValue left, VariableValue right)
+        public static Value operator >=(Value left, Value right)
         {
-            VariableValue result = new VariableValue();
+            Value result = new Value();
             result.Type = ValueTypeEnum.BOOLEAN;
             switch (CommonType(left, right))
             {
@@ -136,9 +136,9 @@ namespace ScriptEngine.EngineBase.Compiler.Types
         /// <param name="left"></param>
         /// <param name="right"></param>
         /// <returns></returns>
-        public static VariableValue operator <(VariableValue left, VariableValue right)
+        public static Value operator <(Value left, Value right)
         {
-            VariableValue result = new VariableValue();
+            Value result = new Value();
             result.Type = ValueTypeEnum.BOOLEAN;
             switch (CommonType(left, right))
             {
@@ -167,9 +167,9 @@ namespace ScriptEngine.EngineBase.Compiler.Types
         /// <param name="left"></param>
         /// <param name="right"></param>
         /// <returns></returns>
-        public static VariableValue operator <=(VariableValue left, VariableValue right)
+        public static Value operator <=(Value left, Value right)
         {
-            VariableValue result = new VariableValue();
+            Value result = new Value();
             result.Type = ValueTypeEnum.BOOLEAN;
             switch (CommonType(left, right))
             {
@@ -200,9 +200,9 @@ namespace ScriptEngine.EngineBase.Compiler.Types
         /// <param name="left"></param>
         /// <param name="right"></param>
         /// <returns></returns>
-        public static VariableValue operator +(VariableValue left, VariableValue right)
+        public static Value operator +(Value left, Value right)
         {
-            VariableValue result = new VariableValue();
+            Value result = new Value();
 
             switch (CommonType(left, right))
             {
@@ -233,9 +233,9 @@ namespace ScriptEngine.EngineBase.Compiler.Types
         /// <param name="left"></param>
         /// <param name="right"></param>
         /// <returns></returns>
-        public static VariableValue operator -(VariableValue left, VariableValue right)
+        public static Value operator -(Value left, Value right)
         {
-            VariableValue result = new VariableValue();
+            Value result = new Value();
             switch (CommonType(left, right))
             {
                 case ValueTypeEnum.NUMBER:
@@ -260,9 +260,9 @@ namespace ScriptEngine.EngineBase.Compiler.Types
         /// <param name="left"></param>
         /// <param name="right"></param>
         /// <returns></returns>
-        public static VariableValue operator *(VariableValue left, VariableValue right)
+        public static Value operator *(Value left, Value right)
         {
-            VariableValue result = new VariableValue();
+            Value result = new Value();
             switch (CommonType(left, right))
             {
                 case ValueTypeEnum.NUMBER:
@@ -287,11 +287,11 @@ namespace ScriptEngine.EngineBase.Compiler.Types
         /// <param name="left"></param>
         /// <param name="right"></param>
         /// <returns></returns>
-        public static VariableValue operator *(VariableValue left, int right)
+        public static Value operator *(Value left, int right)
         {
-            VariableValue result = new VariableValue();
+            Value result = new Value();
 
-            VariableValue right_tmp = new VariableValue();
+            Value right_tmp = new Value();
             right_tmp.Type = ValueTypeEnum.NUMBER;
             switch (CommonType(left, right_tmp))
             {
@@ -315,9 +315,9 @@ namespace ScriptEngine.EngineBase.Compiler.Types
         /// <param name="left"></param>
         /// <param name="right"></param>
         /// <returns></returns>
-        public static VariableValue operator /(VariableValue left, VariableValue right)
+        public static Value operator /(Value left, Value right)
         {
-            VariableValue result = new VariableValue();
+            Value result = new Value();
             switch (CommonType(left, right))
             {
                 case ValueTypeEnum.NUMBER:
@@ -345,7 +345,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types
         /// </summary>
         /// <param name="left"></param>
         /// <param name="right"></param>
-        public static ValueTypeEnum CommonType(VariableValue left, VariableValue right)
+        public static ValueTypeEnum CommonType(Value left, Value right)
         {
             if (left.Type == right.Type)
                 return left.Type;
@@ -532,7 +532,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types
         /// </summary>
         /// <param name="type"></param>
         /// <returns></returns>
-        public VariableValue ConvertTo(ValueTypeEnum type)
+        public Value ConvertTo(ValueTypeEnum type)
         {
             string error = String.Empty;
             if (type == Type)
@@ -563,7 +563,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types
 
         #endregion
 
-        public VariableValue()
+        public Value()
         {
             Type = ValueTypeEnum.NULL;
         }
@@ -573,7 +573,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types
         /// </summary>
         /// <param name="type"></param>
         /// <param name="value"></param>
-        public VariableValue(ValueTypeEnum type, string value)
+        public Value(ValueTypeEnum type, string value)
         {
             Type = ValueTypeEnum.STRING;
             Content = value;
@@ -581,14 +581,14 @@ namespace ScriptEngine.EngineBase.Compiler.Types
         }
 
 
-        public VariableValue(string value)
+        public Value(string value)
         {
             Type = ValueTypeEnum.STRING;
             Content = value;
         }
 
 
-        public VariableValue(int value)
+        public Value(int value)
         {
             Type = ValueTypeEnum.NUMBER;
             Content = value.ToString();
@@ -599,7 +599,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types
         /// Установить значение.
         /// </summary>
         /// <param name="value"></param>
-        public void SetValue(VariableValue value)
+        public void SetValue(Value value)
         {
             Type = value.Type;
             Content = value.Content;
@@ -632,12 +632,12 @@ namespace ScriptEngine.EngineBase.Compiler.Types
         /// Копировать класс.
         /// </summary>
         /// <returns></returns>
-        public VariableValue Clone()
+        public Value Clone()
         {
             if (this == null)
                 return null;
 
-            return new VariableValue()
+            return new Value()
             {
                 Type = this.Type,
                 Content = this.Content,
@@ -651,7 +651,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types
 
         public override bool Equals(object obj)
         {
-            var value = obj as VariableValue;
+            var value = obj as Value;
             return value != null && this == value;
         }
 

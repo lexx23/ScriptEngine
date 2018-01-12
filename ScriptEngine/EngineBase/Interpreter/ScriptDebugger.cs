@@ -1,5 +1,7 @@
 ﻿using ScriptEngine.EngineBase.Compiler.Programm;
 using ScriptEngine.EngineBase.Compiler.Types;
+using ScriptEngine.EngineBase.Compiler.Types.Variable;
+using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -132,17 +134,17 @@ namespace ScriptEngine.EngineBase.Interpreter
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        public VariableValue RegisterGetValue(string name)
+        public Value RegisterGetValue(string name)
         {
-            Variable var;
+            IVariable var;
             if (_interpreter._context.ModuleContexts.Current.Function.Context != null)
             {
-                var = _interpreter.CurrentModule.VariableGet(name, _interpreter._context.ModuleContexts.Current.Function.Context.Name);
+                var = _interpreter.CurrentModule.Variables.Get(name, _interpreter._context.ModuleContexts.Current.Function.Context.Name);
                 if(var != null)
                     return _interpreter._context.ModuleContexts.Current.Function.Context.GetValue(var);
             }
 
-            var = _interpreter.CurrentModule.VariableGet(name, _interpreter._context.ModuleContexts.Current.Context.Name);
+            var = _interpreter.CurrentModule.Variables.Get(name, _interpreter._context.ModuleContexts.Current.Context.Name);
             if (var != null)
                 return _interpreter._context.ModuleContexts.Current.Context.GetValue(var);
 
@@ -158,17 +160,17 @@ namespace ScriptEngine.EngineBase.Interpreter
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        public VariableValue ObjectGetValue(string object_name, string var_name)
+        public Value ObjectGetValue(string object_name, string var_name)
         {
-            Variable var;
-            VariableValue object_value = null;
+            IVariable var;
+            Value object_value = null;
 
             object_value = RegisterGetValue(object_name);
 
             if (object_value != null && object_value.Object != null && object_value.Object.Context != null)
             {
 
-                var = object_value.Object.Context.Module.VariableGet(var_name);
+                var = object_value.Object.Context.Module.Variables.Get(var_name);
                 if (var != null)
                 return object_value.Object.Context.Context.GetValue(var);
             }

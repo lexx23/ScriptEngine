@@ -1,4 +1,7 @@
 ﻿using ScriptEngine.EngineBase.Compiler.Types;
+using ScriptEngine.EngineBase.Compiler.Types.Function;
+using ScriptEngine.EngineBase.Compiler.Types.Variable;
+using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
 using System.Collections.Generic;
 
 
@@ -10,9 +13,9 @@ namespace ScriptEngine.EngineBase.Compiler.Programm
     public class ScriptProgramm
     {
         private IDictionary<string, ScriptModule> _modules;
-        private IDictionary<string, Variable> _global_vars;
-        private IDictionary<string, Function> _global_functions;
-        private IDictionary<VariableValue, Variable> _static_vars;
+        private IDictionary<string, IVariable> _global_vars;
+        private IDictionary<string, IFunction> _global_functions;
+        private IDictionary<Value, IVariable> _static_vars;
         private ScriptScope _global_scope;
 
 
@@ -30,11 +33,10 @@ namespace ScriptEngine.EngineBase.Compiler.Programm
             _modules = new Dictionary<string, ScriptModule>();
             _global_scope = new ScriptScope() { Name = "global", Type = ScopeTypeEnum.GLOBAL };
 
-            _static_vars = new Dictionary<VariableValue, Variable>();
+            _static_vars = new Dictionary<Value, IVariable>();
 
-            _global_vars = new Dictionary<string, Variable>();
-            _global_functions = new Dictionary<string, Function>();
-
+            _global_vars = new Dictionary<string, IVariable>();
+            _global_functions = new Dictionary<string, IFunction>();
         }
 
         /// <summary>
@@ -46,10 +48,10 @@ namespace ScriptEngine.EngineBase.Compiler.Programm
             _modules.Add(module.Name, module);
 
             if (!module.AsGlobal && module.Type == ModuleTypeEnum.COMMON)
-                GlobalVariableAdd(module.Name, new VariableValue(ValueTypeEnum.OBJECT, module.Name));
+                GlobalVariableAdd(module.Name, new Value(ValueTypeEnum.OBJECT, module.Name));
 
             if (module.Type == ModuleTypeEnum.OBJECT)
-                GlobalVariableAdd(module.Name, new VariableValue(ValueTypeEnum.OBJECT, module.Name));
+                GlobalVariableAdd(module.Name, new Value(ValueTypeEnum.OBJECT, module.Name));
         }
 
         /// <summary>
@@ -70,9 +72,9 @@ namespace ScriptEngine.EngineBase.Compiler.Programm
         /// <param name="module"></param>
         /// <param name="type"></param>
         /// <returns></returns>
-        public Function GlobalFunctionAdd(string name)
+        public IFunction GlobalFunctionAdd(string name)
         {
-            Function function;
+            IFunction function;
 
             if (!_global_functions.ContainsKey(name + "-" + _global_scope.Name))
             {
@@ -89,7 +91,7 @@ namespace ScriptEngine.EngineBase.Compiler.Programm
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        public Function GlobalFunctionGet(string name)
+        public IFunction GlobalFunctionGet(string name)
         {
             if (_global_functions.ContainsKey(name + "-" + _global_scope.Name))
                 return _global_functions[name + "-" + _global_scope.Name];
@@ -105,7 +107,7 @@ namespace ScriptEngine.EngineBase.Compiler.Programm
         /// <param name="name"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public Variable GlobalVariableAdd(string name, VariableValue value = null)
+        public IVariable GlobalVariableAdd(string name, Value value = null)
         {
             if (name == string.Empty)
                 name = "<<var_" + _global_vars.Count.ToString() + ">>";
@@ -113,7 +115,7 @@ namespace ScriptEngine.EngineBase.Compiler.Programm
             if (_global_vars.ContainsKey(name + "-" + _global_scope.Name))
                 return null;
 
-            Variable var = new Variable()
+            IVariable var = new Variable()
             {
                 Name = name,
                 Value = value,
@@ -134,7 +136,7 @@ namespace ScriptEngine.EngineBase.Compiler.Programm
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        public Variable GlobalVariableGet(string name)
+        public IVariable GlobalVariableGet(string name)
         {
             if (_global_vars.ContainsKey(name + "-" + _global_scope.Name))
                 return _global_vars[name + "-" + _global_scope.Name];
@@ -149,9 +151,9 @@ namespace ScriptEngine.EngineBase.Compiler.Programm
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>
-        public Variable StaticVariableAdd(VariableValue value)
+        public IVariable StaticVariableAdd(Value value)
         {
-            Variable tmp_var;
+            IVariable tmp_var;
             if (StaticVariableExist(value))
             {
                 tmp_var = _static_vars[value];
@@ -174,7 +176,7 @@ namespace ScriptEngine.EngineBase.Compiler.Programm
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>
-        public bool StaticVariableExist(VariableValue value)
+        public bool StaticVariableExist(Value value)
         {
             return _static_vars.ContainsKey(value);
 
@@ -185,9 +187,9 @@ namespace ScriptEngine.EngineBase.Compiler.Programm
         /// </summary>
         /// <param name="variable"></param>
         /// <param name="scope"></param>
-        public void StaticVariableDelete(Variable variable, Variable scope = null)
+        public void StaticVariableDelete(IVariable variable)
         {
-            Variable tmp_var;
+            IVariable tmp_var;
 
             if (StaticVariableExist(variable.Value))
             {

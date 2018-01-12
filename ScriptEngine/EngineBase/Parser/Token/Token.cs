@@ -6,41 +6,24 @@ using System.Text;
 
 namespace ScriptEngine.EngineBase.Praser.Token
 {
-    public class TokenClass
+    public class TokenClass : IToken
     {
         /// <summary>
         /// Наименование лексемы.
         /// </summary>
-        public TokenTypeEnum Type
-        {
-            get;
-            set;
-        }
+        public TokenTypeEnum Type{ get; set; }
 
-        public TokenSubTypeEnum SubType
-        {
-            get;
-            set;
-        }
-
+        public TokenSubTypeEnum SubType { get; set; }
 
         /// <summary>
         /// Текст токена из модуля. 
         /// </summary>
-        public string Content
-        {
-            get;
-            set;
-        }
+        public string Content { get; set; }
 
         /// <summary>
         /// Информация о коде где был получен токен.
         /// </summary>
-        public CodeInformation CodeInformation
-        {
-            get;
-            set;
-        }
+        public CodeInformation CodeInformation { get; set; }
 
 
         public TokenClass()
@@ -48,9 +31,9 @@ namespace ScriptEngine.EngineBase.Praser.Token
             SubType = TokenSubTypeEnum.NA;
         }
 
-        public TokenClass Clone()
+        public IToken Clone()
         {
-            return (TokenClass)this.MemberwiseClone();
+            return (IToken)this.MemberwiseClone();
         }
 
         public override string ToString()

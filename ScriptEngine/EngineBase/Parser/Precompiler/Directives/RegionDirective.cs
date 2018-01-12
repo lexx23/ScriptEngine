@@ -43,7 +43,7 @@ namespace ScriptEngine.EngineBase.Parser.Precompiler.Directives
         /// <returns></returns>
         private bool ProcessRegion()
         {
-            TokenClass token = _iterator.Current.Clone();
+            IToken token = _iterator.Current.Clone();
             if (_iterator.CheckToken(TokenTypeEnum.IDENTIFIER, TokenSubTypeEnum.I_REGION))
             {
                 _stack.Push(token);
