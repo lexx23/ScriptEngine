@@ -14,6 +14,60 @@ namespace UnitTests
         #region For
 
         [TestMethod]
+        public void Compile_Goto()
+        {
+            IDictionary<string, string> files = new Dictionary<string, string>();
+            files.Add("goto", "Goto\\goto.scr");
+
+            Compile(files);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ExceptionBase))]
+        public void Compile_GotoError()
+        {
+            IDictionary<string, string> files = new Dictionary<string, string>();
+            files.Add("goto", "Goto\\goto_error.scr");
+
+            Compile(files);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ExceptionBase))]
+        public void Compile_GotoError2()
+        {
+            IDictionary<string, string> files = new Dictionary<string, string>();
+            files.Add("goto", "Goto\\goto_error2.scr");
+
+            Compile(files);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ExceptionBase))]
+        public void Compile_GotoError3()
+        {
+            IDictionary<string, string> files = new Dictionary<string, string>();
+            files.Add("goto", "Goto\\goto_error3.scr");
+
+            Compile(files);
+        }
+
+
+        [TestMethod]
+        [ExpectedException(typeof(ExceptionBase))]
+        public void Compile_GotoError4()
+        {
+            IDictionary<string, string> files = new Dictionary<string, string>();
+            files.Add("goto", "Goto\\goto_error4.scr");
+
+            Compile(files);
+        }
+        #endregion
+
+
+        #region For
+
+        [TestMethod]
         public void Compile_For()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();

@@ -14,6 +14,11 @@ namespace ScriptEngine.EngineBase.Parser.Token
         [StringValue("КонецОбласти { EndRegion }")]
         I_ENDREGION,
 
+        [StringValue("Перейти { Goto }")]
+        I_GOTO,
+        [StringValue("тильда { ~ }")]
+        P_TILDE,
+
         [StringValue("Если { If }")]
         I_IF,
         [StringValue("Тогда { Then }")]
@@ -104,10 +109,12 @@ namespace ScriptEngine.EngineBase.Parser.Token
 
         [StringValue("запятая { , }")]
         P_COMMA,
+        [StringValue("двоеточие { : }")]
+        P_COLON,
         [StringValue("точка с запятой { ; }")]
         P_SEMICOLON,
         [StringValue("вопрос { ? }")]
-        P_QUESTIONMARK,
+        P_QUESTION,
 
 
         [StringValue("открывающая скобка { ( }")]

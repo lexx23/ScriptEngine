@@ -21,6 +21,10 @@ namespace ScriptEngine.EngineBase.Compiler
         private IDictionary<string, Variable> _deferred_var;
         private IList<Function> _deferred_function;
         private IList<IList<int>> _loop;
+
+        private IList<(string, int)> _goto_jmp;
+        private IDictionary<string, int> _goto_labels;
+
         private int _module_entry_point;
         private int _function_entry_point;
 
@@ -55,6 +59,8 @@ namespace ScriptEngine.EngineBase.Compiler
             _deferred_var = new Dictionary<string, Variable>();
             _deferred_function = new List<Function>();
             _loop = new List<IList<int>>();
+            _goto_jmp = new List<(string, int)>();
+            _goto_labels = new Dictionary<string, int>();
 
             _expression_op_codes = new Dictionary<TokenSubTypeEnum, op_code>();
             _expression_op_codes.Add(TokenSubTypeEnum.P_MUL, new op_code { code = OP_CODES.OP_MUL, type = OP_TYPE.RESULT_OPTIMIZATION, level = 1 });
@@ -1060,7 +1066,10 @@ namespace ScriptEngine.EngineBase.Compiler
             return false;
         }
 
-
+        /// <summary>
+        /// Парсинг оператора Для ( For ).
+        /// </summary>
+        /// <returns></returns>
         private bool ParseFor()
         {
             if (_iterator.CheckToken(TokenTypeEnum.IDENTIFIER, TokenSubTypeEnum.I_FOR))
@@ -1224,6 +1233,10 @@ namespace ScriptEngine.EngineBase.Compiler
             return false;
         }
 
+        #endregion
+
+        #region Если, "короткий" Если ?()
+
         /// <summary>
         /// Парсин оператор Если, ИначеЕсли.
         /// </summary>
@@ -1323,9 +1336,9 @@ namespace ScriptEngine.EngineBase.Compiler
         /// <returns></returns>
         private Variable ParseIfShort()
         {
-            if (_iterator.CheckToken(TokenTypeEnum.PUNCTUATION, TokenSubTypeEnum.P_QUESTIONMARK))
+            if (_iterator.CheckToken(TokenTypeEnum.PUNCTUATION, TokenSubTypeEnum.P_QUESTION))
             {
-                Variable result,expression,true_result,false_result = null;
+                Variable result, expression, true_result, false_result = null;
                 ScriptStatement if_statement, jmp_statement;
 
                 _iterator.ExpectToken(TokenTypeEnum.PUNCTUATION, TokenSubTypeEnum.P_PARENTHESESOPEN);
@@ -1335,12 +1348,12 @@ namespace ScriptEngine.EngineBase.Compiler
                 if (_iterator.CheckToken(TokenTypeEnum.PUNCTUATION, TokenSubTypeEnum.P_COMMA))
                     throw new ExceptionBase(_iterator.Current.CodeInformation, "Ожидается выражение.");
 
-                result = _current_module.VariableAdd("",false,_scope);
+                result = _current_module.VariableAdd("", false, _scope);
 
                 // Условие.
                 expression = ParseExpression((int)Priority.TOP);
                 EmitCode(OP_CODES.OP_IFNOT, expression, null);
-                if_statement = _current_module.StatementGet(_current_module.ProgrammLine-1);
+                if_statement = _current_module.StatementGet(_current_module.ProgrammLine - 1);
 
                 // Результат для true.
                 _iterator.ExpectToken(TokenTypeEnum.PUNCTUATION, TokenSubTypeEnum.P_COMMA);
@@ -1354,7 +1367,7 @@ namespace ScriptEngine.EngineBase.Compiler
                 // Переход в конец false.
                 EmitCode(OP_CODES.OP_JMP, null, null);
                 jmp_statement = _current_module.StatementGet(_current_module.ProgrammLine - 1);
-                
+
                 // Патч перехода условия.
                 if_statement.Variable3 = _programm.StaticVariableAdd(new VariableValue(_current_module.ProgrammLine));
 
@@ -1381,6 +1394,82 @@ namespace ScriptEngine.EngineBase.Compiler
         #endregion
 
 
+        #region Перейти ( Goto )
+
+        /// <summary>
+        /// Парсинг оператора Перейти ( Goto ).
+        /// </summary>
+        /// <returns></returns>
+        private bool ParseGoto()
+        {
+            if (_iterator.CheckToken(TokenTypeEnum.IDENTIFIER, TokenSubTypeEnum.I_GOTO))
+            {
+                _iterator.ExpectToken(TokenTypeEnum.PUNCTUATION, TokenSubTypeEnum.P_TILDE);
+
+                TokenClass token = _iterator.Current;
+
+                _iterator.IsTokenType(TokenTypeEnum.IDENTIFIER);
+                _iterator.MoveNext();
+
+                _goto_jmp.Add((token.Content + "-" + _scope.Name, _current_module.ProgrammLine));
+                EmitCode(OP_CODES.OP_JMP, null, null);
+
+                _iterator.IsTokenType(TokenTypeEnum.PUNCTUATION, TokenSubTypeEnum.P_SEMICOLON);
+
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Парсинг меток оператора Перейти ( Goto ).
+        /// </summary>
+        /// <returns></returns>
+        private bool ParseGotoLabel()
+        {
+            if (_iterator.CheckToken(TokenTypeEnum.PUNCTUATION, TokenSubTypeEnum.P_TILDE))
+            {
+                TokenClass token = _iterator.Current;
+                _iterator.IsTokenType(TokenTypeEnum.IDENTIFIER);
+                _iterator.MoveNext();
+
+                if (_goto_labels.ContainsKey(token.Content + "-" + _scope.Name))
+                    throw new ExceptionBase(_iterator.Current.CodeInformation, $"Метка с указанным именем уже определена [{token.Content}]");
+
+                _goto_labels.Add(token.Content + "-" + _scope.Name, _current_module.ProgrammLine);
+                _iterator.IsTokenType(TokenTypeEnum.PUNCTUATION, TokenSubTypeEnum.P_COLON);
+
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Обработка меток переходов. Установка правильных значений переходов.
+        /// </summary>
+        private void ProcessGoto()
+        {
+            int line;
+            ScriptStatement jmp_statement;
+
+            foreach ((string,int) value in _goto_jmp)
+            {
+                if(!_goto_labels.TryGetValue(value.Item1,out line))
+                    throw new ExceptionBase(_iterator.Current.CodeInformation, $"Метка не определена в процедуре, функции или теле модуля [{value.Item1.Substring(0, value.Item1.IndexOf('-'))}]");
+                else
+                {
+                    jmp_statement = _current_module.StatementGet(value.Item2);
+                    jmp_statement.Variable2 = _programm.StaticVariableAdd(new VariableValue(line));
+                }
+            }
+            _goto_labels.Clear();
+            _goto_labels.Clear();
+        }
+
+        #endregion
+
         /// <summary>
         /// Парсинг тела функции, модуля.
         /// </summary>
@@ -1403,11 +1492,19 @@ namespace ScriptEngine.EngineBase.Compiler
                     return;
 
                 // Ошибка "короткий" Если не в выражении.
-                if (_iterator.CheckToken(TokenTypeEnum.PUNCTUATION, TokenSubTypeEnum.P_QUESTIONMARK))
+                if (_iterator.CheckToken(TokenTypeEnum.PUNCTUATION, TokenSubTypeEnum.P_QUESTION))
                     throw new ExceptionBase(_iterator.Current.CodeInformation, "Встроенная функция может быть использована только в выражении.");
+
+                // Парсинг меток оператора Перейти(Goto ).
+                if (ParseGotoLabel())
+                    continue;
 
                 _iterator.IsTokenType(TokenTypeEnum.IDENTIFIER);
                 token = _iterator.Current;
+
+                // Парсинг оператора Перейти(Goto ).
+                if (ParseGoto())
+                    continue;
 
                 // Парсим обьявление переменных, оператор Перем.
                 if (ParseVariableDefine())
@@ -1484,6 +1581,7 @@ namespace ScriptEngine.EngineBase.Compiler
                 EmitCode(OP_CODES.OP_RETURN, null, null);
 
                 _programm.ModuleAdd(_current_module);
+                ProcessGoto();
 
                 if (_iterator.Current.Type != TokenTypeEnum.PUNCTUATION && _iterator.Current.SubType != TokenSubTypeEnum.EOF)
                     throw new ExceptionBase("Есть не разобранный участок кода.");

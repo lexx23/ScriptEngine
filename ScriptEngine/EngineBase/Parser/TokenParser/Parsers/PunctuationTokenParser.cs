@@ -14,35 +14,38 @@ namespace ScriptEngine.EngineBase.Parser.TokenParser.Parsers
 
         public PunctuationTokenParser()
         {
-            _punctuation_table = new Dictionary<string, TokenSubTypeEnum>();
+            _punctuation_table = new Dictionary<string, TokenSubTypeEnum>
+            {
+                { ">=", TokenSubTypeEnum.P_LOGIC_GEQ },
+                { "<=", TokenSubTypeEnum.P_LOGIC_LEQ },
+                { "<>", TokenSubTypeEnum.P_LOGIC_UNEQ },
+                { ">", TokenSubTypeEnum.P_LOGIC_GREATER },
+                { "<", TokenSubTypeEnum.P_LOGIC_LESS },
 
-            _punctuation_table.Add(">=", TokenSubTypeEnum.P_LOGIC_GEQ);
-            _punctuation_table.Add("<=", TokenSubTypeEnum.P_LOGIC_LEQ);
-            _punctuation_table.Add("<>", TokenSubTypeEnum.P_LOGIC_UNEQ);
-            _punctuation_table.Add(">", TokenSubTypeEnum.P_LOGIC_GREATER);
-            _punctuation_table.Add("<", TokenSubTypeEnum.P_LOGIC_LESS);
+                { "*", TokenSubTypeEnum.P_MUL },
+                { "/", TokenSubTypeEnum.P_DIV },
+                { "%", TokenSubTypeEnum.P_MOD },
+                { "+", TokenSubTypeEnum.P_ADD },
+                { "-", TokenSubTypeEnum.P_SUB },
+                { "=", TokenSubTypeEnum.P_ASSIGN },
 
-            _punctuation_table.Add("*", TokenSubTypeEnum.P_MUL);
-            _punctuation_table.Add("/", TokenSubTypeEnum.P_DIV);
-            _punctuation_table.Add("%", TokenSubTypeEnum.P_MOD);
-            _punctuation_table.Add("+", TokenSubTypeEnum.P_ADD);
-            _punctuation_table.Add("-", TokenSubTypeEnum.P_SUB);
-            _punctuation_table.Add("=", TokenSubTypeEnum.P_ASSIGN);
+                { ".", TokenSubTypeEnum.P_DOT },
 
-            _punctuation_table.Add(".", TokenSubTypeEnum.P_DOT);
+                { ",", TokenSubTypeEnum.P_COMMA },
+                { ";", TokenSubTypeEnum.P_SEMICOLON },
+                { ":", TokenSubTypeEnum.P_COLON },
 
-            _punctuation_table.Add(",", TokenSubTypeEnum.P_COMMA);
-            _punctuation_table.Add(";", TokenSubTypeEnum.P_SEMICOLON);
+                { "?", TokenSubTypeEnum.P_QUESTION },
 
-            _punctuation_table.Add("?", TokenSubTypeEnum.P_QUESTIONMARK);
+                { "(", TokenSubTypeEnum.P_PARENTHESESOPEN },
+                { ")", TokenSubTypeEnum.P_PARENTHESESCLOSE },
+                { "[", TokenSubTypeEnum.SQBRACKETOPEN },
+                { "]", TokenSubTypeEnum.SQBRACKETCLOSE },
 
-            _punctuation_table.Add("(", TokenSubTypeEnum.P_PARENTHESESOPEN);
-            _punctuation_table.Add(")", TokenSubTypeEnum.P_PARENTHESESCLOSE);
-            _punctuation_table.Add("[", TokenSubTypeEnum.SQBRACKETOPEN);
-            _punctuation_table.Add("]", TokenSubTypeEnum.SQBRACKETCLOSE);
-
-            _punctuation_table.Add("#", TokenSubTypeEnum.PRECOMP);
-            _punctuation_table.Add("&", TokenSubTypeEnum.COMP);
+                { "#", TokenSubTypeEnum.PRECOMP },
+                { "&", TokenSubTypeEnum.COMP },
+                { "~", TokenSubTypeEnum.P_TILDE }
+            };
         }
 
         public bool Parse(SourceIterator iterator, out TokenClass token)

@@ -15,76 +15,80 @@ namespace ScriptEngine.EngineBase.Parser.TokenParser.Parsers
 
         public IdentifierTokenParser()
         {
-            _table = new Dictionary<string, TokenSubTypeEnum>(StringComparer.OrdinalIgnoreCase);
+            _table = new Dictionary<string, TokenSubTypeEnum>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "или", TokenSubTypeEnum.I_LOGIC_OR },
+                { "or", TokenSubTypeEnum.I_LOGIC_OR },
+                { "не", TokenSubTypeEnum.I_LOGIC_NOT },
+                { "not", TokenSubTypeEnum.I_LOGIC_NOT },
+                { "и", TokenSubTypeEnum.I_LOGIC_AND },
+                { "and", TokenSubTypeEnum.I_LOGIC_AND },
 
-            _table.Add("или", TokenSubTypeEnum.I_LOGIC_OR);
-            _table.Add("or", TokenSubTypeEnum.I_LOGIC_OR);
-            _table.Add("не", TokenSubTypeEnum.I_LOGIC_NOT);
-            _table.Add("not", TokenSubTypeEnum.I_LOGIC_NOT);
-            _table.Add("и", TokenSubTypeEnum.I_LOGIC_AND);
-            _table.Add("and", TokenSubTypeEnum.I_LOGIC_AND);
+                { "Область", TokenSubTypeEnum.I_REGION },
+                { "Region", TokenSubTypeEnum.I_REGION },
+                { "КонецОбласти", TokenSubTypeEnum.I_ENDREGION },
+                { "EndRegion", TokenSubTypeEnum.I_ENDREGION },
 
-            _table.Add("Область", TokenSubTypeEnum.I_REGION);
-            _table.Add("Region", TokenSubTypeEnum.I_REGION);
-            _table.Add("КонецОбласти", TokenSubTypeEnum.I_ENDREGION);
-            _table.Add("EndRegion", TokenSubTypeEnum.I_ENDREGION);
+                { "If", TokenSubTypeEnum.I_IF },
+                { "Если", TokenSubTypeEnum.I_IF },
+                { "Then", TokenSubTypeEnum.I_THEN },
+                { "Тогда", TokenSubTypeEnum.I_THEN },
+                { "Else", TokenSubTypeEnum.I_ELSE },
+                { "Иначе", TokenSubTypeEnum.I_ELSE },
+                { "ElsIf", TokenSubTypeEnum.I_ELSEIF },
+                { "ИначеЕсли", TokenSubTypeEnum.I_ELSEIF },
+                { "EndIf", TokenSubTypeEnum.I_ENDIF },
+                { "КонецЕсли", TokenSubTypeEnum.I_ENDIF },
 
-            _table.Add("If", TokenSubTypeEnum.I_IF);
-            _table.Add("Если", TokenSubTypeEnum.I_IF);
-            _table.Add("Then", TokenSubTypeEnum.I_THEN);
-            _table.Add("Тогда", TokenSubTypeEnum.I_THEN);
-            _table.Add("Else", TokenSubTypeEnum.I_ELSE);
-            _table.Add("Иначе", TokenSubTypeEnum.I_ELSE);
-            _table.Add("ElsIf", TokenSubTypeEnum.I_ELSEIF);
-            _table.Add("ИначеЕсли", TokenSubTypeEnum.I_ELSEIF);
-            _table.Add("EndIf", TokenSubTypeEnum.I_ENDIF);
-            _table.Add("КонецЕсли", TokenSubTypeEnum.I_ENDIF);
+                { "Для", TokenSubTypeEnum.I_FOR },
+                { "For", TokenSubTypeEnum.I_FOR },
+                { "По", TokenSubTypeEnum.I_TO },
+                { "To", TokenSubTypeEnum.I_TO },
+                { "Пока", TokenSubTypeEnum.I_WHILE },
+                { "While", TokenSubTypeEnum.I_WHILE },
+                { "Цикл", TokenSubTypeEnum.I_LOOP },
+                { "Do", TokenSubTypeEnum.I_LOOP },
+                { "КонецЦикла", TokenSubTypeEnum.I_ENDLOOP },
+                { "EndDo", TokenSubTypeEnum.I_ENDLOOP },
 
-            _table.Add("Для", TokenSubTypeEnum.I_FOR);
-            _table.Add("For", TokenSubTypeEnum.I_FOR);
-            _table.Add("По", TokenSubTypeEnum.I_TO);
-            _table.Add("To", TokenSubTypeEnum.I_TO);
-            _table.Add("Пока", TokenSubTypeEnum.I_WHILE);
-            _table.Add("While", TokenSubTypeEnum.I_WHILE);
-            _table.Add("Цикл", TokenSubTypeEnum.I_LOOP);
-            _table.Add("Do", TokenSubTypeEnum.I_LOOP);
-            _table.Add("КонецЦикла", TokenSubTypeEnum.I_ENDLOOP);
-            _table.Add("EndDo", TokenSubTypeEnum.I_ENDLOOP);
+                { "Продолжить", TokenSubTypeEnum.I_CONTINUE },
+                { "Сontınue", TokenSubTypeEnum.I_CONTINUE },
+                { "Прервать", TokenSubTypeEnum.I_BREAK },
+                { "Break", TokenSubTypeEnum.I_BREAK },
 
-            _table.Add("Продолжить", TokenSubTypeEnum.I_CONTINUE);
-            _table.Add("Сontınue", TokenSubTypeEnum.I_CONTINUE);
-            _table.Add("Прервать", TokenSubTypeEnum.I_BREAK);
-            _table.Add("Break", TokenSubTypeEnum.I_BREAK);
+                { "Перем", TokenSubTypeEnum.I_VARDEF },
+                { "Var", TokenSubTypeEnum.I_VARDEF },
 
-            _table.Add("Перем", TokenSubTypeEnum.I_VARDEF);
-            _table.Add("Var", TokenSubTypeEnum.I_VARDEF);
+                { "Знач", TokenSubTypeEnum.I_VAL },
+                { "Val", TokenSubTypeEnum.I_VAL },
 
-            _table.Add("Знач", TokenSubTypeEnum.I_VAL);
-            _table.Add("Val", TokenSubTypeEnum.I_VAL);
+                { "Экспорт", TokenSubTypeEnum.I_EXPORT },
+                { "Export", TokenSubTypeEnum.I_EXPORT },
 
-            _table.Add("Экспорт", TokenSubTypeEnum.I_EXPORT);
-            _table.Add("Export", TokenSubTypeEnum.I_EXPORT);
+                { "Истина", TokenSubTypeEnum.I_LOGIC_TRUE },
+                { "True", TokenSubTypeEnum.I_LOGIC_TRUE },
+                { "Ложь", TokenSubTypeEnum.I_LOGIC_FALSE },
+                { "False", TokenSubTypeEnum.I_LOGIC_FALSE },
 
-            _table.Add("Истина", TokenSubTypeEnum.I_LOGIC_TRUE);
-            _table.Add("True", TokenSubTypeEnum.I_LOGIC_TRUE);
-            _table.Add("Ложь", TokenSubTypeEnum.I_LOGIC_FALSE);
-            _table.Add("False", TokenSubTypeEnum.I_LOGIC_FALSE);
+                { "Неопределено", TokenSubTypeEnum.N_NULL },
+                { "Null", TokenSubTypeEnum.N_NULL },
 
-            _table.Add("Неопределено", TokenSubTypeEnum.N_NULL);
-            _table.Add("Null", TokenSubTypeEnum.N_NULL);
+                { "Функция", TokenSubTypeEnum.I_FUNCTION },
+                { "Function", TokenSubTypeEnum.I_FUNCTION },
+                { "КонецФункции", TokenSubTypeEnum.I_ENDFUNCTION },
+                { "EndFunction", TokenSubTypeEnum.I_ENDFUNCTION },
 
-            _table.Add("Функция", TokenSubTypeEnum.I_FUNCTION);
-            _table.Add("Function", TokenSubTypeEnum.I_FUNCTION);
-            _table.Add("КонецФункции", TokenSubTypeEnum.I_ENDFUNCTION);
-            _table.Add("EndFunction", TokenSubTypeEnum.I_ENDFUNCTION);
+                { "Процедура", TokenSubTypeEnum.I_PROCEDURE },
+                { "Procedure", TokenSubTypeEnum.I_PROCEDURE },
+                { "КонецПроцедуры", TokenSubTypeEnum.I_ENDPROCEDURE },
+                { "EndProcedure", TokenSubTypeEnum.I_ENDPROCEDURE },
 
-            _table.Add("Процедура", TokenSubTypeEnum.I_PROCEDURE);
-            _table.Add("Procedure", TokenSubTypeEnum.I_PROCEDURE);
-            _table.Add("КонецПроцедуры", TokenSubTypeEnum.I_ENDPROCEDURE);
-            _table.Add("EndProcedure", TokenSubTypeEnum.I_ENDPROCEDURE);
+                { "Возврат", TokenSubTypeEnum.I_RETURN },
+                { "Return", TokenSubTypeEnum.I_RETURN },
 
-            _table.Add("Возврат", TokenSubTypeEnum.I_RETURN);
-            _table.Add("Return", TokenSubTypeEnum.I_RETURN);
+                { "Перейти", TokenSubTypeEnum.I_GOTO },
+                { "Goto", TokenSubTypeEnum.I_GOTO }
+            };
 
         }
 

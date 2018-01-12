@@ -12,6 +12,31 @@ namespace UnitTests
     [TestClass]
     public class Interpreter_Test
     {
+        #region Goto
+
+        [TestMethod]
+        public void Interpreter_Goto()
+        {
+            IDictionary<string, string> files = new Dictionary<string, string>();
+            files.Add("goto", "Goto\\goto.scr");
+
+            ScriptProgramm programm = Compile(files);
+            ScriptInterpreter interpreter = new ScriptInterpreter(programm);
+            interpreter.Debugger.AddBreakpoint("goto", 14);
+            interpreter.Debugger.AddBreakpoint("goto", 28);
+            interpreter.Debug();
+
+            Assert.AreEqual(14, interpreter.CurrentLine);
+            Assert.AreEqual(10, interpreter.Debugger.RegisterGetValue("ф").Integer);
+            interpreter.Debugger.Continue();
+
+            Assert.AreEqual(28, interpreter.CurrentLine);
+            Assert.AreEqual(20, interpreter.Debugger.RegisterGetValue("ф").Integer);
+            interpreter.Debugger.Continue();
+        }
+        #endregion
+
+
         #region For
 
         [TestMethod]
