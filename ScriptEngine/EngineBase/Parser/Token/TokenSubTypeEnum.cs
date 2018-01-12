@@ -106,8 +106,8 @@ namespace ScriptEngine.EngineBase.Parser.Token
         P_COMMA,
         [StringValue("точка с запятой { ; }")]
         P_SEMICOLON,
-
-        QUESTIONMARK,
+        [StringValue("вопрос { ? }")]
+        P_QUESTIONMARK,
 
 
         [StringValue("открывающая скобка { ( }")]

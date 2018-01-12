@@ -101,6 +101,49 @@ namespace UnitTests
         #region If
 
         [TestMethod]
+        public void Interpreter_IfShort()
+        {
+            IDictionary<string, string> files = new Dictionary<string, string>();
+            files.Add("if", "If\\short_if.scr");
+
+            ScriptProgramm programm = Compile(files);
+            ScriptInterpreter interpreter = new ScriptInterpreter(programm);
+            interpreter.Debugger.AddBreakpoint("if", 6);
+            interpreter.Debugger.AddBreakpoint("if", 10);
+            interpreter.Debugger.AddBreakpoint("if", 14);
+            interpreter.Debugger.AddBreakpoint("if", 18);
+            interpreter.Debugger.AddBreakpoint("if", 22);
+            interpreter.Debugger.AddBreakpoint("if", 26);
+            interpreter.Debug();
+
+            Assert.AreEqual(6, interpreter.CurrentLine);
+            Assert.AreEqual("if", interpreter.CurrentModuleName);
+
+            Assert.AreEqual(0, interpreter.Debugger.RegisterGetValue("ф").Integer);
+            interpreter.Debugger.Continue();
+
+            Assert.AreEqual(10, interpreter.CurrentLine);
+            Assert.AreEqual(10, interpreter.Debugger.RegisterGetValue("ф").Integer);
+            interpreter.Debugger.Continue();
+
+            Assert.AreEqual(14, interpreter.CurrentLine);
+            Assert.AreEqual(-100, interpreter.Debugger.RegisterGetValue("ф").Integer);
+            interpreter.Debugger.Continue();
+
+            Assert.AreEqual(18, interpreter.CurrentLine);
+            Assert.AreEqual(-200, interpreter.Debugger.RegisterGetValue("ф").Integer);
+            interpreter.Debugger.Continue();
+
+            Assert.AreEqual(22, interpreter.CurrentLine);
+            Assert.AreEqual(10, interpreter.Debugger.RegisterGetValue("ф").Integer);
+            interpreter.Debugger.Continue();
+
+            Assert.AreEqual(26, interpreter.CurrentLine);
+            Assert.AreEqual(30, interpreter.Debugger.RegisterGetValue("ф").Integer);
+            interpreter.Debugger.Continue();
+        }
+
+        [TestMethod]
         public void Interpreter_If()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();

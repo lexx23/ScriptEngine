@@ -421,14 +421,6 @@ namespace ScriptEngine.EngineBase.Interpreter
                         ObjectResoleVariable(statement);
                         break;
 
-                    case OP_CODES.OP_IF:
-                        v2 = GetValue(statement.Variable2);
-                        v3 = GetValue(statement.Variable3);
-                        if (v2.Boolean)
-                        {
-                            _instruction = v3.Integer;
-                            continue;
-                        }
                         break;
                     case OP_CODES.OP_IFNOT:
                         v2 = GetValue(statement.Variable2);

@@ -34,7 +34,7 @@ namespace ScriptEngine.EngineBase.Parser.TokenParser.Parsers
             _punctuation_table.Add(",", TokenSubTypeEnum.P_COMMA);
             _punctuation_table.Add(";", TokenSubTypeEnum.P_SEMICOLON);
 
-            _punctuation_table.Add("?", TokenSubTypeEnum.QUESTIONMARK);
+            _punctuation_table.Add("?", TokenSubTypeEnum.P_QUESTIONMARK);
 
             _punctuation_table.Add("(", TokenSubTypeEnum.P_PARENTHESESOPEN);
             _punctuation_table.Add(")", TokenSubTypeEnum.P_PARENTHESESCLOSE);

@@ -120,6 +120,57 @@ namespace UnitTests
 
         #region If
 
+
+        [TestMethod]
+        public void Compile_IfShort()
+        {
+            IDictionary<string, string> files = new Dictionary<string, string>();
+            files.Add("if", "If\\short_if.scr");
+
+            Compile(files);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ExceptionBase))]
+        public void Compile_IfShortError()
+        {
+            IDictionary<string, string> files = new Dictionary<string, string>();
+            files.Add("if", "If\\short_if_error.scr");
+
+            Compile(files);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ExceptionBase))]
+        public void Compile_IfShortError2()
+        {
+            IDictionary<string, string> files = new Dictionary<string, string>();
+            files.Add("if", "If\\short_if_error2.scr");
+
+            Compile(files);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ExceptionBase))]
+        public void Compile_IfShortError3()
+        {
+            IDictionary<string, string> files = new Dictionary<string, string>();
+            files.Add("if", "If\\short_if_error3.scr");
+
+            Compile(files);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ExceptionBase))]
+        public void Compile_IfShortError4()
+        {
+            IDictionary<string, string> files = new Dictionary<string, string>();
+            files.Add("if", "If\\short_if_error4.scr");
+
+            Compile(files);
+        }
+
+
         [TestMethod]
         public void Compile_If()
         {
