@@ -130,7 +130,7 @@ namespace UnitTests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ExceptionBase))]
+        [ExpectedException(typeof(CompilerException))]
         public void Preprocessor_Not_Closed_Region()
         {
             LoadFile("not_closed_region.scr",null);
@@ -138,7 +138,7 @@ namespace UnitTests
 
 
         [TestMethod]
-        [ExpectedException(typeof(ExceptionBase))]
+        [ExpectedException(typeof(CompilerException))]
         public void Preprocessor_Not_Closed_If()
         {
             LoadFile("not_closed_if.scr",null);

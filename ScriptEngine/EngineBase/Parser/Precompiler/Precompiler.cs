@@ -55,7 +55,7 @@ namespace ScriptEngine.EngineBase.Parser.Precompiler
                     return;
             }
 
-            throw new ExceptionBase(_iterator.Current.CodeInformation, $"Оператор препроцессора #{_iterator.Current.Content} не распознан.");
+            throw new CompilerException(_iterator.Current.CodeInformation, $"Оператор препроцессора #{_iterator.Current.Content} не распознан.");
         }
 
 
@@ -84,7 +84,7 @@ namespace ScriptEngine.EngineBase.Parser.Precompiler
             if (_stack.Count == 0)
                 return;
             PrecompilerStackStruct str = _stack.Peek();
-            throw new ExceptionBase(str.Token.CodeInformation, $"Ожидается завершение оператора препроцессора #{str.Token.Content}");
+            throw new CompilerException(str.Token.CodeInformation, $"Ожидается завершение оператора препроцессора #{str.Token.Content}");
 
         }
 

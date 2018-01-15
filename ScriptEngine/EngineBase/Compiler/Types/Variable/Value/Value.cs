@@ -1,5 +1,6 @@
 ﻿using ScriptEngine.EngineBase.Compiler.Programm;
 using ScriptEngine.EngineBase.Exceptions;
+using ScriptEngine.EngineBase.Interpreter.Context;
 using System;
 using System.Collections.Generic;
 
@@ -15,7 +16,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
         public float Float { get; set; }
         public bool Boolean { get; set; }
         public DateTime Date { get; set; }
-        public ValueObject Object { get; set; }
+        public ObjectContext Object { get; set; }
 
 
         #region Логические операции с значением
@@ -96,7 +97,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
                     return result;
             }
 
-            throw new ExceptionBase($"Невозможно выполнить сравнение (больше) {left.Content} и {right.Content}.");
+            throw new CompilerException($"Невозможно выполнить сравнение (больше) {left.Content} и {right.Content}.");
         }
 
         /// <summary>
@@ -127,7 +128,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
                     return result;
             }
 
-            throw new ExceptionBase($"Невозможно выполнить сравнение (больше либо равно) {left.Content} и {right.Content}.");
+            throw new CompilerException($"Невозможно выполнить сравнение (больше либо равно) {left.Content} и {right.Content}.");
         }
 
         /// <summary>
@@ -158,7 +159,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
                     return result;
             }
 
-            throw new ExceptionBase($"Невозможно выполнить сравнение (меньше) {left.Content} и {right.Content}.");
+            throw new CompilerException($"Невозможно выполнить сравнение (меньше) {left.Content} и {right.Content}.");
         }
 
         /// <summary>
@@ -189,7 +190,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
                     return result;
             }
 
-            throw new ExceptionBase($"Невозможно выполнить сравнение (меньше либо равно) {left.Content} и {right.Content}.");
+            throw new CompilerException($"Невозможно выполнить сравнение (меньше либо равно) {left.Content} и {right.Content}.");
         }
         #endregion
 
@@ -224,7 +225,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
                     return result;
             }
 
-            throw new ExceptionBase($"Невозможно выполнить сложение {left.Content} и {right.Content}.");
+            throw new CompilerException($"Невозможно выполнить сложение {left.Content} и {right.Content}.");
         }
 
         /// <summary>
@@ -251,7 +252,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
                     return result;
             }
 
-            throw new ExceptionBase($"Невозможно вычислить разницу {left.Content} и {right.Content}.");
+            throw new CompilerException($"Невозможно вычислить разницу {left.Content} и {right.Content}.");
         }
 
         /// <summary>
@@ -278,7 +279,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
                     return result;
             }
 
-            throw new ExceptionBase($"Невозможно выполнить произведение {left.Content} и {right.Content}.");
+            throw new CompilerException($"Невозможно выполнить произведение {left.Content} и {right.Content}.");
         }
 
         /// <summary>
@@ -306,7 +307,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
                     return result;
             }
 
-            throw new ExceptionBase($"Невозможно выполнить произведение {left.Content} и {right.ToString()}.");
+            throw new CompilerException($"Невозможно выполнить произведение {left.Content} и {right.ToString()}.");
         }
 
         /// <summary>
@@ -333,7 +334,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
                     return result;
             }
 
-            throw new ExceptionBase($"Невозможно выполнить деление {left.Content} и {right.Content}.");
+            throw new CompilerException($"Невозможно выполнить деление {left.Content} и {right.Content}.");
         }
 
         /// <summary>
@@ -360,7 +361,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
                     return result;
             }
 
-            throw new ExceptionBase($"Невозможно выполнить деление {left.Content} и {right.Content}.");
+            throw new CompilerException($"Невозможно выполнить деление {left.Content} и {right.Content}.");
         }
         #endregion
 
@@ -420,7 +421,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
         public float ToFloat()
         {
             if (Type == ValueTypeEnum.NULL)
-                throw new ExceptionBase($"Значение с типом Null невозможно преобразовать в число с плавающей точкой.");
+                throw new CompilerException($"Значение с типом Null невозможно преобразовать в число с плавающей точкой.");
 
             switch (Type)
             {
@@ -431,7 +432,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
                     }
                     catch
                     {
-                        throw new ExceptionBase($"Невозможно преобразовать [{Content}] в число с плавающей точкой.");
+                        throw new CompilerException($"Невозможно преобразовать [{Content}] в число с плавающей точкой.");
                     }
 
 
@@ -458,7 +459,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
         public int ToInt()
         {
             if (Type == ValueTypeEnum.NULL)
-                throw new ExceptionBase($"Значение с типом Null невозможно преобразовать в число.");
+                throw new CompilerException($"Значение с типом Null невозможно преобразовать в число.");
 
             switch (Type)
             {
@@ -469,7 +470,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
                     }
                     catch
                     {
-                        throw new ExceptionBase($"Невозможно преобразовать [{Content}] в число.");
+                        throw new CompilerException($"Невозможно преобразовать [{Content}] в число.");
                     }
 
 
@@ -496,7 +497,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
         public bool ToBoolean()
         {
             if (Type == ValueTypeEnum.NULL)
-                throw new ExceptionBase($"Значение с типом Null невозможно преобразовать в логическое значение.");
+                throw new CompilerException($"Значение с типом Null невозможно преобразовать в логическое значение.");
 
             switch (Type)
             {
@@ -505,7 +506,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
                         return false;
                     if (Content.ToLower() == "истина" || Content.ToLower() == "true")
                         return true;
-                    throw new ExceptionBase($"Невозможно преобразовать [{Content}] в логическое значение.");
+                    throw new CompilerException($"Невозможно преобразовать [{Content}] в логическое значение.");
 
                 case ValueTypeEnum.NUMBER:
                     return Integer != 0;
@@ -529,7 +530,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
         public bool ToType(ValueTypeEnum type)
         {
             if (Type == ValueTypeEnum.NULL)
-                throw new ExceptionBase($"Значение с типом Null невозможно преобразовать в {type}.");
+                throw new CompilerException($"Значение с типом Null невозможно преобразовать в {type}.");
 
             switch (type)
             {
@@ -538,7 +539,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
                         return false;
                     if (Content.ToLower() == "истина" || Content.ToLower() == "true")
                         return true;
-                    throw new ExceptionBase($"Невозможно преобразовать [{Content}] в логическое значение.");
+                    throw new CompilerException($"Невозможно преобразовать [{Content}] в логическое значение.");
 
                 case ValueTypeEnum.NUMBER:
                     return Integer != 0;

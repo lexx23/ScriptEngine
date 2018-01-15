@@ -12,7 +12,7 @@ namespace ScriptEngine.EngineBase.Compiler.Programm
         public IVariable Variable1 { get; set; }
         public IVariable Variable2 { get; set; }
         public IVariable Variable3 { get; set; }
-        public CodeInformation CodeInformation { get; set; }
+        public int Line { get; set; }
 
         public override string ToString()
         {

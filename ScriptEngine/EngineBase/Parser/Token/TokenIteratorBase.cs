@@ -54,11 +54,11 @@ namespace ScriptEngine.EngineBase.Parser.Token
             if (subtype != TokenSubTypeEnum.ANY)
             {
                 if (Current.Type != type || Current.SubType != subtype)
-                    throw new ExceptionBase(Current.CodeInformation, $"Ожидается [{StringEnum.GetStringValue(type) + (subtype != TokenSubTypeEnum.NA ? "-" + StringEnum.GetStringValue(subtype) : "")}] а найден [{Current.ToString()}]");
+                    throw new CompilerException(Current.CodeInformation, $"Ожидается [{StringEnum.GetStringValue(type) + (subtype != TokenSubTypeEnum.NA ? "-" + StringEnum.GetStringValue(subtype) : "")}] а найден [{Current.ToString()}]");
             }
             else
                 if (Current.Type != type)
-                throw new ExceptionBase(Current.CodeInformation, $"Ожидается [{StringEnum.GetStringValue(type)}] а найден [{StringEnum.GetStringValue(Current.SubType)}]");
+                throw new CompilerException(Current.CodeInformation, $"Ожидается [{StringEnum.GetStringValue(type)}] а найден [{StringEnum.GetStringValue(Current.SubType)}]");
         }
 
         /// <summary>
@@ -106,7 +106,7 @@ namespace ScriptEngine.EngineBase.Parser.Token
         public void ExpectToken(string content)
         {
             if (Current.Content.ToLower() != content.ToLower())
-                throw new ExceptionBase($"Ожидается токен {content} , а получен {Current.Content}");
+                throw new CompilerException($"Ожидается токен {content} , а получен {Current.Content}");
 
             MoveNext();
         }
@@ -119,7 +119,7 @@ namespace ScriptEngine.EngineBase.Parser.Token
         public void ExpectToken(TokenTypeEnum type, TokenSubTypeEnum subtype = TokenSubTypeEnum.NA)
         {
             if (Current.Type != type || Current.SubType != subtype)
-                throw new ExceptionBase(Current.CodeInformation, $"Ожидается [{StringEnum.GetStringValue(type) + (subtype != TokenSubTypeEnum.NA ? "-" + StringEnum.GetStringValue(subtype) : "")}] а найден [{Current.ToString()}]");
+                throw new CompilerException(Current.CodeInformation, $"Ожидается [{StringEnum.GetStringValue(type) + (subtype != TokenSubTypeEnum.NA ? "-" + StringEnum.GetStringValue(subtype) : "")}] а найден [{Current.ToString()}]");
 
             MoveNext();
         }

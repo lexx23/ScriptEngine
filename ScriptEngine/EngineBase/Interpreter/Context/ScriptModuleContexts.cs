@@ -1,22 +1,21 @@
-﻿using ScriptEngine.EngineBase.Compiler.Programm;
-using ScriptEngine.EngineBase.Compiler.Programm.Parts;
+﻿using ScriptEngine.EngineBase.Compiler.Programm.Parts;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace ScriptEngine.EngineBase.Interpreter.Context
 {
-    public class ScriptModuleContextsHolder
+    public class ScriptModuleContexts
     {
-        private Stack<(int, ScriptModuleContext)> _history;
-        private IDictionary<string, ScriptModuleContext> _contexts;
+        private ScriptProgrammContext _main_context;
+        private Stack<(int, ObjectContext)> _history;
+        private IDictionary<string, ObjectContext> _contexts;
 
-        public ScriptModuleContext Current { get; set; }
-
-        public ScriptModuleContextsHolder()
+        public ScriptModuleContexts(ScriptProgrammContext main_context)
         {
-            _contexts = new Dictionary<string, ScriptModuleContext>();
-            _history = new Stack<(int, ScriptModuleContext)>();
+            _main_context = main_context;
+            _contexts = new Dictionary<string, ObjectContext>();
+            _history = new Stack<(int, ObjectContext)>();
         }
 
         /// <summary>
@@ -24,9 +23,12 @@ namespace ScriptEngine.EngineBase.Interpreter.Context
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        public ScriptModuleContext CreateModuleContext(string name, ScriptModule module)
+        public ObjectContext CreateModuleContext(string name, ScriptModule module)
         {
-            ScriptModuleContext context = new ScriptModuleContext(name, module);
+            ObjectContext context = new ObjectContext(module)
+            {
+                Context = new ScriptSimpleContext(name, module.ModuleScope.VarCount)
+            };
             _contexts.Add(name, context);
             return context;
         }
@@ -58,12 +60,18 @@ namespace ScriptEngine.EngineBase.Interpreter.Context
         /// Установить текуший контест модуля, используя контекст.
         /// </summary>
         /// <param name="context"></param>
-        public void SetModuleContext(ScriptModuleContext context, int position)
+        public void SetModuleContext(ObjectContext context, int position)
         {
             // Сохранить текущий контекст.
-            _history.Push((position, Current));
+            _history.Push((position, new ObjectContext(_main_context.CurrentModule)
+            {
+                Context = _main_context._contexts[1]
+            }
+            ));
+
             // Установить новый.
-            Current = context;
+            _main_context._contexts[1] = context.Context;
+            _main_context._current_module = context.Module;
         }
 
         /// <summary>
@@ -71,8 +79,9 @@ namespace ScriptEngine.EngineBase.Interpreter.Context
         /// </summary>
         public int RestoreModuleContext()
         {
-            (int, ScriptModuleContext) context = _history.Pop();
-            Current = context.Item2;
+            (int, ObjectContext) context = _history.Pop();
+            _main_context._contexts[1] = context.Item2.Context;
+            _main_context._current_module = context.Item2.Module;
 
             return context.Item1;
         }

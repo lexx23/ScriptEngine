@@ -10,6 +10,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types
         public String Name { get; set; }
         public ScriptModule Module { get; set; }
         public ScopeTypeEnum Type { get; set; }
+        public int StackIndex { get; set; }
         public int VarCount { get; set; }
 
         public ScriptScope()

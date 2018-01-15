@@ -18,12 +18,12 @@ namespace ScriptEngine.EngineBase.Parser.TokenParser.Parsers
         private void IsValidDate(string date, CodeInformation information)
         {
             if (date.Length > 14)
-                throw new ExceptionBase(information, "Дата не может быть длинной более 14 символов.");
+                throw new CompilerException(information, "Дата не может быть длинной более 14 символов.");
 
             foreach (char symbol in date)
             {
                 if (!Char.IsNumber(symbol))
-                    throw new ExceptionBase(information, String.Format("Не верный формат даты, символ '{0}' .", symbol));
+                    throw new CompilerException(information, String.Format("Не верный формат даты, символ '{0}' .", symbol));
             }
         }
 
@@ -50,7 +50,7 @@ namespace ScriptEngine.EngineBase.Parser.TokenParser.Parsers
 
 
                 if (date[date.Length - 1] != '\'')
-                    throw new ExceptionBase(iterator.CodeInformation, "Ожидется символ \'.");
+                    throw new CompilerException(iterator.CodeInformation, "Ожидется символ \'.");
 
                 date = date.Remove(0, 1);
                 date = date.Remove(date.Length - 1, 1);
@@ -90,7 +90,7 @@ namespace ScriptEngine.EngineBase.Parser.TokenParser.Parsers
                 while (iterator.MoveNext());
 
                 if (str[str.Length - 1] != '"')
-                    throw new ExceptionBase(iterator.CodeInformation, "Ожидется символ \"");
+                    throw new CompilerException(iterator.CodeInformation, "Ожидется символ \"");
 
                 str = str.Remove(0, 1);
                 str = str.Remove(str.Length - 1, 1);

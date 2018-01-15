@@ -35,7 +35,7 @@ namespace ScriptEngine.EngineBase.Compiler.Programm
         public ScriptProgramm()
         {
             _modules = new Dictionary<string, ScriptModule>();
-            _global_scope = new ScriptScope() { Name = "global", Type = ScopeTypeEnum.GLOBAL };
+            _global_scope = new ScriptScope() { Name = "global", Type = ScopeTypeEnum.GLOBAL, StackIndex = 0 };
 
             _global_functions = new GlobalFunctions();
             _global_variables = new GlobalVariables(_global_scope);

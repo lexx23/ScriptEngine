@@ -2,6 +2,7 @@
 using ScriptEngine.EngineBase.Compiler.Types;
 using ScriptEngine.EngineBase.Compiler.Types.Variable;
 using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
+using ScriptEngine.EngineBase.Interpreter.Context;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -94,24 +95,24 @@ namespace ScriptEngine.EngineBase.Interpreter
         /// </summary>
         private void GetNextStep()
         {
-            if (_interpreter._instruction >= _interpreter._context.ModuleContexts.Current.Module.Code.Count)
+            if (_interpreter._instruction >= _interpreter.CurrentModule.Code.Count)
                 return;
 
             _step_break_point = int.MinValue;
             int i = _interpreter._instruction;
 
-            if (_interpreter._context.ModuleContexts.Current.Module.Code[i].OP_CODE == OP_CODES.OP_RETURN)
+            if (_interpreter.CurrentModule.Code[i].OP_CODE == OP_CODES.OP_RETURN)
             {
                 _step_break_point = (int)DEBUG_COMMANDS.STEP_OVER_START;
                 return;
             }
 
-            while (i < _interpreter._context.ModuleContexts.Current.Module.Code.Count - 1)
+            while (i < _interpreter.CurrentModule.Code.Count - 1)
             {
                 i++;
-                if (_interpreter._context.ModuleContexts.Current.Module.Code[i].CodeInformation != null)
+                if (_interpreter.CurrentModule.Code[i].Line != -1)
                 {
-                    _step_break_point = _interpreter._context.ModuleContexts.Current.Module.Code[i].CodeInformation.LineNumber;
+                    _step_break_point = _interpreter.CurrentModule.Code[i].Line;
                     if (_step_break_point == _interpreter.CurrentLine)
                         _step_break_point = int.MaxValue;
                     else
@@ -137,20 +138,20 @@ namespace ScriptEngine.EngineBase.Interpreter
         public Value RegisterGetValue(string name)
         {
             IVariable var;
-            if (_interpreter._context.ModuleContexts.Current.Function.Context != null)
+            if (_interpreter.CurrentFunction != null)
             {
-                var = _interpreter.CurrentModule.Variables.Get(name, _interpreter._context.ModuleContexts.Current.Function.Context.Name);
+                var = _interpreter.CurrentModule.Variables.Get(name, _interpreter.CurrentFunction.Name);
                 if(var != null)
-                    return _interpreter._context.ModuleContexts.Current.Function.Context.GetValue(var);
+                    return _interpreter.Context.GetValue(var);
             }
 
-            var = _interpreter.CurrentModule.Variables.Get(name, _interpreter._context.ModuleContexts.Current.Context.Name);
+            var = _interpreter.CurrentModule.Variables.Get(name, _interpreter.CurrentModule.Name);
             if (var != null)
-                return _interpreter._context.ModuleContexts.Current.Context.GetValue(var);
+                return _interpreter.Context.GetValue(var);
 
             var = _interpreter._programm.GlobalVariables.Get(name);
             if (var != null)
-                return _interpreter._context.Global.GetValue(var);
+                return _interpreter.Context.GetValue(var);
 
             return null;
         }
@@ -170,14 +171,18 @@ namespace ScriptEngine.EngineBase.Interpreter
             if (object_value != null && object_value.Object != null && object_value.Object.Context != null)
             {
 
-                var = object_value.Object.Context.Module.Variables.Get(var_name);
+                var = object_value.Object.Module.Variables.Get(var_name);
                 if (var != null)
-                return object_value.Object.Context.Context.GetValue(var);
+                return object_value.Object.Context.GetValue(var.StackNumber);
             }
 
             return null;
         }
 
+        public IList<FunctionHistoryData> GetStackCall()
+        {
+            return _interpreter.Context.FunctionContextsHolder.StackCall();
+        }
 
         internal void OnFunctionCall()
         {
@@ -196,15 +201,15 @@ namespace ScriptEngine.EngineBase.Interpreter
         {
             if (Debug)
             {
-                if (_interpreter.CurrentLine != int.MinValue)
+                if (_interpreter.CurrentLine != -1)
                 {
                     if (_break_points.Count > 0)
                     {
-                        if (_break_points.ContainsKey(_interpreter._context.ModuleContexts.Current.Module.Name) && _break_points[_interpreter._context.ModuleContexts.Current.Module.Name].Contains(_interpreter.CurrentLine))
+                        if (_break_points.ContainsKey(_interpreter.CurrentModule.Name) && _break_points[_interpreter.CurrentModule.Name].Contains(_interpreter.CurrentLine))
                         {
-                            if (_current_break_point != _interpreter._context.ModuleContexts.Current.Module.Name + "_" + _interpreter.CurrentLine)
+                            if (_current_break_point != _interpreter.CurrentModule.Name + "_" + _interpreter.CurrentLine)
                             {
-                                _current_break_point = _interpreter._context.ModuleContexts.Current.Module.Name + "_" + _interpreter.CurrentLine;
+                                _current_break_point = _interpreter.CurrentModule.Name + "_" + _interpreter.CurrentLine;
                                 _on_break_delegate?.Invoke(_interpreter);
                                 return true;
                             }

@@ -204,7 +204,7 @@ namespace ScriptEngine.EngineBase
             CodeInformation.ColumnNumber++;
 
             if (_source.Length+1 == _cursor)
-                throw new ExceptionBase(CodeInformation,"Итератор исходного кода находится в конце файла.");
+                throw new CompilerException(CodeInformation,"Итератор исходного кода находится в конце файла.");
 
 
             if (End)
@@ -231,7 +231,7 @@ namespace ScriptEngine.EngineBase
             do
             {
                 if (!MoveNext())
-                    throw new ExceptionBase(information, "Ожидается символ: { " + symbol + " }");
+                    throw new CompilerException(information, "Ожидается символ: { " + symbol + " }");
             }
             while (_current_symbol != symbol);
 

@@ -105,7 +105,7 @@ namespace ScriptEngine.EngineBase.Compiler
             if (_module_entry_point == -1 && _scope.Type == ScopeTypeEnum.MODULE)
             {
                 _module_entry_point = _current_module.ProgrammLine;
-                _scope = new ScriptScope() { Type = ScopeTypeEnum.PROCEDURE, Module = _current_module, Name = "<<entry_point>>" };
+                _scope = new ScriptScope() { Type = ScopeTypeEnum.PROCEDURE, Module = _current_module, Name = "<<entry_point>>", StackIndex = 2 };
 
                 if (_current_module.Type == ModuleTypeEnum.COMMON)
                     throw new Exception($"Данный [{_current_module.Name}] модуль может содержать только определения процедур и функций");
@@ -206,7 +206,21 @@ namespace ScriptEngine.EngineBase.Compiler
             }
 
             if (result != null)
+            {
+                if (right != null)
+                {
+                    right.Users--;
+                    if (right.Users <= 0)
+                        _programm.StaticVariables.Delete(right);
+
+                }
+
+                left.Users--;
+                if (left.Users <= 0)
+                    _programm.StaticVariables.Delete(left);
+
                 return _programm.StaticVariables.Add(result);
+            }
 
             return null;
         }
@@ -255,11 +269,13 @@ namespace ScriptEngine.EngineBase.Compiler
             ScriptStatement statement;
             statement = _current_module.StatementAdd();
             if (code.code != OP_CODES.OP_PUSH)
-                statement.CodeInformation = _iterator.Current.CodeInformation.Clone();
+                statement.Line = _iterator.Current.CodeInformation.LineNumber;
             statement.OP_CODE = code.code;
             statement.Variable1 = result;
             statement.Variable2 = left;
             statement.Variable3 = right;
+
+
 
 
             return result;
@@ -317,7 +333,7 @@ namespace ScriptEngine.EngineBase.Compiler
                 if (var.Status == VariableStatusEnum.CONSTANTVARIABLE)
                 {
                     if (var.Value.Type != ValueTypeEnum.NUMBER && var.Value.Type != ValueTypeEnum.FLOAT)
-                        throw new ExceptionBase(_iterator.Current.CodeInformation, $"Неожиданный символ ({sign.Content}).");
+                        throw new CompilerException(_iterator.Current.CodeInformation, $"Неожиданный символ ({sign.Content}).");
                 }
 
                 if (sign.SubType == TokenSubTypeEnum.P_SUB)
@@ -465,7 +481,7 @@ namespace ScriptEngine.EngineBase.Compiler
             }
 
             if (!create && var == null)
-                throw new ExceptionBase(token.CodeInformation, $"Переменная не определена ({token.Content})");
+                throw new CompilerException(token.CodeInformation, $"Переменная не определена ({token.Content})");
 
             if (create)
                 return _current_module.Variables.Add(token.Content, false, _scope);
@@ -500,11 +516,11 @@ namespace ScriptEngine.EngineBase.Compiler
             {
                 // Проверка порядка расположения.
                 if (_function_entry_point == -1 && _module_entry_point != -1)
-                    throw new ExceptionBase(_iterator.Current.CodeInformation, "Объявления переменных должны быть расположены в начале модуля, процедуры или функции.");
+                    throw new CompilerException(_iterator.Current.CodeInformation, "Объявления переменных должны быть расположены в начале модуля, процедуры или функции.");
                 else
                 {
                     if (_function_entry_point != -1)
-                        throw new ExceptionBase(_iterator.Current.CodeInformation, "Объявления переменных должны быть расположены в начале модуля, процедуры или функции.");
+                        throw new CompilerException(_iterator.Current.CodeInformation, "Объявления переменных должны быть расположены в начале модуля, процедуры или функции.");
                 }
 
 
@@ -517,7 +533,7 @@ namespace ScriptEngine.EngineBase.Compiler
                 {
                     // Обьвление находится в функции.
                     if (_scope.Type != ScopeTypeEnum.MODULE)
-                        throw new ExceptionBase("Локальные переменные не могут быть экспортированы.");
+                        throw new CompilerException("Локальные переменные не могут быть экспортированы.");
 
                     export = true;
                 }
@@ -528,24 +544,24 @@ namespace ScriptEngine.EngineBase.Compiler
                     if (export)
                     {
                         if (_current_module.Variables.Get(var.Content) != null)
-                            throw new ExceptionBase(var.CodeInformation, $"Переменная с указанным именем уже определена ({var.Content})");
+                            throw new CompilerException(var.CodeInformation, $"Переменная с указанным именем уже определена ({var.Content})");
 
                         if (_current_module.AsGlobal)
                         {
                             if (_programm.GlobalVariables.Add(var.Content) == null)
-                                throw new ExceptionBase(var.CodeInformation, $"Переменная с указанным именем уже определена ({var.Content})");
+                                throw new CompilerException(var.CodeInformation, $"Переменная с указанным именем уже определена ({var.Content})");
                         }
                         else
                          if (_current_module.Variables.Add(var.Content, true, _scope) == null)
-                            throw new ExceptionBase(var.CodeInformation, $"Переменная с указанным именем уже определена ({var.Content})");
+                            throw new CompilerException(var.CodeInformation, $"Переменная с указанным именем уже определена ({var.Content})");
                     }
                     else
                     {
                         if (_programm.GlobalVariables.Get(var.Content) != null)
-                            throw new ExceptionBase(var.CodeInformation, $"Переменная с указанным именем уже определена ({var.Content})");
+                            throw new CompilerException(var.CodeInformation, $"Переменная с указанным именем уже определена ({var.Content})");
 
                         if (_current_module.Variables.Add(var.Content, false, _scope) == null)
-                            throw new ExceptionBase(var.CodeInformation, $"Переменная с указанным именем уже определена ({var.Content})");
+                            throw new CompilerException(var.CodeInformation, $"Переменная с указанным именем уже определена ({var.Content})");
                     }
                 }
 
@@ -601,7 +617,7 @@ namespace ScriptEngine.EngineBase.Compiler
                 if (var != null)
                     var_kp.Value.StackNumber = var.StackNumber;
                 else
-                    throw new ExceptionBase($"Переменная не определена [{var_kp.Value.Name}], модуль [{var_kp.Value.Scope.Module.Name}].");
+                    throw new CompilerException($"Переменная не определена [{var_kp.Value.Name}], модуль [{var_kp.Value.Scope.Module.Name}].");
             }
 
             _deferred_var.Clear();
@@ -623,13 +639,13 @@ namespace ScriptEngine.EngineBase.Compiler
 
                 // Проверка что Возврат внутри функции/процедуры.
                 if (_scope.Type == ScopeTypeEnum.MODULE || _scope.Type == ScopeTypeEnum.GLOBAL)
-                    throw new ExceptionBase(_iterator.Current.CodeInformation, "Оператор Возврат (Return) не может употребляться вне процедуры или функции.");
+                    throw new CompilerException(_iterator.Current.CodeInformation, "Оператор Возврат (Return) не может употребляться вне процедуры или функции.");
 
                 if (_iterator.Current.Type != TokenTypeEnum.PUNCTUATION && _iterator.Current.SubType != TokenSubTypeEnum.P_SEMICOLON)
                 {
                     // Возврат содержит выражение.
                     if (_scope.Type == ScopeTypeEnum.PROCEDURE)
-                        throw new ExceptionBase(_iterator.Current.CodeInformation, "Процедура не может возвращать значение.");
+                        throw new CompilerException(_iterator.Current.CodeInformation, "Процедура не может возвращать значение.");
 
                     return_var = ParseExpression((int)Priority.TOP);
 
@@ -639,7 +655,7 @@ namespace ScriptEngine.EngineBase.Compiler
                 {
                     // Слово Возврат не содержит выражения.
                     if (_scope.Type == ScopeTypeEnum.FUNCTION)
-                        throw new ExceptionBase(_iterator.Current.CodeInformation, "Функция должна возвращать результат.");
+                        throw new CompilerException(_iterator.Current.CodeInformation, "Функция должна возвращать результат.");
                     EmitCode(OP_CODES.OP_RETURN, null, null);
                 }
 
@@ -673,7 +689,7 @@ namespace ScriptEngine.EngineBase.Compiler
             {
                 var = ParseConstantVariable(_iterator.Current);
                 if (var == null)
-                    throw new ExceptionBase(_iterator.Current.CodeInformation, $"Ожидается константа типа Число, Строка, Дата или Булево.");
+                    throw new CompilerException(_iterator.Current.CodeInformation, $"Ожидается константа типа Число, Строка, Дата или Булево.");
                 var.Name = param_name.Content;
             }
             else
@@ -710,11 +726,11 @@ namespace ScriptEngine.EngineBase.Compiler
 
                 // Проверка где обьявили.
                 if (_scope.Type != ScopeTypeEnum.MODULE)
-                    throw new ExceptionBase(_iterator.Current.CodeInformation, "Процедуры и функциии могут распологаться только в теле модуля.");
+                    throw new CompilerException(_iterator.Current.CodeInformation, "Процедуры и функциии могут распологаться только в теле модуля.");
 
                 // Проверка порядка расположения вызовов и обьявлений в модуле.
                 if (_module_entry_point != -1)
-                    throw new ExceptionBase(_iterator.Current.CodeInformation, "Определения процедур и функций должны размещаться перед операторами тела модуля.");
+                    throw new CompilerException(_iterator.Current.CodeInformation, "Определения процедур и функций должны размещаться перед операторами тела модуля.");
 
                 _function_entry_point = -1;
 
@@ -729,7 +745,8 @@ namespace ScriptEngine.EngineBase.Compiler
                 {
                     Type = type.SubType == TokenSubTypeEnum.I_PROCEDURE ? ScopeTypeEnum.PROCEDURE : ScopeTypeEnum.FUNCTION,
                     Module = _current_module,
-                    Name = function_name.Content
+                    Name = function_name.Content,
+                    StackIndex = 2
                 };
 
                 // Блок обработки параметров.
@@ -745,7 +762,7 @@ namespace ScriptEngine.EngineBase.Compiler
 
                 // Проверка дубляжа.
                 if (_programm.GlobalFunctions.Get(function_name.Content) != null || _current_module.Functions.Get(function_name.Content) != null)
-                    throw new ExceptionBase(function_name.CodeInformation, $"Процедура или функция с указанным именем уже определена ({function_name.Content})");
+                    throw new CompilerException(function_name.CodeInformation, $"Процедура или функция с указанным именем уже определена ({function_name.Content})");
 
                 // Если есть оператор Экспорт. Тогда в зависимости от типа модуля и его параметров, добовляем функцию в глобальный модуль или делаем ее "публичной", доступной для обращения через обьект этого модуля.
                 if (_iterator.CheckToken(TokenTypeEnum.IDENTIFIER, TokenSubTypeEnum.I_EXPORT))
@@ -811,11 +828,11 @@ namespace ScriptEngine.EngineBase.Compiler
                 work_function = _programm.GlobalFunctions.Get(function.Name);
 
             if (work_function == null)
-                throw new ExceptionBase(function.CodeInformation, $"Процедура или функция с именем [{function.Name}] не определена.");
+                throw new CompilerException(function.CodeInformation, $"Процедура или функция с именем [{function.Name}] не определена.");
 
             // Проверка типа использования. Если используется процедура как функция то ошибка.
             if (work_function.Type == FunctionTypeEnum.PROCEDURE && work_function.Type != function.Type)
-                throw new ExceptionBase(function.CodeInformation, $"Обращение к процедуре [{function.Name}] как к функции.");
+                throw new CompilerException(function.CodeInformation, $"Обращение к процедуре [{function.Name}] как к функции.");
 
             // Патч вызова функции. Указываю правильный модуль.
             if (work_function.Scope.Module != function.Scope.Module)
@@ -830,7 +847,7 @@ namespace ScriptEngine.EngineBase.Compiler
 
             // Блок проверки параметров.
             if (function.Param.Count > work_function.Param.Count)
-                throw new ExceptionBase(work_function.CodeInformation, $"Много фактических параметров [{work_function.Name}].");
+                throw new CompilerException(work_function.CodeInformation, $"Много фактических параметров [{work_function.Name}].");
 
             int i, param_count;
             param_count = i = function.Param.Count;
@@ -843,7 +860,7 @@ namespace ScriptEngine.EngineBase.Compiler
             }
 
             if (param_count < work_function.Param.Count)
-                throw new ExceptionBase(work_function.CodeInformation, $"Недостаточно фактических параметров [{work_function.Name}].");
+                throw new CompilerException(work_function.CodeInformation, $"Недостаточно фактических параметров [{work_function.Name}].");
 
         }
 
@@ -1056,7 +1073,7 @@ namespace ScriptEngine.EngineBase.Compiler
             if (_iterator.CheckToken(TokenTypeEnum.IDENTIFIER, TokenSubTypeEnum.I_CONTINUE) || _iterator.CheckToken(TokenTypeEnum.IDENTIFIER, TokenSubTypeEnum.I_BREAK))
             {
                 if (_loop.Count == 0)
-                    throw new ExceptionBase(_iterator.Current.CodeInformation, "Оператор Продолжить (Continue) и Прервать (Break) может употребляться только внутри цикла.");
+                    throw new CompilerException(_iterator.Current.CodeInformation, "Оператор Продолжить (Continue) и Прервать (Break) может употребляться только внутри цикла.");
 
                 // Продолжить (Continue), делаем номер строки отрицательным, для того чтобы потом различить Продолжить и Прервать.
                 if (token.SubType == TokenSubTypeEnum.I_CONTINUE)
@@ -1091,19 +1108,19 @@ namespace ScriptEngine.EngineBase.Compiler
                 SetModuleEntryPoint();
 
                 if (_iterator.CheckToken(TokenTypeEnum.IDENTIFIER, TokenSubTypeEnum.I_TO) || _iterator.CheckToken(TokenTypeEnum.IDENTIFIER, TokenSubTypeEnum.I_LOOP))
-                    throw new ExceptionBase(_iterator.Current.CodeInformation, "Ожидается выражение.");
+                    throw new CompilerException(_iterator.Current.CodeInformation, "Ожидается выражение.");
 
                 IToken token;
                 token = _iterator.Current;
                 IVariable var = Parse(token);
 
                 if (var == null)
-                    throw new ExceptionBase(token.CodeInformation, "Ожидается имя переменной.");
+                    throw new CompilerException(token.CodeInformation, "Ожидается имя переменной.");
 
                 _iterator.ExpectToken(TokenTypeEnum.IDENTIFIER, TokenSubTypeEnum.I_TO);
 
                 if (_iterator.CheckToken(TokenTypeEnum.IDENTIFIER, TokenSubTypeEnum.I_LOOP))
-                    throw new ExceptionBase(_iterator.Current.CodeInformation, "Ожидается выражение.");
+                    throw new CompilerException(_iterator.Current.CodeInformation, "Ожидается выражение.");
 
                 expression = ParseExpression((int)Priority.TOP);
 
@@ -1188,7 +1205,7 @@ namespace ScriptEngine.EngineBase.Compiler
                 SetModuleEntryPoint();
 
                 if (_iterator.CheckToken(TokenTypeEnum.IDENTIFIER, TokenSubTypeEnum.I_LOOP))
-                    throw new ExceptionBase(_iterator.Current.CodeInformation, "Ожидается выражение.");
+                    throw new CompilerException(_iterator.Current.CodeInformation, "Ожидается выражение.");
 
                 // Сохранить начало выполнения условия.
                 continue_line = _current_module.ProgrammLine;
@@ -1265,12 +1282,12 @@ namespace ScriptEngine.EngineBase.Compiler
                 do
                 {
                     if (_iterator.CheckToken(TokenTypeEnum.IDENTIFIER, TokenSubTypeEnum.I_THEN))
-                        throw new ExceptionBase(_iterator.Current.CodeInformation, "Ожидается выражение.");
+                        throw new CompilerException(_iterator.Current.CodeInformation, "Ожидается выражение.");
 
                     expression = ParseExpression((int)Priority.TOP);
 
                     if (expression == null)
-                        throw new ExceptionBase(_iterator.Current.CodeInformation, "Ожидается выражение.");
+                        throw new CompilerException(_iterator.Current.CodeInformation, "Ожидается выражение.");
 
                     // Установка перехода для предыдущего условия.
                     if (line != int.MinValue)
@@ -1351,9 +1368,9 @@ namespace ScriptEngine.EngineBase.Compiler
                 _iterator.ExpectToken(TokenTypeEnum.PUNCTUATION, TokenSubTypeEnum.P_PARENTHESESOPEN);
 
                 if (_iterator.CheckToken(TokenTypeEnum.PUNCTUATION, TokenSubTypeEnum.P_PARENTHESESCLOSE))
-                    throw new ExceptionBase(_iterator.Current.CodeInformation, "Ожидается выражение.");
+                    throw new CompilerException(_iterator.Current.CodeInformation, "Ожидается выражение.");
                 if (_iterator.CheckToken(TokenTypeEnum.PUNCTUATION, TokenSubTypeEnum.P_COMMA))
-                    throw new ExceptionBase(_iterator.Current.CodeInformation, "Ожидается выражение.");
+                    throw new CompilerException(_iterator.Current.CodeInformation, "Ожидается выражение.");
 
                 result = _current_module.Variables.Add("", false, _scope);
 
@@ -1365,7 +1382,7 @@ namespace ScriptEngine.EngineBase.Compiler
                 // Результат для true.
                 _iterator.ExpectToken(TokenTypeEnum.PUNCTUATION, TokenSubTypeEnum.P_COMMA);
                 if (_iterator.CheckToken(TokenTypeEnum.PUNCTUATION, TokenSubTypeEnum.P_COMMA))
-                    throw new ExceptionBase(_iterator.Current.CodeInformation, "Ожидается выражение.");
+                    throw new CompilerException(_iterator.Current.CodeInformation, "Ожидается выражение.");
 
                 true_result = ParseExpression((int)Priority.TOP);
                 EmitCode(OP_CODES.OP_STORE, result, true_result);
@@ -1381,7 +1398,7 @@ namespace ScriptEngine.EngineBase.Compiler
                 // Результат для false.
                 _iterator.ExpectToken(TokenTypeEnum.PUNCTUATION, TokenSubTypeEnum.P_COMMA);
                 if (_iterator.CheckToken(TokenTypeEnum.PUNCTUATION, TokenSubTypeEnum.P_COMMA))
-                    throw new ExceptionBase(_iterator.Current.CodeInformation, "Ожидается выражение.");
+                    throw new CompilerException(_iterator.Current.CodeInformation, "Ожидается выражение.");
 
                 false_result = ParseExpression((int)Priority.TOP);
 
@@ -1442,7 +1459,7 @@ namespace ScriptEngine.EngineBase.Compiler
                 _iterator.MoveNext();
 
                 if (_goto_labels.ContainsKey(token.Content + "-" + _scope.Name))
-                    throw new ExceptionBase(_iterator.Current.CodeInformation, $"Метка с указанным именем уже определена [{token.Content}]");
+                    throw new CompilerException(_iterator.Current.CodeInformation, $"Метка с указанным именем уже определена [{token.Content}]");
 
                 _goto_labels.Add(token.Content + "-" + _scope.Name, _current_module.ProgrammLine);
                 _iterator.IsTokenType(TokenTypeEnum.PUNCTUATION, TokenSubTypeEnum.P_COLON);
@@ -1464,7 +1481,7 @@ namespace ScriptEngine.EngineBase.Compiler
             foreach ((string,int) value in _goto_jmp)
             {
                 if(!_goto_labels.TryGetValue(value.Item1,out line))
-                    throw new ExceptionBase(_iterator.Current.CodeInformation, $"Метка не определена в процедуре, функции или теле модуля [{value.Item1.Substring(0, value.Item1.IndexOf('-'))}]");
+                    throw new CompilerException(_iterator.Current.CodeInformation, $"Метка не определена в процедуре, функции или теле модуля [{value.Item1.Substring(0, value.Item1.IndexOf('-'))}]");
                 else
                 {
                     jmp_statement = _current_module.StatementGet(value.Item2);
@@ -1501,7 +1518,7 @@ namespace ScriptEngine.EngineBase.Compiler
 
                 // Ошибка "короткий" Если не в выражении.
                 if (_iterator.CheckToken(TokenTypeEnum.PUNCTUATION, TokenSubTypeEnum.P_QUESTION))
-                    throw new ExceptionBase(_iterator.Current.CodeInformation, "Встроенная функция может быть использована только в выражении.");
+                    throw new CompilerException(_iterator.Current.CodeInformation, "Встроенная функция может быть использована только в выражении.");
 
                 // Парсинг меток оператора Перейти(Goto ).
                 if (ParseGotoLabel())
@@ -1592,7 +1609,7 @@ namespace ScriptEngine.EngineBase.Compiler
                 ProcessGoto();
 
                 if (_iterator.Current.Type != TokenTypeEnum.PUNCTUATION && _iterator.Current.SubType != TokenSubTypeEnum.EOF)
-                    throw new ExceptionBase("Есть не разобранный участок кода.");
+                    throw new CompilerException("Есть не разобранный участок кода.");
             }
 
             ProcessDifferedVars();

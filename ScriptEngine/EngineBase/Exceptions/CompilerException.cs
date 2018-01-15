@@ -8,28 +8,23 @@ namespace ScriptEngine.EngineBase.Exceptions
     /// <summary>
     /// Базовый класс исключений.
     /// </summary>
-    public class ExceptionBase : ApplicationException
+    public class CompilerException : ApplicationException
     {
 
         private readonly CodeInformation _code_information;
 
-        internal ExceptionBase()
+        internal CompilerException()
         {
             _code_information = new CodeInformation();
             _code_information.LineNumber = -1;
         }
 
-        internal ExceptionBase(string message) : this(new CodeInformation(), message, null)
+        internal CompilerException(string message) : base(message)
         {
 
         }
 
-        internal ExceptionBase(CodeInformation codeInfo, string message) : this(codeInfo, message, null)
-        {
-
-        }
-
-        internal ExceptionBase(CodeInformation codeInfo, string message, Exception innerException) : base(message, innerException)
+        internal CompilerException(CodeInformation codeInfo, string message) : base (message)
         {
             _code_information = codeInfo;
         }
@@ -60,7 +55,10 @@ namespace ScriptEngine.EngineBase.Exceptions
         {
             get
             {
-                return $"Модуль [{_code_information.ModuleName}] | Ошибка в строке {_code_information.LineNumber}:{_code_information.ColumnNumber} | " + base.Message;
+                if(_code_information != null)
+                    return $"Модуль [{_code_information.ModuleName}] | Ошибка в строке {_code_information.LineNumber}:{_code_information.ColumnNumber} | " + base.Message;
+                else
+                    return base.Message;
             }
         }
 

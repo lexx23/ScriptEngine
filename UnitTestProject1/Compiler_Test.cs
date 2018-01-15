@@ -24,7 +24,7 @@ namespace UnitTests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ExceptionBase))]
+        [ExpectedException(typeof(CompilerException))]
         public void Compile_GotoError()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
@@ -34,7 +34,7 @@ namespace UnitTests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ExceptionBase))]
+        [ExpectedException(typeof(CompilerException))]
         public void Compile_GotoError2()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
@@ -44,7 +44,7 @@ namespace UnitTests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ExceptionBase))]
+        [ExpectedException(typeof(CompilerException))]
         public void Compile_GotoError3()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
@@ -55,7 +55,7 @@ namespace UnitTests
 
 
         [TestMethod]
-        [ExpectedException(typeof(ExceptionBase))]
+        [ExpectedException(typeof(CompilerException))]
         public void Compile_GotoError4()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
@@ -78,7 +78,7 @@ namespace UnitTests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ExceptionBase))]
+        [ExpectedException(typeof(CompilerException))]
         public void Compile_ForError()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
@@ -88,7 +88,7 @@ namespace UnitTests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ExceptionBase))]
+        [ExpectedException(typeof(CompilerException))]
         public void Compile_ForError2()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
@@ -98,7 +98,7 @@ namespace UnitTests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ExceptionBase))]
+        [ExpectedException(typeof(CompilerException))]
         public void Compile_ForError3()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
@@ -108,7 +108,7 @@ namespace UnitTests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ExceptionBase))]
+        [ExpectedException(typeof(CompilerException))]
         public void Compile_ForError4()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
@@ -131,7 +131,7 @@ namespace UnitTests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ExceptionBase))]
+        [ExpectedException(typeof(CompilerException))]
         public void Compile_WhileError()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
@@ -141,7 +141,7 @@ namespace UnitTests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ExceptionBase))]
+        [ExpectedException(typeof(CompilerException))]
         public void Compile_WhileError2()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
@@ -151,7 +151,7 @@ namespace UnitTests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ExceptionBase))]
+        [ExpectedException(typeof(CompilerException))]
         public void Compile_LoopWordsError()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
@@ -161,7 +161,7 @@ namespace UnitTests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ExceptionBase))]
+        [ExpectedException(typeof(CompilerException))]
         public void Compile_LoopWordsError2()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
@@ -186,7 +186,7 @@ namespace UnitTests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ExceptionBase))]
+        [ExpectedException(typeof(CompilerException))]
         public void Compile_IfShortError()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
@@ -196,7 +196,7 @@ namespace UnitTests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ExceptionBase))]
+        [ExpectedException(typeof(CompilerException))]
         public void Compile_IfShortError2()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
@@ -206,7 +206,7 @@ namespace UnitTests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ExceptionBase))]
+        [ExpectedException(typeof(CompilerException))]
         public void Compile_IfShortError3()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
@@ -216,7 +216,7 @@ namespace UnitTests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ExceptionBase))]
+        [ExpectedException(typeof(CompilerException))]
         public void Compile_IfShortError4()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
@@ -236,7 +236,7 @@ namespace UnitTests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ExceptionBase))]
+        [ExpectedException(typeof(CompilerException))]
         public void Compile_IfError()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
@@ -246,7 +246,7 @@ namespace UnitTests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ExceptionBase))]
+        [ExpectedException(typeof(CompilerException))]
         public void Compile_IfError2()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
@@ -256,7 +256,7 @@ namespace UnitTests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ExceptionBase))]
+        [ExpectedException(typeof(CompilerException))]
         public void Compile_IfError3()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
@@ -318,7 +318,7 @@ namespace UnitTests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ExceptionBase))]
+        [ExpectedException(typeof(CompilerException))]
         public void Compile_Function_EmptyReturn()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
@@ -349,7 +349,7 @@ namespace UnitTests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ExceptionBase))]
+        [ExpectedException(typeof(CompilerException))]
         public void Compile_Procedure_ReturnError()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
@@ -359,7 +359,7 @@ namespace UnitTests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ExceptionBase))]
+        [ExpectedException(typeof(CompilerException))]
         public void Compile_Procedure_AsFunctionError()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
@@ -369,7 +369,7 @@ namespace UnitTests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ExceptionBase))]
+        [ExpectedException(typeof(CompilerException))]
         public void Compile_Procedure_CallNotFoundError()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
@@ -380,7 +380,7 @@ namespace UnitTests
         
 
         [TestMethod]
-        [ExpectedException(typeof(ExceptionBase))]
+        [ExpectedException(typeof(CompilerException))]
         public void Compile_Procedure_AsFunctionError2()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
@@ -390,7 +390,7 @@ namespace UnitTests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ExceptionBase))]
+        [ExpectedException(typeof(CompilerException))]
         public void Compile_Procedure_AsFunctionError3()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
@@ -400,7 +400,7 @@ namespace UnitTests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ExceptionBase))]
+        [ExpectedException(typeof(CompilerException))]
         public void Compile_Procedure_AsFunctionError4()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
@@ -410,7 +410,7 @@ namespace UnitTests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ExceptionBase))]
+        [ExpectedException(typeof(CompilerException))]
         public void Compile_Procedure_AsFunctionError5()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
@@ -420,7 +420,7 @@ namespace UnitTests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ExceptionBase))]
+        [ExpectedException(typeof(CompilerException))]
         public void Compile_Procedure_ParamCountError()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
@@ -431,7 +431,7 @@ namespace UnitTests
 
 
         [TestMethod]
-        [ExpectedException(typeof(ExceptionBase))]
+        [ExpectedException(typeof(CompilerException))]
         public void Compile_Procedure_ParamCountError2()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
@@ -452,7 +452,7 @@ namespace UnitTests
 
 
         [TestMethod]
-        [ExpectedException(typeof(ExceptionBase))]
+        [ExpectedException(typeof(CompilerException))]
         public void Compile_Procedure_VarOrderError()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
@@ -463,7 +463,7 @@ namespace UnitTests
 
 
         [TestMethod]
-        [ExpectedException(typeof(ExceptionBase))]
+        [ExpectedException(typeof(CompilerException))]
         public void Compile_Procedure_RepeatError()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
@@ -487,7 +487,7 @@ namespace UnitTests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ExceptionBase))]
+        [ExpectedException(typeof(CompilerException))]
         public void Compile_Var_RepeatError()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
@@ -498,7 +498,7 @@ namespace UnitTests
 
 
         [TestMethod]
-        [ExpectedException(typeof(ExceptionBase))]
+        [ExpectedException(typeof(CompilerException))]
         public void Compile_Var_OrderError()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
@@ -509,7 +509,7 @@ namespace UnitTests
 
 
         [TestMethod]
-        [ExpectedException(typeof(ExceptionBase))]
+        [ExpectedException(typeof(CompilerException))]
         public void Compile_Var_OrderError2()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();

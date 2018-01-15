@@ -27,7 +27,7 @@ namespace ScriptEngine.EngineBase.Parser.Precompiler.Directives
             {
 
                 if (_stack.Count == 0 || _stack.Peek().Token.SubType != TokenSubTypeEnum.I_REGION)
-                    throw new ExceptionBase(_iterator.Current.CodeInformation, $"Ожидается оператор препроцессора #Область(#Region), а найдена #{_stack.Peek().Token.Content}.");
+                    throw new CompilerException(_iterator.Current.CodeInformation, $"Ожидается оператор препроцессора #Область(#Region), а найдена #{_stack.Peek().Token.Content}.");
 
                 _stack.Pop();
                 return true;

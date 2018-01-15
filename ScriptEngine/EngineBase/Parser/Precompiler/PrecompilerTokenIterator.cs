@@ -30,7 +30,7 @@ namespace ScriptEngine.EngineBase.Parser.Precompiler
             }
 
             if (_token == null)
-                throw new ExceptionBase(_iterator.Current.CodeInformation, "Не удалось получить токен.");
+                throw new CompilerException(_iterator.Current.CodeInformation, "Не удалось получить токен.");
 
             if (_precompiler.IsDirective())
                 throw new Exception("Есть не обработанная директива.");

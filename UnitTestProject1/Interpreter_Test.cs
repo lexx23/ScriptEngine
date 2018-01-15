@@ -4,6 +4,7 @@ using ScriptEngine.EngineBase.Compiler.Programm;
 using ScriptEngine.EngineBase.Compiler.Programm.Parts;
 using ScriptEngine.EngineBase.Exceptions;
 using ScriptEngine.EngineBase.Interpreter;
+using ScriptEngine.EngineBase.Interpreter.Context;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -333,7 +334,7 @@ namespace UnitTests
 
 
         [TestMethod]
-        [ExpectedException(typeof(ExceptionBase))]
+        [ExpectedException(typeof(CompilerException))]
         public void Interpreter_Objects_ProcedureAsFunction_Error()
         {
             IDictionary<ScriptModule, string> modules = new Dictionary<ScriptModule, string>();
@@ -348,7 +349,7 @@ namespace UnitTests
 
 
         [TestMethod]
-        [ExpectedException(typeof(ExceptionBase))]
+        [ExpectedException(typeof(CompilerException))]
         public void Interpreter_Objects_NotPublicFunctionCall_Error()
         {
             IDictionary<ScriptModule, string> modules = new Dictionary<ScriptModule, string>();
@@ -363,7 +364,7 @@ namespace UnitTests
 
 
         [TestMethod]
-        [ExpectedException(typeof(ExceptionBase))]
+        [ExpectedException(typeof(RuntimeException))]
         public void Interpreter_Objects_NotPublicMethodCall_Error()
         {
             IDictionary<ScriptModule, string> modules = new Dictionary<ScriptModule, string>();
@@ -503,6 +504,7 @@ namespace UnitTests
 
             // Тест2
             interpreter.Debugger.StepInto();
+            IList<FunctionHistoryData> stack_list = interpreter.Debugger.GetStackCall();
             Assert.AreEqual(100, interpreter.Debugger.RegisterGetValue("парам").Integer);
             Assert.AreEqual(5, interpreter.Debugger.RegisterGetValue("парам1").Integer);
             interpreter.Debugger.StepOver();

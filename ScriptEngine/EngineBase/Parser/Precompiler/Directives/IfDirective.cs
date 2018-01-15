@@ -102,13 +102,13 @@ namespace ScriptEngine.EngineBase.Parser.Precompiler.Directives
             if (_iterator.CheckToken(TokenTypeEnum.IDENTIFIER, TokenSubTypeEnum.I_ENDIF))
             {
                 if (_stack.Count == 0)
-                    throw new ExceptionBase(_iterator.Current.CodeInformation, "Пропущен оператор препроцессора #Если(#If).");
+                    throw new CompilerException(_iterator.Current.CodeInformation, "Пропущен оператор препроцессора #Если(#If).");
 
                 PrecompilerStackStruct directive;
                 directive = _stack.Peek();
 
                 if (directive.Token.SubType != TokenSubTypeEnum.I_IF && directive.Token.SubType != TokenSubTypeEnum.I_ELSE && directive.Token.SubType != TokenSubTypeEnum.I_ELSEIF)
-                    throw new ExceptionBase(_iterator.Current.CodeInformation, "Пропущен оператор препроцессора #Если(#If).");
+                    throw new CompilerException(_iterator.Current.CodeInformation, "Пропущен оператор препроцессора #Если(#If).");
 
                 _stack.Pop();
 
@@ -129,7 +129,7 @@ namespace ScriptEngine.EngineBase.Parser.Precompiler.Directives
             {
                 PrecompilerStackStruct directive = _stack.Peek();
                 if (_stack.Count == 0 || (directive.Token.SubType != TokenSubTypeEnum.I_IF && directive.Token.SubType != TokenSubTypeEnum.I_ELSEIF))
-                    throw new ExceptionBase(_iterator.Current.CodeInformation, "Пропущен оператор препроцессора #Если(#If).");
+                    throw new CompilerException(_iterator.Current.CodeInformation, "Пропущен оператор препроцессора #Если(#If).");
 
 
                 _stack.Pop();
@@ -154,7 +154,7 @@ namespace ScriptEngine.EngineBase.Parser.Precompiler.Directives
             if (_iterator.CheckToken(TokenTypeEnum.IDENTIFIER, TokenSubTypeEnum.I_ELSEIF))
             {
                 if (_stack.Count == 0 || (_stack.Peek().Token.SubType != TokenSubTypeEnum.I_IF && _stack.Peek().Token.SubType != TokenSubTypeEnum.I_ELSEIF))
-                    throw new ExceptionBase(_iterator.Current.CodeInformation, "Пропущен оператор препроцессора #Если(#If).");
+                    throw new CompilerException(_iterator.Current.CodeInformation, "Пропущен оператор препроцессора #Если(#If).");
 
 
                 PrecompilerStackStruct directive = _stack.Pop();

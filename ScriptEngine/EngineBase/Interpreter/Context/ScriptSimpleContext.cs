@@ -15,21 +15,30 @@ namespace ScriptEngine.EngineBase.Interpreter.Context
         public string Name { get; set; }
 
 
-        public ScriptSimpleContext(string name,int size)
+        public ScriptSimpleContext(string name, int size)
         {
             Name = name;
             _vars = new List<Value>();
 
             while (size > 0)
             {
-                _vars.Add(null);
+                _vars.Add(new Value(ValueTypeEnum.NULL, ""));
                 size--;
             }
         }
 
-        public void ClearValue(IVariable variable)
+        /// <summary>
+        /// Очистить значение.
+        /// </summary>
+        /// <param name="index"></param>
+        public void ClearValue(int index)
         {
-             _vars[variable.StackNumber] = new Value(ValueTypeEnum.NULL, "");
+            _vars[index] = new Value(ValueTypeEnum.NULL, "");
+        }
+
+        public void CopyValue(int index, Value value)
+        {
+            _vars[index] = value;
         }
 
 
@@ -38,12 +47,9 @@ namespace ScriptEngine.EngineBase.Interpreter.Context
         /// </summary>
         /// <param name="variable"></param>
         /// <param name="value"></param>
-        public void SetValue(IVariable variable, Value value)
+        public void SetValue(int index, Value value)
         {
-            if(_vars[variable.StackNumber] != null)
-                _vars[variable.StackNumber].SetValue(value);
-            else
-                _vars[variable.StackNumber] = value;
+            _vars[index].SetValue(value);
         }
 
         /// <summary>
@@ -51,9 +57,9 @@ namespace ScriptEngine.EngineBase.Interpreter.Context
         /// </summary>
         /// <param name="variable"></param>
         /// <returns></returns>
-        public Value GetValue(IVariable variable)
+        public Value GetValue(int index)
         {
-            return _vars[variable.StackNumber];
+            return _vars[index];
         }
 
     }

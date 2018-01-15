@@ -47,7 +47,7 @@ namespace UnitTests
 
 
         [TestMethod]
-        [ExpectedException(typeof(ExceptionBase))]
+        [ExpectedException(typeof(CompilerException))]
         public void String_Not_Full()
         {
             LoadFile("not_full.scr");

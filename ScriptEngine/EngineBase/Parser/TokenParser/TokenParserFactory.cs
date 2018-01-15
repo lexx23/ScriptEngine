@@ -57,7 +57,7 @@ namespace ScriptEngine.EngineBase.Parser.TokenParser
             }
 
             if (iterator.Current != '\0')
-                throw new ExceptionBase(iterator.CodeInformation, $"Не удалось распознать символ: {iterator.Current}");
+                throw new CompilerException(iterator.CodeInformation, $"Не удалось распознать символ: {iterator.Current}");
             else
             {
                 token = new TokenClass()

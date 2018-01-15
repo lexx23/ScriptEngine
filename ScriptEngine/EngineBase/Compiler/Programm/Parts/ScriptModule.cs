@@ -40,7 +40,7 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts
             if (type == ModuleTypeEnum.STARTUP)
                 AsGlobal = true;
 
-            _module_scope = new ScriptScope() { Type = ScopeTypeEnum.MODULE, Name = name, Module = this };
+            _module_scope = new ScriptScope() { Type = ScopeTypeEnum.MODULE, Name = name, Module = this, StackIndex = 1 };
 
             _object_functions_call = new List<IFunction>();
 
@@ -69,7 +69,10 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts
         /// <returns></returns>
         public ScriptStatement StatementAdd()
         {
-            ScriptStatement statement = new ScriptStatement();
+            ScriptStatement statement = new ScriptStatement
+            {
+                Line = -1
+            };
             _code.Add(statement);
             return statement;
         }
