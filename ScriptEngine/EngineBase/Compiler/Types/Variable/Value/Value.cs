@@ -12,8 +12,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
         public ValueTypeEnum Type { get; set; }
 
         public string Content { get; set; }
-        public int Integer { get; set; }
-        public float Float { get; set; }
+        public decimal Number { get; set; }
         public bool Boolean { get; set; }
         public DateTime Date { get; set; }
         public ObjectContext Object { get; set; }
@@ -40,16 +39,17 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
             if (left.Type != right.Type)
                 return false;
 
-            switch (CommonType(left, right))
+            switch (right.Type)
             {
                 case ValueTypeEnum.STRING:
                     return left.Content == right.Content;
 
                 case ValueTypeEnum.NUMBER:
-                    return left.ToInt() == right.ToInt();
-
-                case ValueTypeEnum.FLOAT:
-                    return left.ToFloat() == right.ToFloat();
+                    decimal left_result,right_result;
+                    if (!left.ToNumber(out left_result) || !right.ToNumber(out right_result))
+                        return false;
+                    else
+                        return left_result == right_result;
 
                 case ValueTypeEnum.BOOLEAN:
                     return left.ToBoolean() == right.ToBoolean();
@@ -79,25 +79,22 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
         {
             Value result = new Value();
             result.Type = ValueTypeEnum.BOOLEAN;
-            switch (CommonType(left, right))
+            switch (right.Type)
             {
-                case ValueTypeEnum.NUMBER:
-                    result.Boolean = left.ToInt() > right.ToInt();
-                    result.Content = result.ToString();
-                    return result;
-
-                case ValueTypeEnum.FLOAT:
-                    result.Boolean = left.ToFloat() > right.ToFloat();
-                    result.Content = result.ToString();
-                    return result;
-
                 case ValueTypeEnum.BOOLEAN:
-                    result.Boolean = left.ToInt() > right.ToInt();
+                case ValueTypeEnum.NUMBER:
+                    decimal left_result, right_result;
+                    if (!left.ToNumber(out left_result) || !right.ToNumber(out right_result))
+                        result.Boolean = false;
+                    else
+                        result.Boolean = left_result > right_result;
                     result.Content = result.ToString();
                     return result;
             }
 
-            throw new CompilerException($"Невозможно выполнить сравнение (больше) {left.Content} и {right.Content}.");
+            result.Boolean = false;
+            result.Content = result.ToString();
+            return result;
         }
 
         /// <summary>
@@ -110,25 +107,24 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
         {
             Value result = new Value();
             result.Type = ValueTypeEnum.BOOLEAN;
-            switch (CommonType(left, right))
+            switch (right.Type)
             {
-                case ValueTypeEnum.NUMBER:
-                    result.Boolean = left.ToInt() >= right.ToInt();
-                    result.Content = result.ToString();
-                    return result;
-
-                case ValueTypeEnum.FLOAT:
-                    result.Boolean = left.ToFloat() >= right.ToFloat();
-                    result.Content = result.ToString();
-                    return result;
-
                 case ValueTypeEnum.BOOLEAN:
-                    result.Boolean = left.ToInt() >= right.ToInt();
+                case ValueTypeEnum.NUMBER:
+                    decimal left_result, right_result;
+                    if (!left.ToNumber(out left_result) || !right.ToNumber(out right_result))
+                        result.Boolean = false;
+                    else
+                        result.Boolean = left_result >= right_result;
                     result.Content = result.ToString();
                     return result;
+
+
             }
 
-            throw new CompilerException($"Невозможно выполнить сравнение (больше либо равно) {left.Content} и {right.Content}.");
+            result.Boolean = false;
+            result.Content = result.ToString();
+            return result;
         }
 
         /// <summary>
@@ -141,25 +137,23 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
         {
             Value result = new Value();
             result.Type = ValueTypeEnum.BOOLEAN;
-            switch (CommonType(left, right))
+            switch (right.Type)
             {
-                case ValueTypeEnum.NUMBER:
-                    result.Boolean = left.ToInt() < right.ToInt();
-                    result.Content = result.ToString();
-                    return result;
-
-                case ValueTypeEnum.FLOAT:
-                    result.Boolean = left.ToFloat() < right.ToFloat();
-                    result.Content = result.ToString();
-                    return result;
-
                 case ValueTypeEnum.BOOLEAN:
-                    result.Boolean = left.ToInt() < right.ToInt();
+                case ValueTypeEnum.NUMBER:
+                    decimal left_result, right_result;
+                    if (!left.ToNumber(out left_result) || !right.ToNumber(out right_result))
+                        result.Boolean = false;
+                    else
+                        result.Boolean = left_result < right_result;
                     result.Content = result.ToString();
                     return result;
+
             }
 
-            throw new CompilerException($"Невозможно выполнить сравнение (меньше) {left.Content} и {right.Content}.");
+            result.Boolean = false;
+            result.Content = result.ToString();
+            return result;
         }
 
         /// <summary>
@@ -172,25 +166,23 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
         {
             Value result = new Value();
             result.Type = ValueTypeEnum.BOOLEAN;
-            switch (CommonType(left, right))
+            switch (right.Type)
             {
-                case ValueTypeEnum.NUMBER:
-                    result.Boolean = left.ToInt() <= right.ToInt();
-                    result.Content = result.ToString();
-                    return result;
-
-                case ValueTypeEnum.FLOAT:
-                    result.Boolean = left.ToFloat() <= right.ToFloat();
-                    result.Content = result.ToString();
-                    return result;
-
                 case ValueTypeEnum.BOOLEAN:
-                    result.Boolean = left.ToInt() <= right.ToInt();
+                case ValueTypeEnum.NUMBER:
+                    decimal left_result, right_result;
+                    if (!left.ToNumber(out left_result) || !right.ToNumber(out right_result))
+                        result.Boolean = false;
+                    else
+                        result.Boolean = left_result <= right_result;
                     result.Content = result.ToString();
                     return result;
+
             }
 
-            throw new CompilerException($"Невозможно выполнить сравнение (меньше либо равно) {left.Content} и {right.Content}.");
+            result.Boolean = false;
+            result.Content = result.ToString();
+            return result;
         }
         #endregion
 
@@ -205,7 +197,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
         {
             Value result = new Value();
 
-            switch (CommonType(left, right))
+            switch (right.Type)
             {
                 case ValueTypeEnum.STRING:
                     result.Type = ValueTypeEnum.STRING;
@@ -213,19 +205,17 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
                     return result;
 
                 case ValueTypeEnum.NUMBER:
+                    decimal left_result, right_result;
                     result.Type = ValueTypeEnum.NUMBER;
-                    result.Integer = left.ToInt() + right.ToInt();
-                    result.Content = result.ToString();
-                    return result;
-
-                case ValueTypeEnum.FLOAT:
-                    result.Type = ValueTypeEnum.FLOAT;
-                    result.Float = left.ToFloat() + right.ToFloat();
+                    if (!left.ToNumber(out left_result) || !right.ToNumber(out right_result))
+                        return null;
+                    else
+                        result.Number = left_result + right_result;
                     result.Content = result.ToString();
                     return result;
             }
 
-            throw new CompilerException($"Невозможно выполнить сложение {left.Content} и {right.Content}.");
+            return null;
         }
 
         /// <summary>
@@ -237,22 +227,21 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
         public static Value operator -(Value left, Value right)
         {
             Value result = new Value();
-            switch (CommonType(left, right))
+
+            switch (right.Type)
             {
                 case ValueTypeEnum.NUMBER:
+                    decimal left_result, right_result;
                     result.Type = ValueTypeEnum.NUMBER;
-                    result.Integer = left.ToInt() - right.ToInt();
-                    result.Content = result.ToString();
-                    return result;
-
-                case ValueTypeEnum.FLOAT:
-                    result.Type = ValueTypeEnum.FLOAT;
-                    result.Float = left.ToFloat() - right.ToFloat();
+                    if (!left.ToNumber(out left_result) || !right.ToNumber(out right_result))
+                        return null;
+                    else
+                        result.Number = left_result - right_result;
                     result.Content = result.ToString();
                     return result;
             }
 
-            throw new CompilerException($"Невозможно вычислить разницу {left.Content} и {right.Content}.");
+            return null;
         }
 
         /// <summary>
@@ -264,22 +253,22 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
         public static Value operator *(Value left, Value right)
         {
             Value result = new Value();
-            switch (CommonType(left, right))
+
+            switch (right.Type)
             {
                 case ValueTypeEnum.NUMBER:
+                    decimal left_result, right_result;
                     result.Type = ValueTypeEnum.NUMBER;
-                    result.Integer = left.ToInt() * right.ToInt();
-                    result.Content = result.ToString();
-                    return result;
-
-                case ValueTypeEnum.FLOAT:
-                    result.Type = ValueTypeEnum.FLOAT;
-                    result.Float = left.ToFloat() * right.ToFloat();
+                    if (!left.ToNumber(out left_result) || !right.ToNumber(out right_result))
+                        return null;
+                    else
+                        result.Number = left_result * right_result;
                     result.Content = result.ToString();
                     return result;
             }
 
-            throw new CompilerException($"Невозможно выполнить произведение {left.Content} и {right.Content}.");
+            return null;
+
         }
 
         /// <summary>
@@ -294,20 +283,19 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
 
             Value right_tmp = new Value();
             right_tmp.Type = ValueTypeEnum.NUMBER;
-            switch (CommonType(left, right_tmp))
+            switch (right_tmp.Type)
             {
                 case ValueTypeEnum.NUMBER:
-                    result.Integer = left.ToInt() * right;
-                    result.Content = result.ToString();
-                    return result;
-
-                case ValueTypeEnum.FLOAT:
-                    result.Float = left.ToFloat() * right;
+                    decimal left_result;
+                    if (!left.ToNumber(out left_result))
+                        return null;
+                    else
+                        result.Number = left_result - right;
                     result.Content = result.ToString();
                     return result;
             }
 
-            throw new CompilerException($"Невозможно выполнить произведение {left.Content} и {right.ToString()}.");
+            return null;
         }
 
         /// <summary>
@@ -319,22 +307,24 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
         public static Value operator /(Value left, Value right)
         {
             Value result = new Value();
-            switch (CommonType(left, right))
+            switch (right.Type)
             {
                 case ValueTypeEnum.NUMBER:
+                    decimal left_result, right_result;
                     result.Type = ValueTypeEnum.NUMBER;
-                    result.Integer = left.ToInt() / right.ToInt();
-                    result.Content = result.ToString();
-                    return result;
-
-                case ValueTypeEnum.FLOAT:
-                    result.Type = ValueTypeEnum.FLOAT;
-                    result.Float = left.ToFloat() / right.ToFloat();
-                    result.Content = result.ToString();
-                    return result;
+                    if (!left.ToNumber(out left_result) || !right.ToNumber(out right_result))
+                        return null;
+                    else
+                    {
+                        if (right_result == 0)
+                            return null;
+                        result.Number = left_result / right_result;
+                        result.Content = result.ToString();
+                        return result;
+                    }
             }
 
-            throw new CompilerException($"Невозможно выполнить деление {left.Content} и {right.Content}.");
+            return null;
         }
 
         /// <summary>
@@ -346,46 +336,29 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
         public static Value operator %(Value left, Value right)
         {
             Value result = new Value();
-            switch (CommonType(left, right))
+            decimal left_result, right_result;
+
+            switch (right.Type)
             {
                 case ValueTypeEnum.NUMBER:
-                    result.Type = ValueTypeEnum.FLOAT;
-                    result.Float = left.ToFloat() % right.ToFloat();
-                    result.Content = result.ToString();
-                    return result;
-
-                case ValueTypeEnum.FLOAT:
-                    result.Type = ValueTypeEnum.FLOAT;
-                    result.Float = left.ToFloat() % right.ToFloat();
-                    result.Content = result.ToString();
-                    return result;
+                    result.Type = ValueTypeEnum.NUMBER;
+                    if (!left.ToNumber(out left_result) || !right.ToNumber(out right_result))
+                        return null;
+                    else
+                    {
+                        if (right_result == 0)
+                            return null;
+                        result.Number = left_result % right_result;
+                        result.Content = result.ToString();
+                        return result;
+                    }
             }
 
-            throw new CompilerException($"Невозможно выполнить деление {left.Content} и {right.Content}.");
+            return null;
         }
         #endregion
 
         #region Преобразование значения
-
-        /// <summary>
-        /// Преобразовать значения к общему типу
-        /// </summary>
-        /// <param name="left"></param>
-        /// <param name="right"></param>
-        public static ValueTypeEnum CommonType(Value left, Value right)
-        {
-            if (left.Type == right.Type)
-                return left.Type;
-
-            if (left.Type == ValueTypeEnum.FLOAT)
-                return left.Type;
-
-
-            if (right.Type == ValueTypeEnum.FLOAT)
-                return right.Type;
-
-            return left.Type;
-        }
 
         /// <summary>
         /// Преобразовать в строку, не изменяя тип переменной.
@@ -399,57 +372,55 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
                     return Content;
 
                 case ValueTypeEnum.NUMBER:
-                    return Integer.ToString();
-
-                case ValueTypeEnum.FLOAT:
-                    return Float.ToString("n3");
+                    return Number.ToString("n3");
 
                 case ValueTypeEnum.BOOLEAN:
                     return Boolean.ToString();
 
                 case ValueTypeEnum.NULL:
                     return "null";
+
+                case ValueTypeEnum.OBJECT:
+                    return Object.Module.Name;
+
+                case ValueTypeEnum.DATE:
+                    return Date.ToString("dd.MM.yyyy hh.mm:ss");
+
             }
 
-            return string.Empty;
+            return "";
         }
 
         /// <summary>
-        /// Преобразовать в число с плавающей точкой, не изменяя тип переменной.
+        /// Преобразовать в число , не изменяя тип переменной.
         /// </summary>
         /// <returns></returns>
-        public float ToFloat()
+        public bool ToNumber(out decimal result)
         {
+            result = 0;
             if (Type == ValueTypeEnum.NULL)
-                throw new CompilerException($"Значение с типом Null невозможно преобразовать в число с плавающей точкой.");
+                return false;
 
             switch (Type)
             {
                 case ValueTypeEnum.STRING:
-                    try
-                    {
-                        return float.Parse(Content, System.Globalization.CultureInfo.InvariantCulture);
-                    }
-                    catch
-                    {
-                        throw new CompilerException($"Невозможно преобразовать [{Content}] в число с плавающей точкой.");
-                    }
-
-
+                    if (decimal.TryParse(Content, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out result))
+                        return true;
+                    break;
                 case ValueTypeEnum.NUMBER:
-                    return (float)Integer;
-
-                case ValueTypeEnum.FLOAT:
-                    return Float;
+                    result = Number;
+                    return true;
 
                 case ValueTypeEnum.BOOLEAN:
                     if (Boolean)
-                        return 1.0f;
+                        result = 1;
                     else
-                        return 0f;
+                        result = 0;
+                    return true;
 
             }
-            return 0;
+
+            return false;
         }
 
         /// <summary>
@@ -459,34 +430,23 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
         public int ToInt()
         {
             if (Type == ValueTypeEnum.NULL)
-                throw new CompilerException($"Значение с типом Null невозможно преобразовать в число.");
+                return 0;
 
             switch (Type)
             {
                 case ValueTypeEnum.STRING:
-                    try
-                    {
-                        return int.Parse(Content);
-                    }
-                    catch
-                    {
-                        throw new CompilerException($"Невозможно преобразовать [{Content}] в число.");
-                    }
-
+                    return int.Parse(Content);
 
                 case ValueTypeEnum.NUMBER:
-                    return Integer;
-
-                case ValueTypeEnum.FLOAT:
-                    return (int)Float;
+                    return (int)Number;
 
                 case ValueTypeEnum.BOOLEAN:
                     if (Boolean)
                         return 1;
                     else
                         return 0;
-
             }
+
             return 0;
         }
 
@@ -497,7 +457,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
         public bool ToBoolean()
         {
             if (Type == ValueTypeEnum.NULL)
-                throw new CompilerException($"Значение с типом Null невозможно преобразовать в логическое значение.");
+                return false;
 
             switch (Type)
             {
@@ -506,52 +466,43 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
                         return false;
                     if (Content.ToLower() == "истина" || Content.ToLower() == "true")
                         return true;
-                    throw new CompilerException($"Невозможно преобразовать [{Content}] в логическое значение.");
+                    break;
 
                 case ValueTypeEnum.NUMBER:
-                    return Integer != 0;
-
-                case ValueTypeEnum.FLOAT:
-                    return Float != 0.0;
+                    return Number != 0;
 
                 case ValueTypeEnum.BOOLEAN:
                     return Boolean;
 
             }
+
             return false;
         }
 
-
-
         /// <summary>
-        /// Преобразовать указанный тип, не изменяя тип переменной.
+        /// Преобразовать в дату, не изменяя тип переменной.
         /// </summary>
         /// <returns></returns>
-        public bool ToType(ValueTypeEnum type)
+        public DateTime ToDate()
         {
             if (Type == ValueTypeEnum.NULL)
-                throw new CompilerException($"Значение с типом Null невозможно преобразовать в {type}.");
+                throw new Exception($"Значение с типом Null невозможно преобразовать в логическое значение.");
 
-            switch (type)
+            string[] formats = { "yyyyMMddhhmmss", "yyyyMMdd", "yyyyMMddhhmm" };
+            DateTime result;
+
+            switch (Type)
             {
                 case ValueTypeEnum.STRING:
-                    if (Content.ToLower() == "ложь" || Content.ToLower() == "false")
-                        return false;
-                    if (Content.ToLower() == "истина" || Content.ToLower() == "true")
-                        return true;
-                    throw new CompilerException($"Невозможно преобразовать [{Content}] в логическое значение.");
-
+                    if (DateTime.TryParseExact(Content, formats, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out result))
+                        return result;
+                    break;
+                // проверить возможно такого фунционала нет!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                 case ValueTypeEnum.NUMBER:
-                    return Integer != 0;
-
-                case ValueTypeEnum.FLOAT:
-                    return Float != 0.0;
-
-                case ValueTypeEnum.BOOLEAN:
-                    return Boolean;
-
+                    return DateTime.FromFileTime((long)Number);
             }
-            return false;
+
+            throw new Exception($"Невозможно преобразовать [{Content}] в дату.");
         }
 
         /// <summary>
@@ -572,15 +523,17 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
                     break;
 
                 case ValueTypeEnum.NUMBER:
-                    Integer = ToInt();
-                    break;
-
-                case ValueTypeEnum.FLOAT:
-                    Float = ToFloat();
+                    decimal result;
+                    ToNumber(out result);
+                    Number = result;
                     break;
 
                 case ValueTypeEnum.BOOLEAN:
                     Boolean = ToBoolean();
+                    break;
+
+                case ValueTypeEnum.DATE:
+                    Date = ToDate();
                     break;
             }
 
@@ -619,7 +572,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
         {
             Type = ValueTypeEnum.NUMBER;
             Content = value.ToString();
-            Integer = value;
+            Number = value;
         }
 
         /// <summary>
@@ -638,11 +591,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
                     break;
 
                 case ValueTypeEnum.NUMBER:
-                    Integer = value.Integer;
-                    break;
-
-                case ValueTypeEnum.FLOAT:
-                    Float = value.Float;
+                    Number = value.Number;
                     break;
 
                 case ValueTypeEnum.BOOLEAN:
@@ -651,6 +600,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
 
                 case ValueTypeEnum.OBJECT:
                     Object = value.Object;
+                    Content = value.Object.Module.Name;
                     break;
             }
         }
@@ -669,8 +619,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
                 Type = this.Type,
                 Content = this.Content,
                 Boolean = this.Boolean,
-                Integer = this.Integer,
-                Float = this.Float,
+                Number = this.Number,
                 Date = this.Date,
                 Object = this.Object
             };
@@ -685,7 +634,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
         public override int GetHashCode()
         {
             var hashCode = 873661529;
-            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(ToString());
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Content);
             return hashCode;
         }
     }

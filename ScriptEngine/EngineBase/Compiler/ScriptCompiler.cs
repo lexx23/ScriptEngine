@@ -117,7 +117,6 @@ namespace ScriptEngine.EngineBase.Compiler
                 _function_entry_point = _current_module.ProgrammLine;
         }
 
-
         /// <summary>
         /// Оптимизация кода, предварительный расчет где это возможно.
         /// </summary>
@@ -203,6 +202,9 @@ namespace ScriptEngine.EngineBase.Compiler
                 case OP_CODES.OP_MOD:
                     result = left.Value % right.Value;
                     break;
+
+                default:
+                    return null;
             }
 
             if (result != null)
@@ -221,8 +223,8 @@ namespace ScriptEngine.EngineBase.Compiler
 
                 return _programm.StaticVariables.Add(result);
             }
-
-            return null;
+            else
+                throw new CompilerException($"Невозможно расчитать {StringEnum.GetStringValue(code.code)}  {left.Value.Content} и {right.Value.Content}.");
         }
 
         /// <summary>
@@ -332,7 +334,7 @@ namespace ScriptEngine.EngineBase.Compiler
                 // Меняем знак у константы, если константа уже используется, создаем новую.
                 if (var.Status == VariableStatusEnum.CONSTANTVARIABLE)
                 {
-                    if (var.Value.Type != ValueTypeEnum.NUMBER && var.Value.Type != ValueTypeEnum.FLOAT)
+                    if (var.Value.Type != ValueTypeEnum.NUMBER)
                         throw new CompilerException(_iterator.Current.CodeInformation, $"Неожиданный символ ({sign.Content}).");
                 }
 
@@ -400,7 +402,7 @@ namespace ScriptEngine.EngineBase.Compiler
 
             // Это число.
             if (_iterator.CheckToken(TokenTypeEnum.NUMBER))
-                type = token.SubType == TokenSubTypeEnum.N_INTEGER ? ValueTypeEnum.NUMBER : ValueTypeEnum.FLOAT;
+                type = ValueTypeEnum.NUMBER;
 
             // Это строка.
             else if (_iterator.CheckToken(TokenTypeEnum.LITERAL, TokenSubTypeEnum.L_STRING))

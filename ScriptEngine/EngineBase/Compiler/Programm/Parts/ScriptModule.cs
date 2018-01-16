@@ -92,5 +92,12 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts
         {
             return _code[index];
         }
+
+
+
+        public static ScriptModule LoadModule(string path)
+        {
+            return null;
+        }
     }
 }

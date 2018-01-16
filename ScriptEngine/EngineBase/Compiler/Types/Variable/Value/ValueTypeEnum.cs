@@ -9,7 +9,6 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
         NULL,
         DATE,
         STRING,
-        FLOAT,
         NUMBER,
         BOOLEAN,
         OBJECT

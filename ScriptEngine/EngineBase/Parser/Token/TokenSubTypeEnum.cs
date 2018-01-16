@@ -130,10 +130,6 @@ namespace ScriptEngine.EngineBase.Parser.Token
         L_DATE,
         [StringValue("строка")]
         L_STRING,
-        [StringValue("целое число")]
-        N_INTEGER,
-        [StringValue("дробное число")]
-        N_FLOAT,
         [StringValue("неопределено ( null )")]
         N_NULL,
 

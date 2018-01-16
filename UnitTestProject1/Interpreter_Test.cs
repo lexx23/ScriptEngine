@@ -14,6 +14,21 @@ namespace UnitTests
     [TestClass]
     public class Interpreter_Test
     {
+        #region Other
+
+        [TestMethod]
+        [ExpectedException(typeof(RuntimeException))]
+        public void Interpreter_OtherThrowError()
+        {
+            IDictionary<string, string> files = new Dictionary<string, string>();
+            files.Add("other", "Other\\throw_error_runtime.scr");
+
+            ScriptProgramm programm = Compile(files);
+            ScriptInterpreter interpreter = new ScriptInterpreter(programm);
+            interpreter.Run();
+        }
+        #endregion
+
         #region Goto
 
         [TestMethod]
@@ -29,11 +44,11 @@ namespace UnitTests
             interpreter.Debug();
 
             Assert.AreEqual(14, interpreter.CurrentLine);
-            Assert.AreEqual(10, interpreter.Debugger.RegisterGetValue("ф").Integer);
+            Assert.AreEqual(10, interpreter.Debugger.RegisterGetValue("ф").ToInt());
             interpreter.Debugger.Continue();
 
             Assert.AreEqual(28, interpreter.CurrentLine);
-            Assert.AreEqual(20, interpreter.Debugger.RegisterGetValue("ф").Integer);
+            Assert.AreEqual(20, interpreter.Debugger.RegisterGetValue("ф").Number);
             interpreter.Debugger.Continue();
         }
         #endregion
@@ -56,24 +71,24 @@ namespace UnitTests
             interpreter.Debug();
 
             Assert.AreEqual(7, interpreter.CurrentLine);
-            Assert.AreEqual(6, interpreter.Debugger.RegisterGetValue("ф").Integer);
-            Assert.AreEqual(8, interpreter.Debugger.RegisterGetValue("б").Integer);
+            Assert.AreEqual(6, interpreter.Debugger.RegisterGetValue("ф").Number);
+            Assert.AreEqual(8, interpreter.Debugger.RegisterGetValue("б").Number);
             interpreter.Debugger.Continue();
 
 
             Assert.AreEqual(14, interpreter.CurrentLine);
-            Assert.AreEqual(2, interpreter.Debugger.RegisterGetValue("ф").Integer);
-            Assert.AreEqual(4, interpreter.Debugger.RegisterGetValue("б").Integer);
+            Assert.AreEqual(2, interpreter.Debugger.RegisterGetValue("ф").Number);
+            Assert.AreEqual(4, interpreter.Debugger.RegisterGetValue("б").Number);
             interpreter.Debugger.Continue();
 
             Assert.AreEqual(25, interpreter.CurrentLine);
-            Assert.AreEqual(101, interpreter.Debugger.RegisterGetValue("ф").Integer);
-            Assert.AreEqual(50, interpreter.Debugger.RegisterGetValue("б").Integer);
+            Assert.AreEqual(101, interpreter.Debugger.RegisterGetValue("ф").Number);
+            Assert.AreEqual(50, interpreter.Debugger.RegisterGetValue("б").Number);
             interpreter.Debugger.Continue();
 
             Assert.AreEqual(36, interpreter.CurrentLine);
-            Assert.AreEqual(51, interpreter.Debugger.RegisterGetValue("ф").Integer);
-            Assert.AreEqual(50, interpreter.Debugger.RegisterGetValue("б").Integer);
+            Assert.AreEqual(51, interpreter.Debugger.RegisterGetValue("ф").Number);
+            Assert.AreEqual(50, interpreter.Debugger.RegisterGetValue("б").Number);
             interpreter.Debugger.Continue();
 
         }
@@ -99,27 +114,27 @@ namespace UnitTests
             interpreter.Debug();
 
             Assert.AreEqual(4, interpreter.CurrentLine);
-            Assert.AreEqual(100, interpreter.Debugger.RegisterGetValue("ф").Integer);
+            Assert.AreEqual(100, interpreter.Debugger.RegisterGetValue("ф").Number);
             interpreter.Debugger.Continue();
 
             Assert.AreEqual(9, interpreter.CurrentLine);
-            Assert.AreEqual(0, interpreter.Debugger.RegisterGetValue("ф").Integer);
-            Assert.AreEqual(100, interpreter.Debugger.RegisterGetValue("б").Integer);
+            Assert.AreEqual(0, interpreter.Debugger.RegisterGetValue("ф").Number);
+            Assert.AreEqual(100, interpreter.Debugger.RegisterGetValue("б").Number);
             interpreter.Debugger.Continue();
 
             Assert.AreEqual(20, interpreter.CurrentLine);
-            Assert.AreEqual(50, interpreter.Debugger.RegisterGetValue("ф").Integer);
+            Assert.AreEqual(50, interpreter.Debugger.RegisterGetValue("ф").Number);
             interpreter.Debugger.Continue();
 
 
             Assert.AreEqual(37, interpreter.CurrentLine);
-            Assert.AreEqual(400, interpreter.Debugger.RegisterGetValue("ф").Integer);
-            Assert.AreEqual(0, interpreter.Debugger.RegisterGetValue("б").Integer);
+            Assert.AreEqual(400, interpreter.Debugger.RegisterGetValue("ф").Number);
+            Assert.AreEqual(0, interpreter.Debugger.RegisterGetValue("б").Number);
             interpreter.Debugger.Continue();
 
             Assert.AreEqual(51, interpreter.CurrentLine);
-            Assert.AreEqual(401, interpreter.Debugger.RegisterGetValue("ф").Integer);
-            Assert.AreEqual(199, interpreter.Debugger.RegisterGetValue("б").Integer);
+            Assert.AreEqual(401, interpreter.Debugger.RegisterGetValue("ф").Number);
+            Assert.AreEqual(199, interpreter.Debugger.RegisterGetValue("б").Number);
             interpreter.Debugger.Continue();
         }
         #endregion
@@ -146,27 +161,27 @@ namespace UnitTests
             Assert.AreEqual(6, interpreter.CurrentLine);
             Assert.AreEqual("if", interpreter.CurrentModule.Name);
 
-            Assert.AreEqual(0, interpreter.Debugger.RegisterGetValue("ф").Integer);
+            Assert.AreEqual(0, interpreter.Debugger.RegisterGetValue("ф").Number);
             interpreter.Debugger.Continue();
 
             Assert.AreEqual(10, interpreter.CurrentLine);
-            Assert.AreEqual(10, interpreter.Debugger.RegisterGetValue("ф").Integer);
+            Assert.AreEqual(10, interpreter.Debugger.RegisterGetValue("ф").Number);
             interpreter.Debugger.Continue();
 
             Assert.AreEqual(14, interpreter.CurrentLine);
-            Assert.AreEqual(-100, interpreter.Debugger.RegisterGetValue("ф").Integer);
+            Assert.AreEqual(-100, interpreter.Debugger.RegisterGetValue("ф").Number);
             interpreter.Debugger.Continue();
 
             Assert.AreEqual(18, interpreter.CurrentLine);
-            Assert.AreEqual(-200, interpreter.Debugger.RegisterGetValue("ф").Integer);
+            Assert.AreEqual(-200, interpreter.Debugger.RegisterGetValue("ф").Number);
             interpreter.Debugger.Continue();
 
             Assert.AreEqual(22, interpreter.CurrentLine);
-            Assert.AreEqual(10, interpreter.Debugger.RegisterGetValue("ф").Integer);
+            Assert.AreEqual(10, interpreter.Debugger.RegisterGetValue("ф").Number);
             interpreter.Debugger.Continue();
 
             Assert.AreEqual(26, interpreter.CurrentLine);
-            Assert.AreEqual(30, interpreter.Debugger.RegisterGetValue("ф").Integer);
+            Assert.AreEqual(30, interpreter.Debugger.RegisterGetValue("ф").Number);
             interpreter.Debugger.Continue();
         }
 
@@ -190,31 +205,31 @@ namespace UnitTests
             Assert.AreEqual(12, interpreter.CurrentLine);
             Assert.AreEqual("if", interpreter.CurrentModule.Name);
 
-            Assert.AreEqual(1, interpreter.Debugger.RegisterGetValue("ф").Integer);
+            Assert.AreEqual(1, interpreter.Debugger.RegisterGetValue("ф").Number);
             interpreter.Debugger.Continue();
 
             Assert.AreEqual(22, interpreter.CurrentLine);
-            Assert.AreEqual(2, interpreter.Debugger.RegisterGetValue("ф").Integer);
+            Assert.AreEqual(2, interpreter.Debugger.RegisterGetValue("ф").Number);
             interpreter.Debugger.Continue();
 
             Assert.AreEqual(34, interpreter.CurrentLine);
-            Assert.AreEqual(3, interpreter.Debugger.RegisterGetValue("ф").Integer);
+            Assert.AreEqual(3, interpreter.Debugger.RegisterGetValue("ф").Number);
             interpreter.Debugger.Continue();
 
             Assert.AreEqual(46, interpreter.CurrentLine);
-            Assert.AreEqual(4, interpreter.Debugger.RegisterGetValue("ф").Integer);
+            Assert.AreEqual(4, interpreter.Debugger.RegisterGetValue("ф").Number);
             interpreter.Debugger.Continue();
 
             Assert.AreEqual(54, interpreter.CurrentLine);
-            Assert.AreEqual(2, interpreter.Debugger.RegisterGetValue("ф").Integer);
+            Assert.AreEqual(2, interpreter.Debugger.RegisterGetValue("ф").Number);
             interpreter.Debugger.Continue();
 
             Assert.AreEqual(62, interpreter.CurrentLine);
-            Assert.AreEqual(2, interpreter.Debugger.RegisterGetValue("ф").Integer);
+            Assert.AreEqual(2, interpreter.Debugger.RegisterGetValue("ф").Number);
             interpreter.Debugger.Continue();
 
             Assert.AreEqual(70, interpreter.CurrentLine);
-            Assert.AreEqual(1, interpreter.Debugger.RegisterGetValue("ф").Integer);
+            Assert.AreEqual(1, interpreter.Debugger.RegisterGetValue("ф").Number);
         }
 
 
@@ -233,19 +248,19 @@ namespace UnitTests
             interpreter.Debug();
 
             Assert.AreEqual(11, interpreter.CurrentLine);
-            Assert.AreEqual(1, interpreter.Debugger.RegisterGetValue("ф").Integer);
+            Assert.AreEqual(1, interpreter.Debugger.RegisterGetValue("ф").Number);
             interpreter.Debug();
 
             Assert.AreEqual(25, interpreter.CurrentLine);
-            Assert.AreEqual(1, interpreter.Debugger.RegisterGetValue("ф").Integer);
+            Assert.AreEqual(1, interpreter.Debugger.RegisterGetValue("ф").Number);
             interpreter.Debug();
 
             Assert.AreEqual(41, interpreter.CurrentLine);
-            Assert.AreEqual(3, interpreter.Debugger.RegisterGetValue("ф").Integer);
+            Assert.AreEqual(3, interpreter.Debugger.RegisterGetValue("ф").Number);
             interpreter.Debug();
 
             Assert.AreEqual(58, interpreter.CurrentLine);
-            Assert.AreEqual(4, interpreter.Debugger.RegisterGetValue("ф").Integer);
+            Assert.AreEqual(4, interpreter.Debugger.RegisterGetValue("ф").Number);
             interpreter.Debug();
         }
 
@@ -271,32 +286,32 @@ namespace UnitTests
             Assert.AreEqual(7, interpreter.CurrentLine);
             Assert.AreEqual("global", interpreter.CurrentModule.Name);
 
-            Assert.AreEqual(100, interpreter.Debugger.ObjectGetValue("object", "Количество").Integer);
+            Assert.AreEqual(100, interpreter.Debugger.ObjectGetValue("object", "Количество").Number);
             interpreter.Debugger.StepOver();
 
             Assert.AreEqual(9, interpreter.CurrentLine);
-            Assert.AreEqual(100, interpreter.Debugger.RegisterGetValue("колво").Integer);
+            Assert.AreEqual(100, interpreter.Debugger.RegisterGetValue("колво").Number);
 
             interpreter.Debugger.StepOver();
             Assert.AreEqual(10, interpreter.CurrentLine);
-            Assert.AreEqual(100, interpreter.Debugger.RegisterGetValue("колво").Integer);
-            Assert.AreEqual(101, interpreter.Debugger.ObjectGetValue("object", "Количество").Integer);
+            Assert.AreEqual(100, interpreter.Debugger.RegisterGetValue("колво").Number);
+            Assert.AreEqual(101, interpreter.Debugger.ObjectGetValue("object", "Количество").Number);
 
             interpreter.Debugger.AddBreakpoint("object", 12);
             interpreter.Debugger.StepOver();
             Assert.AreEqual(12, interpreter.CurrentLine);
             Assert.AreEqual("object", interpreter.CurrentModule.Name);
-            Assert.AreEqual(101, interpreter.Debugger.RegisterGetValue("Количество").Integer);
+            Assert.AreEqual(101, interpreter.Debugger.RegisterGetValue("Количество").Number);
 
             interpreter.Debugger.AddBreakpoint("global", 12);
             interpreter.Debugger.Continue();
 
 
-            Assert.AreEqual(102, interpreter.Debugger.ObjectGetValue("object", "Количество").Integer);
-            Assert.AreEqual(100, interpreter.Debugger.RegisterGetValue("колво").Integer);
+            Assert.AreEqual(102, interpreter.Debugger.ObjectGetValue("object", "Количество").Number);
+            Assert.AreEqual(100, interpreter.Debugger.RegisterGetValue("колво").Number);
             interpreter.Debugger.StepOver();
-            Assert.AreEqual(102, interpreter.Debugger.ObjectGetValue("object", "Количество").Integer);
-            Assert.AreEqual(102, interpreter.Debugger.RegisterGetValue("колво").Integer);
+            Assert.AreEqual(102, interpreter.Debugger.ObjectGetValue("object", "Количество").Number);
+            Assert.AreEqual(102, interpreter.Debugger.RegisterGetValue("колво").Number);
 
             interpreter.Debugger.Continue();
             Assert.AreEqual(12, interpreter.CurrentLine);
@@ -308,33 +323,33 @@ namespace UnitTests
             Assert.AreEqual(22, interpreter.CurrentLine);
             Assert.AreEqual("global", interpreter.CurrentModule.Name);
 
-            Assert.AreEqual(105, interpreter.Debugger.ObjectGetValue("object", "Количество").Integer);
-            Assert.AreEqual(105, interpreter.Debugger.RegisterGetValue("колво").Integer);
+            Assert.AreEqual(105, interpreter.Debugger.ObjectGetValue("object", "Количество").Number);
+            Assert.AreEqual(105, interpreter.Debugger.RegisterGetValue("колво").Number);
             interpreter.Debugger.Continue();
 
             Assert.AreEqual(30, interpreter.CurrentLine);
             Assert.AreEqual("global", interpreter.CurrentModule.Name);
-            Assert.AreEqual(1, interpreter.Debugger.RegisterGetValue("ф").Integer);
+            Assert.AreEqual(1, interpreter.Debugger.RegisterGetValue("ф").Number);
             interpreter.Debugger.Continue();
 
             Assert.AreEqual(38, interpreter.CurrentLine);
             Assert.AreEqual("global", interpreter.CurrentModule.Name);
-            Assert.AreEqual(-1, interpreter.Debugger.RegisterGetValue("ф").Integer);
+            Assert.AreEqual(-1, interpreter.Debugger.RegisterGetValue("ф").Number);
             interpreter.Debugger.Continue();
 
             Assert.AreEqual(46, interpreter.CurrentLine);
             Assert.AreEqual("global", interpreter.CurrentModule.Name);
-            Assert.AreEqual(105, interpreter.Debugger.RegisterGetValue("ф").Integer);
+            Assert.AreEqual(105, interpreter.Debugger.RegisterGetValue("ф").Number);
             interpreter.Debugger.Continue();
 
             Assert.AreEqual(54, interpreter.CurrentLine);
             Assert.AreEqual("global", interpreter.CurrentModule.Name);
-            Assert.AreEqual(106, interpreter.Debugger.RegisterGetValue("ф").Integer);
+            Assert.AreEqual(106, interpreter.Debugger.RegisterGetValue("ф").Number);
         }
 
 
         [TestMethod]
-        [ExpectedException(typeof(CompilerException))]
+        [ExpectedException(typeof(RuntimeException))]
         public void Interpreter_Objects_ProcedureAsFunction_Error()
         {
             IDictionary<ScriptModule, string> modules = new Dictionary<ScriptModule, string>();
@@ -349,7 +364,7 @@ namespace UnitTests
 
 
         [TestMethod]
-        [ExpectedException(typeof(CompilerException))]
+        [ExpectedException(typeof(RuntimeException))]
         public void Interpreter_Objects_NotPublicFunctionCall_Error()
         {
             IDictionary<ScriptModule, string> modules = new Dictionary<ScriptModule, string>();
@@ -401,43 +416,43 @@ namespace UnitTests
             Assert.AreEqual(6, interpreter.CurrentLine);
             Assert.AreEqual("global", interpreter.CurrentModule.Name);
 
-            Assert.AreEqual(100, interpreter.Debugger.RegisterGetValue("Количество").Integer);
-            Assert.AreEqual(100, interpreter.Debugger.RegisterGetValue("колво").Integer);
+            Assert.AreEqual(100, interpreter.Debugger.RegisterGetValue("Количество").Number);
+            Assert.AreEqual(100, interpreter.Debugger.RegisterGetValue("колво").Number);
             interpreter.Debugger.StepInto();
 
             Assert.AreEqual(2, interpreter.CurrentLine);
             Assert.AreEqual("object", interpreter.CurrentModule.Name);
-            Assert.AreEqual(100, interpreter.Debugger.RegisterGetValue("Количество").Integer);
+            Assert.AreEqual(100, interpreter.Debugger.RegisterGetValue("Количество").Number);
             interpreter.Debugger.StepOver();
-            Assert.AreEqual(101, interpreter.Debugger.RegisterGetValue("Количество").Integer);
+            Assert.AreEqual(101, interpreter.Debugger.RegisterGetValue("Количество").Number);
 
             interpreter.Debugger.Continue();
 
             Assert.AreEqual("global", interpreter.CurrentModule.Name);
             Assert.AreEqual(20, interpreter.CurrentLine);
-            Assert.AreEqual(115, interpreter.Debugger.RegisterGetValue("колво").Integer);
-            Assert.AreEqual(105, interpreter.Debugger.RegisterGetValue("Количество").Integer);
+            Assert.AreEqual(115, interpreter.Debugger.RegisterGetValue("колво").Number);
+            Assert.AreEqual(105, interpreter.Debugger.RegisterGetValue("Количество").Number);
             interpreter.Debugger.Continue();
 
 
             Assert.AreEqual(28, interpreter.CurrentLine);
             Assert.AreEqual("global", interpreter.CurrentModule.Name);
-            Assert.AreEqual(-1, interpreter.Debugger.RegisterGetValue("ф").Integer);
+            Assert.AreEqual(-1, interpreter.Debugger.RegisterGetValue("ф").Number);
             interpreter.Debugger.Continue();
 
             Assert.AreEqual(36, interpreter.CurrentLine);
             Assert.AreEqual("global", interpreter.CurrentModule.Name);
-            Assert.AreEqual(1, interpreter.Debugger.RegisterGetValue("ф").Integer);
+            Assert.AreEqual(1, interpreter.Debugger.RegisterGetValue("ф").Number);
             interpreter.Debugger.Continue();
 
             Assert.AreEqual(44, interpreter.CurrentLine);
             Assert.AreEqual("global", interpreter.CurrentModule.Name);
-            Assert.AreEqual(-1, interpreter.Debugger.RegisterGetValue("ф").Integer);
+            Assert.AreEqual(-1, interpreter.Debugger.RegisterGetValue("ф").Number);
             interpreter.Debugger.Continue();
 
             Assert.AreEqual(52, interpreter.CurrentLine);
             Assert.AreEqual("global", interpreter.CurrentModule.Name);
-            Assert.AreEqual(106, interpreter.Debugger.RegisterGetValue("ф").Integer);
+            Assert.AreEqual(106, interpreter.Debugger.RegisterGetValue("ф").Number);
         }
 
         #endregion
@@ -458,10 +473,10 @@ namespace UnitTests
             interpreter.Debug();
 
             interpreter.Debugger.StepOver();
-            Assert.AreEqual(1080, interpreter.Debugger.RegisterGetValue("а").Integer);
+            Assert.AreEqual(1080, interpreter.Debugger.RegisterGetValue("а").Number);
             Assert.AreEqual(11, interpreter.CurrentLine);
             interpreter.Debugger.StepOver();
-            Assert.AreEqual(1060, interpreter.Debugger.RegisterGetValue("а").Integer);
+            Assert.AreEqual(1060, interpreter.Debugger.RegisterGetValue("а").Number);
             Assert.AreEqual(12, interpreter.CurrentLine);
         }
 
@@ -476,7 +491,7 @@ namespace UnitTests
             interpreter.Debugger.AddBreakpoint("function", 12);
             interpreter.Debug();
 
-            Assert.AreEqual(10, interpreter.Debugger.RegisterGetValue("а").Integer);
+            Assert.AreEqual(10, interpreter.Debugger.RegisterGetValue("а").Number);
         }
         #endregion
 
@@ -494,58 +509,58 @@ namespace UnitTests
             interpreter.Debug();
 
             // Тест1
-            Assert.AreEqual(100, interpreter.Debugger.RegisterGetValue("а").Integer);
+            Assert.AreEqual(100, interpreter.Debugger.RegisterGetValue("а").Number);
             interpreter.Debugger.StepInto();
             interpreter.Debugger.StepOver();
-            Assert.AreEqual(10, interpreter.Debugger.RegisterGetValue("парам").Integer);
-            Assert.AreEqual(12, interpreter.Debugger.RegisterGetValue("парам1").Integer);
+            Assert.AreEqual(10, interpreter.Debugger.RegisterGetValue("парам").Number);
+            Assert.AreEqual(12, interpreter.Debugger.RegisterGetValue("парам1").Number);
             interpreter.Debugger.StepOver();
-            Assert.AreEqual(100, interpreter.Debugger.RegisterGetValue("а").Integer);
+            Assert.AreEqual(100, interpreter.Debugger.RegisterGetValue("а").Number);
 
             // Тест2
             interpreter.Debugger.StepInto();
             IList<FunctionHistoryData> stack_list = interpreter.Debugger.GetStackCall();
-            Assert.AreEqual(100, interpreter.Debugger.RegisterGetValue("парам").Integer);
-            Assert.AreEqual(5, interpreter.Debugger.RegisterGetValue("парам1").Integer);
+            Assert.AreEqual(100, interpreter.Debugger.RegisterGetValue("парам").Number);
+            Assert.AreEqual(5, interpreter.Debugger.RegisterGetValue("парам1").Number);
             interpreter.Debugger.StepOver();
-            Assert.AreEqual(10, interpreter.Debugger.RegisterGetValue("парам").Integer);
-            Assert.AreEqual(5, interpreter.Debugger.RegisterGetValue("парам1").Integer);
+            Assert.AreEqual(10, interpreter.Debugger.RegisterGetValue("парам").Number);
+            Assert.AreEqual(5, interpreter.Debugger.RegisterGetValue("парам1").Number);
             interpreter.Debugger.StepOver();
-            Assert.AreEqual(10, interpreter.Debugger.RegisterGetValue("а").Integer);
+            Assert.AreEqual(10, interpreter.Debugger.RegisterGetValue("а").Number);
 
 
             // Тест3
-            Assert.AreEqual(200, interpreter.Debugger.RegisterGetValue("б").Integer);
+            Assert.AreEqual(200, interpreter.Debugger.RegisterGetValue("б").Number);
             interpreter.Debugger.StepInto();
-            Assert.AreEqual(200, interpreter.Debugger.RegisterGetValue("парам1").Integer);
+            Assert.AreEqual(200, interpreter.Debugger.RegisterGetValue("парам1").Number);
             interpreter.Debugger.StepOver();
             interpreter.Debugger.StepOver();
-            Assert.AreEqual(10, interpreter.Debugger.RegisterGetValue("парам").Integer);
-            Assert.AreEqual(210, interpreter.Debugger.RegisterGetValue("парам1").Integer);
+            Assert.AreEqual(10, interpreter.Debugger.RegisterGetValue("парам").Number);
+            Assert.AreEqual(210, interpreter.Debugger.RegisterGetValue("парам1").Number);
             interpreter.Debugger.StepOver();
-            Assert.AreEqual(210, interpreter.Debugger.RegisterGetValue("б").Integer);
+            Assert.AreEqual(210, interpreter.Debugger.RegisterGetValue("б").Number);
 
             // Тест
-            Assert.AreEqual(10, interpreter.Debugger.RegisterGetValue("а").Integer);
-            Assert.AreEqual(210, interpreter.Debugger.RegisterGetValue("б").Integer);
+            Assert.AreEqual(10, interpreter.Debugger.RegisterGetValue("а").Number);
+            Assert.AreEqual(210, interpreter.Debugger.RegisterGetValue("б").Number);
             interpreter.Debugger.StepInto();
-            Assert.AreEqual(10, interpreter.Debugger.RegisterGetValue("парам").Integer);
-            Assert.AreEqual(210, interpreter.Debugger.RegisterGetValue("парам1").Integer);
+            Assert.AreEqual(10, interpreter.Debugger.RegisterGetValue("парам").Number);
+            Assert.AreEqual(210, interpreter.Debugger.RegisterGetValue("парам1").Number);
             interpreter.Debugger.StepOver();
-            Assert.AreEqual(10, interpreter.Debugger.RegisterGetValue("парам").Integer);
-            Assert.AreEqual(210, interpreter.Debugger.RegisterGetValue("парам1").Integer);
+            Assert.AreEqual(10, interpreter.Debugger.RegisterGetValue("парам").Number);
+            Assert.AreEqual(210, interpreter.Debugger.RegisterGetValue("парам1").Number);
             interpreter.Debugger.StepOver();
-            Assert.AreEqual(10, interpreter.Debugger.RegisterGetValue("парам").Integer);
-            Assert.AreEqual(210, interpreter.Debugger.RegisterGetValue("парам1").Integer);
+            Assert.AreEqual(10, interpreter.Debugger.RegisterGetValue("парам").Number);
+            Assert.AreEqual(210, interpreter.Debugger.RegisterGetValue("парам1").Number);
             interpreter.Debugger.StepOver();
-            Assert.AreEqual(600, interpreter.Debugger.RegisterGetValue("парам").Integer);
-            Assert.AreEqual(210, interpreter.Debugger.RegisterGetValue("парам1").Integer);
+            Assert.AreEqual(600, interpreter.Debugger.RegisterGetValue("парам").Number);
+            Assert.AreEqual(210, interpreter.Debugger.RegisterGetValue("парам1").Number);
             interpreter.Debugger.StepOver();
-            Assert.AreEqual(10, interpreter.Debugger.RegisterGetValue("парам").Integer);
-            Assert.AreEqual(220, interpreter.Debugger.RegisterGetValue("парам1").Integer);
+            Assert.AreEqual(10, interpreter.Debugger.RegisterGetValue("парам").Number);
+            Assert.AreEqual(220, interpreter.Debugger.RegisterGetValue("парам1").Number);
             interpreter.Debugger.StepOver();
-            Assert.AreEqual(10, interpreter.Debugger.RegisterGetValue("а").Integer);
-            Assert.AreEqual(220, interpreter.Debugger.RegisterGetValue("б").Integer);
+            Assert.AreEqual(10, interpreter.Debugger.RegisterGetValue("а").Number);
+            Assert.AreEqual(220, interpreter.Debugger.RegisterGetValue("б").Number);
 
         }
 
@@ -568,18 +583,18 @@ namespace UnitTests
             interpreter.Debug();
 
 
-            Assert.AreEqual(4, interpreter.Debugger.RegisterGetValue("в1").Integer);
-            Assert.AreEqual(298.6875, interpreter.Debugger.RegisterGetValue("а1").Float);
-            Assert.AreEqual(498.6875, interpreter.Debugger.RegisterGetValue("а").Float);
-            Assert.AreEqual(2496.125, interpreter.Debugger.RegisterGetValue("а2").Float);
-            Assert.AreEqual(2396.125, interpreter.Debugger.RegisterGetValue("а3").Float);
-            Assert.AreEqual(494.6875, interpreter.Debugger.RegisterGetValue("а4").Float);
-            Assert.AreEqual(-494.6875, interpreter.Debugger.RegisterGetValue("а5").Float);
+            Assert.AreEqual(4, interpreter.Debugger.RegisterGetValue("в1").Number);
+            Assert.AreEqual(298.6875m, interpreter.Debugger.RegisterGetValue("а1").Number);
+            Assert.AreEqual(498.6875m, interpreter.Debugger.RegisterGetValue("а").Number);
+            Assert.AreEqual(2496.125m, interpreter.Debugger.RegisterGetValue("а2").Number);
+            Assert.AreEqual(2396.125m, interpreter.Debugger.RegisterGetValue("а3").Number);
+            Assert.AreEqual(494.6875m, interpreter.Debugger.RegisterGetValue("а4").Number);
+            Assert.AreEqual(-494.6875m, interpreter.Debugger.RegisterGetValue("а5").Number);
             interpreter.Debug();
 
-            Assert.AreEqual(0.6, interpreter.Debugger.RegisterGetValue("а6").Float,3);
+            Assert.AreEqual(0.6m, interpreter.Debugger.RegisterGetValue("а6").Number);
             interpreter.Debug();
-            Assert.AreEqual(1, interpreter.Debugger.RegisterGetValue("а7").Float,3);
+            Assert.AreEqual(1, interpreter.Debugger.RegisterGetValue("а7").Number);
         }
 
         #endregion

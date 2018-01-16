@@ -529,6 +529,18 @@ namespace UnitTests
 
         #endregion
 
+        #region Other
+        [TestMethod]
+        [ExpectedException(typeof(CompilerException))]
+        public void Compile_Other_ThrowError()
+        {
+            IDictionary<string, string> files = new Dictionary<string, string>();
+            files.Add("Проверка деления на 0", "Other\\throw_error.scr");
+
+            Compile(files);
+        }
+        #endregion
+
         private ScriptProgramm Compile(IDictionary<string, string> file_names)
         {
             IDictionary<ScriptModule, string> files = new Dictionary<ScriptModule, string>();

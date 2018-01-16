@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ScriptEngine.EngineBase.Parser.Token;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -11,14 +12,19 @@ namespace ScriptEngine.EngineBase.Interpreter
         // Присвоить значение переменной
         OP_STORE,
         // Сложение
+        [StringValue("сумма { + }")]
         OP_ADD,
-        // Вычитание
+        // Разница
+        [StringValue("произведение { - }")]
         OP_SUB,
         // Умножение
+        [StringValue("произведение { * }")]
         OP_MUL,
         // Деление
+        [StringValue("деление { / }")]
         OP_DIV,
         // Остаток от деления
+        [StringValue("остаток от деления { % }")]
         OP_MOD,
 
         // Переход без условий

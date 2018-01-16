@@ -19,8 +19,7 @@ namespace ScriptEngine.EngineBase.Parser.TokenParser.Parsers
                 token = new TokenClass()
                 {
                     Content = content,
-                    Type = TokenTypeEnum.NUMBER,
-                    SubType = content.Contains(".") ? TokenSubTypeEnum.N_FLOAT : TokenSubTypeEnum.N_INTEGER 
+                    Type = TokenTypeEnum.NUMBER
                 };
                 return true;
             }

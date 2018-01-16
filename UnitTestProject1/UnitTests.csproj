@@ -109,6 +109,9 @@
     <None Update="Scripts\Compiler\Objects\Cross object call\object_module.scr">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Scripts\Compiler\Other\throw_error.scr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Scripts\Compiler\While\loop_words_error2.scr">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -233,6 +236,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Scripts\Interpreter\Objects\Object procedure as function call\object_module.scr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Scripts\Interpreter\Other\throw_error_runtime.scr">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Scripts\Interpreter\Procedure\procedure.scr">
