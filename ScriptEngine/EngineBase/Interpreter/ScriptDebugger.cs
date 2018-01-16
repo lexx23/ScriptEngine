@@ -45,7 +45,7 @@ namespace ScriptEngine.EngineBase.Interpreter
         /// <param name="line"></param>
         public void AddBreakpoint(string module_name, int line)
         {
-            if (!_interpreter._programm.ModuleExist(module_name))
+            if (!_interpreter.Programm.ModuleExist(module_name))
                 throw new Exception($"В программе нет модуля с именем [{module_name}].");
 
             if (!_break_points.ContainsKey(module_name))
@@ -95,11 +95,11 @@ namespace ScriptEngine.EngineBase.Interpreter
         /// </summary>
         private void GetNextStep()
         {
-            if (_interpreter._instruction >= _interpreter.CurrentModule.Code.Count)
+            if (_interpreter.IstructionIndex >= _interpreter.CurrentModule.Code.Count)
                 return;
 
             _step_break_point = int.MinValue;
-            int i = _interpreter._instruction;
+            int i = _interpreter.IstructionIndex;
 
             if (_interpreter.CurrentModule.Code[i].OP_CODE == OP_CODES.OP_RETURN)
             {
@@ -149,7 +149,7 @@ namespace ScriptEngine.EngineBase.Interpreter
             if (var != null)
                 return _interpreter.Context.GetValue(var);
 
-            var = _interpreter._programm.GlobalVariables.Get(name);
+            var = _interpreter.Programm.GlobalVariables.Get(name);
             if (var != null)
                 return _interpreter.Context.GetValue(var);
 

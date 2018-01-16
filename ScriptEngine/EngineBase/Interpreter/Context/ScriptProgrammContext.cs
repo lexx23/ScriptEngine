@@ -49,7 +49,7 @@ namespace ScriptEngine.EngineBase.Interpreter.Context
         }
 
         /// <summary>
-        /// Присвоить переменной контекста значение, если переменной нет в контексте, то добавить.
+        /// Присвоить переменной контекста значение. Операция с значением.
         /// </summary>
         /// <param name="variable"></param>
         /// <param name="value"></param>
@@ -58,7 +58,11 @@ namespace ScriptEngine.EngineBase.Interpreter.Context
             _contexts[variable.Scope.StackIndex].SetValue(variable.StackNumber,value);
         }
 
-
+        /// <summary>
+        /// Копировать переменную. Операция с адресом а не с значением.
+        /// </summary>
+        /// <param name="variable"></param>
+        /// <param name="value"></param>
         public void CopyValue(IVariable variable, Value value)
         {
             _contexts[variable.Scope.StackIndex].CopyValue(variable.StackNumber, value);
@@ -72,6 +76,20 @@ namespace ScriptEngine.EngineBase.Interpreter.Context
         public void ClearValue(IVariable variable)
         {
             _contexts[variable.Scope.StackIndex].ClearValue(variable.StackNumber);
+        }
+
+
+        /// <summary>
+        /// Установка предыдущего контекста, и предыдущей функции.
+        /// </summary>
+        /// <returns></returns>
+        public int RestoreContext()
+        {
+            int position = FunctionContextsHolder.RestoreFunctionContext();
+            if (position < 0)
+                return ModuleContextsHolder.RestoreModuleContext();
+            else
+                return position;
         }
     }
 }

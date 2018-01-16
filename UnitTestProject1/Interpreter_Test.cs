@@ -144,7 +144,7 @@ namespace UnitTests
             interpreter.Debug();
 
             Assert.AreEqual(6, interpreter.CurrentLine);
-            Assert.AreEqual("if", interpreter.CurrentModuleName);
+            Assert.AreEqual("if", interpreter.CurrentModule.Name);
 
             Assert.AreEqual(0, interpreter.Debugger.RegisterGetValue("ф").Integer);
             interpreter.Debugger.Continue();
@@ -188,7 +188,7 @@ namespace UnitTests
             interpreter.Debug();
 
             Assert.AreEqual(12, interpreter.CurrentLine);
-            Assert.AreEqual("if", interpreter.CurrentModuleName);
+            Assert.AreEqual("if", interpreter.CurrentModule.Name);
 
             Assert.AreEqual(1, interpreter.Debugger.RegisterGetValue("ф").Integer);
             interpreter.Debugger.Continue();
@@ -269,7 +269,7 @@ namespace UnitTests
             interpreter.Debugger.AddBreakpoint("global", 54);
             interpreter.Debug();
             Assert.AreEqual(7, interpreter.CurrentLine);
-            Assert.AreEqual("global", interpreter.CurrentModuleName);
+            Assert.AreEqual("global", interpreter.CurrentModule.Name);
 
             Assert.AreEqual(100, interpreter.Debugger.ObjectGetValue("object", "Количество").Integer);
             interpreter.Debugger.StepOver();
@@ -285,7 +285,7 @@ namespace UnitTests
             interpreter.Debugger.AddBreakpoint("object", 12);
             interpreter.Debugger.StepOver();
             Assert.AreEqual(12, interpreter.CurrentLine);
-            Assert.AreEqual("object", interpreter.CurrentModuleName);
+            Assert.AreEqual("object", interpreter.CurrentModule.Name);
             Assert.AreEqual(101, interpreter.Debugger.RegisterGetValue("Количество").Integer);
 
             interpreter.Debugger.AddBreakpoint("global", 12);
@@ -300,35 +300,35 @@ namespace UnitTests
 
             interpreter.Debugger.Continue();
             Assert.AreEqual(12, interpreter.CurrentLine);
-            Assert.AreEqual("object", interpreter.CurrentModuleName);
+            Assert.AreEqual("object", interpreter.CurrentModule.Name);
             interpreter.Debugger.RemoveBreakpoint("object", 12);
             interpreter.Debugger.AddBreakpoint("global", 22);
             interpreter.Debugger.Continue();
 
             Assert.AreEqual(22, interpreter.CurrentLine);
-            Assert.AreEqual("global", interpreter.CurrentModuleName);
+            Assert.AreEqual("global", interpreter.CurrentModule.Name);
 
             Assert.AreEqual(105, interpreter.Debugger.ObjectGetValue("object", "Количество").Integer);
             Assert.AreEqual(105, interpreter.Debugger.RegisterGetValue("колво").Integer);
             interpreter.Debugger.Continue();
 
             Assert.AreEqual(30, interpreter.CurrentLine);
-            Assert.AreEqual("global", interpreter.CurrentModuleName);
+            Assert.AreEqual("global", interpreter.CurrentModule.Name);
             Assert.AreEqual(1, interpreter.Debugger.RegisterGetValue("ф").Integer);
             interpreter.Debugger.Continue();
 
             Assert.AreEqual(38, interpreter.CurrentLine);
-            Assert.AreEqual("global", interpreter.CurrentModuleName);
+            Assert.AreEqual("global", interpreter.CurrentModule.Name);
             Assert.AreEqual(-1, interpreter.Debugger.RegisterGetValue("ф").Integer);
             interpreter.Debugger.Continue();
 
             Assert.AreEqual(46, interpreter.CurrentLine);
-            Assert.AreEqual("global", interpreter.CurrentModuleName);
+            Assert.AreEqual("global", interpreter.CurrentModule.Name);
             Assert.AreEqual(105, interpreter.Debugger.RegisterGetValue("ф").Integer);
             interpreter.Debugger.Continue();
 
             Assert.AreEqual(54, interpreter.CurrentLine);
-            Assert.AreEqual("global", interpreter.CurrentModuleName);
+            Assert.AreEqual("global", interpreter.CurrentModule.Name);
             Assert.AreEqual(106, interpreter.Debugger.RegisterGetValue("ф").Integer);
         }
 
@@ -399,21 +399,21 @@ namespace UnitTests
 
             interpreter.Debug();
             Assert.AreEqual(6, interpreter.CurrentLine);
-            Assert.AreEqual("global", interpreter.CurrentModuleName);
+            Assert.AreEqual("global", interpreter.CurrentModule.Name);
 
             Assert.AreEqual(100, interpreter.Debugger.RegisterGetValue("Количество").Integer);
             Assert.AreEqual(100, interpreter.Debugger.RegisterGetValue("колво").Integer);
             interpreter.Debugger.StepInto();
 
             Assert.AreEqual(2, interpreter.CurrentLine);
-            Assert.AreEqual("object", interpreter.CurrentModuleName);
+            Assert.AreEqual("object", interpreter.CurrentModule.Name);
             Assert.AreEqual(100, interpreter.Debugger.RegisterGetValue("Количество").Integer);
             interpreter.Debugger.StepOver();
             Assert.AreEqual(101, interpreter.Debugger.RegisterGetValue("Количество").Integer);
 
             interpreter.Debugger.Continue();
 
-            Assert.AreEqual("global", interpreter.CurrentModuleName);
+            Assert.AreEqual("global", interpreter.CurrentModule.Name);
             Assert.AreEqual(20, interpreter.CurrentLine);
             Assert.AreEqual(115, interpreter.Debugger.RegisterGetValue("колво").Integer);
             Assert.AreEqual(105, interpreter.Debugger.RegisterGetValue("Количество").Integer);
@@ -421,22 +421,22 @@ namespace UnitTests
 
 
             Assert.AreEqual(28, interpreter.CurrentLine);
-            Assert.AreEqual("global", interpreter.CurrentModuleName);
+            Assert.AreEqual("global", interpreter.CurrentModule.Name);
             Assert.AreEqual(-1, interpreter.Debugger.RegisterGetValue("ф").Integer);
             interpreter.Debugger.Continue();
 
             Assert.AreEqual(36, interpreter.CurrentLine);
-            Assert.AreEqual("global", interpreter.CurrentModuleName);
+            Assert.AreEqual("global", interpreter.CurrentModule.Name);
             Assert.AreEqual(1, interpreter.Debugger.RegisterGetValue("ф").Integer);
             interpreter.Debugger.Continue();
 
             Assert.AreEqual(44, interpreter.CurrentLine);
-            Assert.AreEqual("global", interpreter.CurrentModuleName);
+            Assert.AreEqual("global", interpreter.CurrentModule.Name);
             Assert.AreEqual(-1, interpreter.Debugger.RegisterGetValue("ф").Integer);
             interpreter.Debugger.Continue();
 
             Assert.AreEqual(52, interpreter.CurrentLine);
-            Assert.AreEqual("global", interpreter.CurrentModuleName);
+            Assert.AreEqual("global", interpreter.CurrentModule.Name);
             Assert.AreEqual(106, interpreter.Debugger.RegisterGetValue("ф").Integer);
         }
 

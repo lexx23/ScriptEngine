@@ -14,8 +14,8 @@ namespace ScriptEngine.EngineBase.Interpreter
 {
     public class ScriptInterpreter
     {
-        internal ScriptProgramm _programm;
-        internal int _instruction;
+        private ScriptProgramm _programm;
+        private int _instruction;
         private ScriptProgrammContext _context;
 
         private ScriptDebugger _debugger;
@@ -23,11 +23,12 @@ namespace ScriptEngine.EngineBase.Interpreter
         private int _current_line;
 
         public ScriptDebugger Debugger { get => _debugger; }
+        public int IstructionIndex { get => _instruction; }
         public int CurrentLine { get => _current_line; }
+        public ScriptProgramm Programm { get => _programm; }
         public ScriptProgrammContext Context { get => _context; }
         public IFunction CurrentFunction { get => _context.CurrentFunction; }
         public ScriptModule CurrentModule { get => _context.CurrentModule; }
-        public string CurrentModuleName { get => _context.CurrentModule.Name; }
 
         public ScriptInterpreter(ScriptProgramm programm)
         {
@@ -128,9 +129,10 @@ namespace ScriptEngine.EngineBase.Interpreter
                 module = _programm[module_name];
                 change_context = true;
 
+                // Если контекста нет то создаем новый.
                 if (!_context.ModuleContextsHolder.ExistModuleContext(module_name))
                     _context.ModuleContextsHolder.CreateModuleContext(module_name, module);
-                _context.ModuleContextsHolder.SetModuleContext(module_name,_instruction);
+                _context.ModuleContextsHolder.SetModuleContext(module_name, _instruction);
             }
 
             function = _context.CurrentModule.Functions.Get(name);
@@ -162,6 +164,20 @@ namespace ScriptEngine.EngineBase.Interpreter
             _instruction = function.EntryPoint;
 
             // добавить из стека в текущий (новый) контекст, переменные функции
+            SetFunctionParams(function);
+
+            _debugger.OnFunctionCall();
+
+            return null;
+        }
+
+
+        /// <summary>
+        /// Добавить в контекст параметры функции.
+        /// </summary>
+        /// <param name="function"></param>
+        private void SetFunctionParams(IFunction function)
+        {
             List<string> function_params = new List<string>();
             Value stack_param;
             if (function.Param != null)
@@ -173,6 +189,7 @@ namespace ScriptEngine.EngineBase.Interpreter
                         if (stack_param?.Type != ValueTypeEnum.NULL)
                         {
                             function_param.Scope = function.Scope;
+                            // Если есть значение, значит это параметр по значению.
                             if (function_param.Status == VariableStatusEnum.CONSTANTVARIABLE)
                             {
                                 _context.SetValue(function_param, stack_param.Clone());
@@ -180,28 +197,30 @@ namespace ScriptEngine.EngineBase.Interpreter
                             }
                             else
                             {
+                                // Параметр который передается как адрес. Изменение внутри функции, приведет к изменению и вне.
                                 _context.CopyValue(function_param, stack_param);
                                 function_params.Add(function_param.Name + " = " + stack_param.ToString());
                             }
                         }
                         else
                         {
+                            // Пустой параметр, тот который не указан между запятых. Функция Тест(,123) 
                             _context.SetValue(function_param, new Value(ValueTypeEnum.NULL, ""));
                             function_params.Add(function_param.Name + " = Null");
                         }
                     }
                     else
                     {
+                        // Параметры по умолчанию.
                         _context.SetValue(function_param, function_param.Value?.Clone());
                         function_params.Add(function_param.Name + " = " + function_param.Value?.ToString());
                     }
                 }
+            
+            // Для дебага, сохраняем параметры функции. Используется при развороте вызовов стека.
             _context.FunctionContextsHolder.SetFunctionParams(function_params);
-
-            _debugger.OnFunctionCall();
-
-            return null;
         }
+
 
         /// <summary>
         /// Выход из функции return
@@ -218,11 +237,7 @@ namespace ScriptEngine.EngineBase.Interpreter
             }
 
             // установка предыдущего контекста, и предыдущей функции.
-            int position = _context.FunctionContextsHolder.RestoreFunctionContext();
-            if (position < 0)
-                _instruction = _context.ModuleContextsHolder.RestoreModuleContext();
-            else
-                _instruction = position;
+            _instruction = _context.RestoreContext();
 
             _debugger.OnFunctionReturn();
         }
@@ -291,8 +306,8 @@ namespace ScriptEngine.EngineBase.Interpreter
             if (!work_function.Public)
                 throw new RuntimeException(this, $"Функция [{function.Name}] не имеет оператора Экспорт, и не доступна.");
 
-            _context.ModuleContextsHolder.SetModuleContext(object_call.Object,_instruction);
-            FunctionCall(work_function,true);
+            _context.ModuleContextsHolder.SetModuleContext(object_call.Object, _instruction);
+            FunctionCall(work_function, true);
         }
 
         /// <summary>
@@ -301,7 +316,7 @@ namespace ScriptEngine.EngineBase.Interpreter
         /// <param name="statement"></param>
         private void ObjectResoleVariable(ScriptStatement statement)
         {
-           Value var_name;
+            Value var_name;
             var_name = _context.GetValue(statement.Variable3);
 
             Value object_call = _context.GetValue(statement.Variable2);
@@ -309,11 +324,11 @@ namespace ScriptEngine.EngineBase.Interpreter
                 throw new RuntimeException(this, $"Значение не является значением объектного типа [{var_name.Content}]");
 
             IVariable var = object_call.Object.Module.Variables.Get(var_name.Content, object_call.Object.Module.ModuleScope);
-            if(!var.Public)
+            if (!var.Public)
                 throw new RuntimeException(this, $"Переменная [{var_name.Content}] не имеет оператора Экспорт, и не доступна.");
 
             Value value = object_call.Object.Context.GetValue(var.StackNumber);
-            _context.CopyValue(statement.Variable1,value);
+            _context.CopyValue(statement.Variable1, value);
         }
 
 
@@ -323,7 +338,7 @@ namespace ScriptEngine.EngineBase.Interpreter
         internal void Execute()
         {
             ScriptStatement statement;
-            Value v2, v3,result;
+            Value v2, v3, result;
 
             while (_instruction < _context.CurrentModule.Code.Count)
             {
@@ -454,7 +469,7 @@ namespace ScriptEngine.EngineBase.Interpreter
                         break;
                     case OP_CODES.OP_STORE:
                         v3 = _context.GetValue(statement.Variable3);
-                        _context.SetValue(statement.Variable2, v3.Clone());
+                        _context.SetValue(statement.Variable2, v3);
                         break;
                     case OP_CODES.OP_ADD:
                         v2 = _context.GetValue(statement.Variable2);

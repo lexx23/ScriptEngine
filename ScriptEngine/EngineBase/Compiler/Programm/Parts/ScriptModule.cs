@@ -49,14 +49,22 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts
             _functions = new ModuleFunctions(this);
         }
 
-
+        /// <summary>
+        /// Добавить обращение к обьекту.
+        /// </summary>
+        /// <param name="function"></param>
+        /// <returns></returns>
         public int ObjectCallAdd(IFunction function)
         {
             _object_functions_call.Add(function);
             return _object_functions_call.Count -1;
         }
 
-
+        /// <summary>
+        /// Получить обращение к обьекту.
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public IFunction ObjectCallGet(int index)
         {
             return _object_functions_call[index];
