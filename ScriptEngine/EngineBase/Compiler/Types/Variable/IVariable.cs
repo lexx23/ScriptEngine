@@ -1,5 +1,5 @@
-﻿using System;
-using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
+﻿using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
+using System;
 
 namespace ScriptEngine.EngineBase.Compiler.Types.Variable
 {
@@ -7,8 +7,9 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable
     {
         String Name { get; set; }
         ScriptScope Scope { get; set; }
-        ScriptEngine.EngineBase.Compiler.Types.Variable.Value.Value Value { get; set; }
+        IValue Value { get; set; }
         VariableStatusEnum Status { get; set; }
+        bool Ref { get; set; }
         bool Public { get; set; }
         int StackNumber { get; set; }
         int Users { get; set; }

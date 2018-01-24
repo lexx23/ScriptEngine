@@ -7,11 +7,11 @@ using System.Collections.Generic;
 
 namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
 {
-    public class Value
+    public class Value: IValue
     {
         public ValueTypeEnum Type { get; set; }
 
-        public string Content { get; set; }
+        public string String { get; set; }
         public decimal Number { get; set; }
         public bool Boolean { get; set; }
         public DateTime Date { get; set; }
@@ -19,13 +19,19 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
 
 
         #region Логические операции с значением
+
+        public static bool operator ==(Value left, Value right)
+        {
+            return EQ(left, right);
+        }
+
         /// <summary>
         /// Равенство
         /// </summary>
         /// <param name="left"></param>
         /// <param name="right"></param>
         /// <returns></returns>
-        public static bool operator ==(Value left, Value right)
+        public static bool EQ(IValue left, IValue right)
         {
             if (object.ReferenceEquals(left, null) == true && object.ReferenceEquals(right, null) == true)
                 return true;
@@ -42,10 +48,10 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
             switch (right.Type)
             {
                 case ValueTypeEnum.STRING:
-                    return left.Content == right.Content;
+                    return left.String == right.String;
 
                 case ValueTypeEnum.NUMBER:
-                    decimal left_result,right_result;
+                    decimal left_result, right_result;
                     if (!left.ToNumber(out left_result) || !right.ToNumber(out right_result))
                         return false;
                     else
@@ -63,9 +69,14 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
         /// <param name="left"></param>
         /// <param name="right"></param>
         /// <returns></returns>
+        public static bool UNEQ(IValue left, IValue right)
+        {
+            return ! Value.EQ(left,right);
+        }
+
         public static bool operator !=(Value left, Value right)
         {
-            return !(left == right);
+            return UNEQ(left, right);
         }
 
 
@@ -75,9 +86,8 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
         /// <param name="left"></param>
         /// <param name="right"></param>
         /// <returns></returns>
-        public static Value operator >(Value left, Value right)
+        public static bool GT(IValue result, IValue left, IValue right)
         {
-            Value result = new Value();
             result.Type = ValueTypeEnum.BOOLEAN;
             switch (right.Type)
             {
@@ -85,16 +95,19 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
                 case ValueTypeEnum.NUMBER:
                     decimal left_result, right_result;
                     if (!left.ToNumber(out left_result) || !right.ToNumber(out right_result))
+                    {
                         result.Boolean = false;
+                        return false;
+                    }
                     else
+                    {
                         result.Boolean = left_result > right_result;
-                    result.Content = result.ToString();
-                    return result;
+                        return true;
+                    }
             }
 
             result.Boolean = false;
-            result.Content = result.ToString();
-            return result;
+            return false;
         }
 
         /// <summary>
@@ -103,9 +116,8 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
         /// <param name="left"></param>
         /// <param name="right"></param>
         /// <returns></returns>
-        public static Value operator >=(Value left, Value right)
+        public static bool GE(IValue result,IValue left, IValue right)
         {
-            Value result = new Value();
             result.Type = ValueTypeEnum.BOOLEAN;
             switch (right.Type)
             {
@@ -113,18 +125,19 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
                 case ValueTypeEnum.NUMBER:
                     decimal left_result, right_result;
                     if (!left.ToNumber(out left_result) || !right.ToNumber(out right_result))
+                    {
                         result.Boolean = false;
+                        return false;
+                    }
                     else
+                    {
                         result.Boolean = left_result >= right_result;
-                    result.Content = result.ToString();
-                    return result;
-
-
+                        return true;
+                    }
             }
 
             result.Boolean = false;
-            result.Content = result.ToString();
-            return result;
+            return false;
         }
 
         /// <summary>
@@ -133,9 +146,8 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
         /// <param name="left"></param>
         /// <param name="right"></param>
         /// <returns></returns>
-        public static Value operator <(Value left, Value right)
+        public static bool LT(IValue result, IValue left, IValue right)
         {
-            Value result = new Value();
             result.Type = ValueTypeEnum.BOOLEAN;
             switch (right.Type)
             {
@@ -143,17 +155,20 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
                 case ValueTypeEnum.NUMBER:
                     decimal left_result, right_result;
                     if (!left.ToNumber(out left_result) || !right.ToNumber(out right_result))
+                    {
                         result.Boolean = false;
+                        return false;
+                    }
                     else
+                    {
                         result.Boolean = left_result < right_result;
-                    result.Content = result.ToString();
-                    return result;
+                        return true;
+                    }
 
             }
 
             result.Boolean = false;
-            result.Content = result.ToString();
-            return result;
+            return false;
         }
 
         /// <summary>
@@ -162,9 +177,8 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
         /// <param name="left"></param>
         /// <param name="right"></param>
         /// <returns></returns>
-        public static Value operator <=(Value left, Value right)
+        public static bool LE(IValue result, IValue left, IValue right)
         {
-            Value result = new Value();
             result.Type = ValueTypeEnum.BOOLEAN;
             switch (right.Type)
             {
@@ -172,17 +186,20 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
                 case ValueTypeEnum.NUMBER:
                     decimal left_result, right_result;
                     if (!left.ToNumber(out left_result) || !right.ToNumber(out right_result))
+                    {
                         result.Boolean = false;
+                        return false;
+                    }
                     else
+                    {
                         result.Boolean = left_result <= right_result;
-                    result.Content = result.ToString();
-                    return result;
+                        return true;
+                    }
 
             }
 
             result.Boolean = false;
-            result.Content = result.ToString();
-            return result;
+            return false;
         }
         #endregion
 
@@ -193,29 +210,26 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
         /// <param name="left"></param>
         /// <param name="right"></param>
         /// <returns></returns>
-        public static Value operator +(Value left, Value right)
+        public static bool ADD(IValue result, IValue left, IValue right)
         {
-            Value result = new Value();
-
             switch (right.Type)
             {
                 case ValueTypeEnum.STRING:
                     result.Type = ValueTypeEnum.STRING;
-                    result.Content = left.ToString() + right.ToString();
-                    return result;
+                    result.String = left.ToString() + right.ToString();
+                    return true;
 
                 case ValueTypeEnum.NUMBER:
                     decimal left_result, right_result;
                     result.Type = ValueTypeEnum.NUMBER;
                     if (!left.ToNumber(out left_result) || !right.ToNumber(out right_result))
-                        return null;
+                        return false;
                     else
                         result.Number = left_result + right_result;
-                    result.Content = result.ToString();
-                    return result;
+                    return true;
             }
 
-            return null;
+            return false;
         }
 
         /// <summary>
@@ -224,24 +238,21 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
         /// <param name="left"></param>
         /// <param name="right"></param>
         /// <returns></returns>
-        public static Value operator -(Value left, Value right)
+        public static bool SUB(IValue result, IValue left, IValue right)
         {
-            Value result = new Value();
-
             switch (right.Type)
             {
                 case ValueTypeEnum.NUMBER:
                     decimal left_result, right_result;
                     result.Type = ValueTypeEnum.NUMBER;
                     if (!left.ToNumber(out left_result) || !right.ToNumber(out right_result))
-                        return null;
+                        return false;
                     else
                         result.Number = left_result - right_result;
-                    result.Content = result.ToString();
-                    return result;
+                    return true;
             }
 
-            return null;
+            return false;
         }
 
         /// <summary>
@@ -250,25 +261,21 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
         /// <param name="left"></param>
         /// <param name="right"></param>
         /// <returns></returns>
-        public static Value operator *(Value left, Value right)
+        public static bool MUL(IValue result, IValue left, IValue right)
         {
-            Value result = new Value();
-
             switch (right.Type)
             {
                 case ValueTypeEnum.NUMBER:
                     decimal left_result, right_result;
                     result.Type = ValueTypeEnum.NUMBER;
                     if (!left.ToNumber(out left_result) || !right.ToNumber(out right_result))
-                        return null;
+                        return false;
                     else
                         result.Number = left_result * right_result;
-                    result.Content = result.ToString();
-                    return result;
+                    return true;
             }
 
-            return null;
-
+            return false;
         }
 
         /// <summary>
@@ -277,25 +284,21 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
         /// <param name="left"></param>
         /// <param name="right"></param>
         /// <returns></returns>
-        public static Value operator *(Value left, int right)
+        public static bool MUL(IValue result, IValue left, int right)
         {
-            Value result = new Value();
-
-            Value right_tmp = new Value();
-            right_tmp.Type = ValueTypeEnum.NUMBER;
-            switch (right_tmp.Type)
+            result.Type = ValueTypeEnum.NUMBER;
+            switch (left.Type)
             {
                 case ValueTypeEnum.NUMBER:
                     decimal left_result;
                     if (!left.ToNumber(out left_result))
-                        return null;
+                        return false;
                     else
-                        result.Number = left_result - right;
-                    result.Content = result.ToString();
-                    return result;
+                        result.Number = left_result * right;
+                    return true;
             }
 
-            return null;
+            return false;
         }
 
         /// <summary>
@@ -304,27 +307,25 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
         /// <param name="left"></param>
         /// <param name="right"></param>
         /// <returns></returns>
-        public static Value operator /(Value left, Value right)
+        public static bool DIV(IValue result, IValue left, IValue right)
         {
-            Value result = new Value();
             switch (right.Type)
             {
                 case ValueTypeEnum.NUMBER:
                     decimal left_result, right_result;
                     result.Type = ValueTypeEnum.NUMBER;
                     if (!left.ToNumber(out left_result) || !right.ToNumber(out right_result))
-                        return null;
+                        return false;
                     else
                     {
                         if (right_result == 0)
-                            return null;
+                            return false;
                         result.Number = left_result / right_result;
-                        result.Content = result.ToString();
-                        return result;
+                        return true;
                     }
             }
 
-            return null;
+            return false;
         }
 
         /// <summary>
@@ -333,9 +334,8 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
         /// <param name="left"></param>
         /// <param name="right"></param>
         /// <returns></returns>
-        public static Value operator %(Value left, Value right)
+        public static bool MOD(IValue result, IValue left, IValue right)
         {
-            Value result = new Value();
             decimal left_result, right_result;
 
             switch (right.Type)
@@ -343,18 +343,18 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
                 case ValueTypeEnum.NUMBER:
                     result.Type = ValueTypeEnum.NUMBER;
                     if (!left.ToNumber(out left_result) || !right.ToNumber(out right_result))
-                        return null;
+                        return false;
                     else
                     {
                         if (right_result == 0)
-                            return null;
+                            return false;
                         result.Number = left_result % right_result;
-                        result.Content = result.ToString();
-                        return result;
+                        result.String = result.ToString();
+                        return true;
                     }
             }
 
-            return null;
+            return false;
         }
         #endregion
 
@@ -369,7 +369,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
             switch (Type)
             {
                 case ValueTypeEnum.STRING:
-                    return Content;
+                    return String;
 
                 case ValueTypeEnum.NUMBER:
                     return Number.ToString("n3");
@@ -404,7 +404,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
             switch (Type)
             {
                 case ValueTypeEnum.STRING:
-                    if (decimal.TryParse(Content, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out result))
+                    if (decimal.TryParse(String, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out result))
                         return true;
                     break;
                 case ValueTypeEnum.NUMBER:
@@ -435,7 +435,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
             switch (Type)
             {
                 case ValueTypeEnum.STRING:
-                    return int.Parse(Content);
+                    return int.Parse(String);
 
                 case ValueTypeEnum.NUMBER:
                     return (int)Number;
@@ -462,9 +462,9 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
             switch (Type)
             {
                 case ValueTypeEnum.STRING:
-                    if (Content.ToLower() == "ложь" || Content.ToLower() == "false")
+                    if (String.ToLower() == "ложь" || String.ToLower() == "false")
                         return false;
-                    if (Content.ToLower() == "истина" || Content.ToLower() == "true")
+                    if (String.ToLower() == "истина" || String.ToLower() == "true")
                         return true;
                     break;
 
@@ -494,7 +494,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
             switch (Type)
             {
                 case ValueTypeEnum.STRING:
-                    if (DateTime.TryParseExact(Content, formats, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out result))
+                    if (DateTime.TryParseExact(String, formats, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out result))
                         return result;
                     break;
                 // проверить возможно такого фунционала нет!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -502,7 +502,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
                     return DateTime.FromFileTime((long)Number);
             }
 
-            throw new Exception($"Невозможно преобразовать [{Content}] в дату.");
+            throw new Exception($"Невозможно преобразовать [{String}] в дату.");
         }
 
         /// <summary>
@@ -519,7 +519,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
             switch (type)
             {
                 case ValueTypeEnum.STRING:
-                    Content = ToString();
+                    String = ToString();
                     break;
 
                 case ValueTypeEnum.NUMBER:
@@ -556,7 +556,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
         public Value(ValueTypeEnum type, string value)
         {
             Type = ValueTypeEnum.STRING;
-            Content = value;
+            String = value;
             ConvertTo(type);
         }
 
@@ -564,30 +564,33 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
         public Value(string value)
         {
             Type = ValueTypeEnum.STRING;
-            Content = value;
+            String = value;
         }
 
 
         public Value(int value)
         {
             Type = ValueTypeEnum.NUMBER;
-            Content = value.ToString();
             Number = value;
+        }
+
+        public Value(bool value)
+        {
+            Type = ValueTypeEnum.BOOLEAN;
+            Boolean = value;
         }
 
         /// <summary>
         /// Установить значение.
         /// </summary>
         /// <param name="value"></param>
-        public void SetValue(Value value)
+        public void SetValue(IValue value)
         {
             Type = value.Type;
-            Content = value.Content;
-
             switch (Type)
             {
                 case ValueTypeEnum.STRING:
-                    Content = value.Content;
+                    String = value.String;
                     break;
 
                 case ValueTypeEnum.NUMBER:
@@ -600,16 +603,24 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
 
                 case ValueTypeEnum.OBJECT:
                     Object = value.Object;
-                    Content = value.Object.Module.Name;
+                    String = value.Object.Module.Name;
                     break;
             }
         }
+
+
+        public void SetValue(bool value)
+        {
+            Type = ValueTypeEnum.BOOLEAN;
+            Boolean = value;
+        }
+
 
         /// <summary>
         /// Копировать класс.
         /// </summary>
         /// <returns></returns>
-        public Value Clone()
+        public IValue Clone()
         {
             if (this == null)
                 return null;
@@ -617,7 +628,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
             return new Value()
             {
                 Type = this.Type,
-                Content = this.Content,
+                String = this.String,
                 Boolean = this.Boolean,
                 Number = this.Number,
                 Date = this.Date,
@@ -634,7 +645,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
         public override int GetHashCode()
         {
             var hashCode = 873661529;
-            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Content);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(ToString());
             return hashCode;
         }
     }

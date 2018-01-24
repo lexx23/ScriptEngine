@@ -7,6 +7,7 @@ using ScriptEngine.EngineBase.Interpreter;
 using ScriptEngine.EngineBase.Interpreter.Context;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 
 namespace UnitTests
@@ -14,6 +15,32 @@ namespace UnitTests
     [TestClass]
     public class Interpreter_Test
     {
+        #region Extension
+
+        [TestMethod]
+        public void Interpreter_ExtensionFunctionCall()
+        {
+            IDictionary<string, string> files = new Dictionary<string, string>();
+            files.Add("function", "Extension\\function call.scr");
+
+            ScriptProgramm programm = Compile(files);
+            ScriptInterpreter interpreter = new ScriptInterpreter(programm);
+            interpreter.Debugger.AddBreakpoint("function", 12);
+
+            System.Diagnostics.Stopwatch sw = new Stopwatch();
+            sw.Start();
+            interpreter.Run();
+            //interpreter.Debug();
+            sw.Stop();
+
+            Assert.AreEqual(4200, sw.ElapsedMilliseconds,200);
+            //Assert.AreEqual(1000000, interpreter.Debugger.RegisterGetValue("ф").Number);
+        }
+
+        #endregion
+
+
+
         #region Other
 
         [TestMethod]
@@ -27,6 +54,42 @@ namespace UnitTests
             ScriptInterpreter interpreter = new ScriptInterpreter(programm);
             interpreter.Run();
         }
+
+        [TestMethod]
+        public void Interpreter_OtherSpeedTest()
+        {
+            IDictionary<string, string> files = new Dictionary<string, string>();
+            files.Add("other", "Other\\speed_test.scr");
+
+            System.Diagnostics.Stopwatch sw = new Stopwatch();
+            sw.Start();
+            ScriptProgramm programm = Compile(files);
+            sw.Stop();
+            Assert.AreEqual(60,sw.ElapsedMilliseconds,80);
+
+            sw.Reset();
+            sw.Start();
+            ScriptInterpreter interpreter = new ScriptInterpreter(programm);
+            interpreter.Run();
+            sw.Stop();
+            Assert.AreEqual(20, sw.ElapsedMilliseconds,20);
+        }
+
+        [TestMethod]
+        public void Interpreter_OtherSpeedTest_Debug()
+        {
+            IDictionary<string, string> files = new Dictionary<string, string>();
+            files.Add("other", "Other\\speed_test.scr");
+
+            ScriptProgramm programm = Compile(files);
+            ScriptInterpreter interpreter = new ScriptInterpreter(programm);
+            interpreter.Debugger.AddBreakpoint("other",107);
+            interpreter.Debug();
+
+            Assert.AreEqual(107, interpreter.CurrentLine);
+            Assert.AreEqual(1000000, interpreter.Debugger.RegisterGetValue("ф").ToInt());
+        }
+
         #endregion
 
         #region Goto

@@ -12,6 +12,20 @@ namespace UnitTests
     [TestClass]
     public class Compiler_Test
     {
+        #region Extension
+
+        [TestMethod]
+        public void Compile_ExtensionFunctionCall()
+        {
+            IDictionary<string, string> files = new Dictionary<string, string>();
+            files.Add("function", "Extension\\function call.scr");
+
+            Compile(files);
+        }
+
+
+        #endregion
+
         #region For
 
         [TestMethod]

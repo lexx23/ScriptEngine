@@ -8,11 +8,11 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts
 {
     public class StaticVariables
     {
-        private IDictionary<Value, IVariable> _static_vars;
+        private IDictionary<IValue, IVariable> _static_vars;
 
         public StaticVariables()
         {
-            _static_vars = new Dictionary<Value, IVariable>();
+            _static_vars = new Dictionary<IValue, IVariable>();
         }
 
 
@@ -21,7 +21,7 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>
-        public IVariable Add(Value value)
+        public IVariable Add(IValue value)
         {
             IVariable tmp_var;
             if (Exist(value))
@@ -46,7 +46,7 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>
-        public bool Exist(Value value)
+        public bool Exist(IValue value)
         {
             return _static_vars.ContainsKey(value);
 

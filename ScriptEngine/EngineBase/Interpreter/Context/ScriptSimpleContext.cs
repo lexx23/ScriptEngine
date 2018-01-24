@@ -1,4 +1,5 @@
-﻿using ScriptEngine.EngineBase.Compiler.Types;
+﻿using ScriptEngine.EngineBase.Compiler.Programm;
+using ScriptEngine.EngineBase.Compiler.Types;
 using ScriptEngine.EngineBase.Compiler.Types.Variable;
 using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
 using System;
@@ -9,20 +10,22 @@ namespace ScriptEngine.EngineBase.Interpreter.Context
 {
     public class ScriptSimpleContext
     {
-        private IList<Value> _vars;
+        private IValue [] _vars;
+        private int _count;
 
-        public int Count { get => _vars.Count; }
+        public int Count { get => _count; }
         public string Name { get; set; }
 
 
         public ScriptSimpleContext(string name, int size)
         {
             Name = name;
-            _vars = new List<Value>();
+            _count = size+1;
+            _vars = new IValue[_count];
 
-            while (size > 0)
+            while (size >= 0)
             {
-                _vars.Add(new Value(ValueTypeEnum.NULL, ""));
+                _vars[size] = new Value();
                 size--;
             }
         }
@@ -33,10 +36,10 @@ namespace ScriptEngine.EngineBase.Interpreter.Context
         /// <param name="index"></param>
         public void ClearValue(int index)
         {
-            _vars[index] = new Value(ValueTypeEnum.NULL, "");
+           _vars[index] = new Value();
         }
 
-        public void CopyValue(int index, Value value)
+        public void CopyValue(int index, IValue value)
         {
             _vars[index] = value;
         }
@@ -47,17 +50,22 @@ namespace ScriptEngine.EngineBase.Interpreter.Context
         /// </summary>
         /// <param name="variable"></param>
         /// <param name="value"></param>
-        public void SetValue(int index, Value value)
+        public void SetValue(int index, IValue value)
         {
             _vars[index].SetValue(value);
         }
+
+        //public void SetValue(int index, bool value)
+        //{
+        //    _vars[index].SetValue(value);
+        //}
 
         /// <summary>
         /// Получить значение из контекста выполнения.
         /// </summary>
         /// <param name="variable"></param>
         /// <returns></returns>
-        public Value GetValue(int index)
+        public IValue GetValue(int index)
         {
             return _vars[index];
         }

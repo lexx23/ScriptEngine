@@ -25,10 +25,7 @@ namespace ScriptEngine.EngineBase.Interpreter.Context
         /// <returns></returns>
         public ObjectContext CreateModuleContext(string name, ScriptModule module)
         {
-            ObjectContext context = new ObjectContext(module)
-            {
-                Context = new ScriptSimpleContext(name, module.ModuleScope.VarCount)
-            };
+            ObjectContext context = new ObjectContext(module,new ScriptSimpleContext(name, module.ModuleScope.VarCount));
             _contexts.Add(name, context);
             return context;
         }
@@ -63,11 +60,7 @@ namespace ScriptEngine.EngineBase.Interpreter.Context
         public void SetModuleContext(ObjectContext context, int position)
         {
             // Сохранить текущий контекст.
-            _history.Push((position, new ObjectContext(_main_context.CurrentModule)
-            {
-                Context = _main_context._contexts[1]
-            }
-            ));
+            _history.Push((position, new ObjectContext(_main_context.CurrentModule, _main_context._contexts[1])));
 
             // Установить новый.
             _main_context._contexts[1] = context.Context;

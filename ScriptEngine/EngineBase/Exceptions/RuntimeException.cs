@@ -1,4 +1,5 @@
 ﻿using ScriptEngine.EngineBase.Interpreter;
+using ScriptEngine.EngineBase.Interpreter.Context;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -15,11 +16,12 @@ namespace ScriptEngine.EngineBase.Exceptions
             _script_interpreter = interpreter;
         }
 
-        public string MessageWithCodeInfo
+
+        public string MessageWithLine
         {
             get
             {
-                return $"Модуль [{_script_interpreter.CurrentModule.Name}] | Ошибка в строке {_script_interpreter.CurrentLine} | " + base.Message;
+                return $"{{{_script_interpreter.CurrentModule.Name}({_script_interpreter.CurrentLine})}} : " + base.Message;
             }
         }
 
@@ -30,7 +32,7 @@ namespace ScriptEngine.EngineBase.Exceptions
         {
             get
             {
-                return MessageWithCodeInfo;
+                return MessageWithLine;
             }
         }
     }

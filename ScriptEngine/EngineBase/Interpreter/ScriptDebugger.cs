@@ -135,25 +135,9 @@ namespace ScriptEngine.EngineBase.Interpreter
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        public Value RegisterGetValue(string name)
+        public IValue RegisterGetValue(string name)
         {
-            IVariable var;
-            if (_interpreter.CurrentFunction != null)
-            {
-                var = _interpreter.CurrentModule.Variables.Get(name, _interpreter.CurrentFunction.Name);
-                if(var != null)
-                    return _interpreter.Context.GetValue(var);
-            }
-
-            var = _interpreter.CurrentModule.Variables.Get(name, _interpreter.CurrentModule.Name);
-            if (var != null)
-                return _interpreter.Context.GetValue(var);
-
-            var = _interpreter.Programm.GlobalVariables.Get(name);
-            if (var != null)
-                return _interpreter.Context.GetValue(var);
-
-            return null;
+            return _interpreter.Context.GetValue(name);
         }
 
         /// <summary>
@@ -161,20 +145,14 @@ namespace ScriptEngine.EngineBase.Interpreter
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        public Value ObjectGetValue(string object_name, string var_name)
+        public IValue ObjectGetValue(string object_name, string var_name)
         {
-            IVariable var;
-            Value object_value = null;
+            IValue object_value = null;
 
             object_value = RegisterGetValue(object_name);
 
             if (object_value != null && object_value.Object != null && object_value.Object.Context != null)
-            {
-
-                var = object_value.Object.Module.Variables.Get(var_name);
-                if (var != null)
-                return object_value.Object.Context.GetValue(var.StackNumber);
-            }
+                return object_value.Object.GetValue(var_name);
 
             return null;
         }

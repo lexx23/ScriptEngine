@@ -1,4 +1,5 @@
 ﻿using ScriptEngine.EngineBase.Compiler.Types;
+using ScriptEngine.EngineBase.Compiler.Types.Function;
 using ScriptEngine.EngineBase.Compiler.Types.Variable;
 using ScriptEngine.EngineBase.Interpreter;
 using ScriptEngine.EngineBase.Praser.Token;

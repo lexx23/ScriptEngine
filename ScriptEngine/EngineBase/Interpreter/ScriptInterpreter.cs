@@ -20,7 +20,7 @@ namespace ScriptEngine.EngineBase.Interpreter
         private ScriptProgrammContext _context;
 
         private ScriptDebugger _debugger;
-        private Queue<Value> _stack;
+        private Queue<IValue> _stack;
         private int _current_line;
 
         public ScriptDebugger Debugger { get => _debugger; }
@@ -37,8 +37,8 @@ namespace ScriptEngine.EngineBase.Interpreter
             _instruction = int.MaxValue;
 
             _debugger = new ScriptDebugger(this);
-            _stack = new Queue<Value>();
-            _context = new ScriptProgrammContext(_programm.GlobalScope.VarCount);
+            _stack = new Queue<IValue>();
+            _context = new ScriptProgrammContext(_programm);
         }
 
 
@@ -144,6 +144,16 @@ namespace ScriptEngine.EngineBase.Interpreter
             if (function == null)
                 throw new Exception($"Функция [{name}] не найдена.");
 
+
+            if(function.Method != null)
+            {
+                Value result = function.Method(null);
+                _stack.Enqueue(result);
+                _instruction++;
+                return;
+            }
+
+
             FunctionCall(function, change_context);
         }
 
@@ -180,7 +190,7 @@ namespace ScriptEngine.EngineBase.Interpreter
         private void SetFunctionParams(IFunction function)
         {
             List<string> function_params = new List<string>();
-            Value stack_param;
+            IValue stack_param;
             if (function.Param != null)
                 foreach (IVariable function_param in function.Param)
                 {
@@ -206,7 +216,7 @@ namespace ScriptEngine.EngineBase.Interpreter
                         else
                         {
                             // Пустой параметр, тот который не указан между запятых. Функция Тест(,123) 
-                            _context.SetValue(function_param, new Value(ValueTypeEnum.NULL, ""));
+                            _context.SetValue(function_param, new Value());
                             function_params.Add(function_param.Name + " = Null");
                         }
                     }
@@ -228,7 +238,7 @@ namespace ScriptEngine.EngineBase.Interpreter
         /// </summary>
         public void FunctionReturn(IVariable return_var)
         {
-            Value var = null;
+            IValue var = null;
 
             // забираем возвращаемое значение из текущего контекста
             if (return_var != null)
@@ -294,8 +304,8 @@ namespace ScriptEngine.EngineBase.Interpreter
         /// <param name="statement"></param>
         private void ObjectCall(ScriptStatement statement)
         {
-            Value object_call = _context.GetValue(statement.Variable2);
-            Value function_index = _context.GetValue(statement.Variable3);
+            IValue object_call = _context.GetValue(statement.Variable2);
+            IValue function_index = _context.GetValue(statement.Variable3);
 
             IFunction function;
             function = _context.CurrentModule.ObjectCallGet((int)function_index.Number);
@@ -318,18 +328,18 @@ namespace ScriptEngine.EngineBase.Interpreter
         /// <param name="statement"></param>
         private void ObjectResoleVariable(ScriptStatement statement)
         {
-            Value var_name;
+            IValue var_name;
             var_name = _context.GetValue(statement.Variable3);
 
-            Value object_call = _context.GetValue(statement.Variable2);
+            IValue object_call = _context.GetValue(statement.Variable2);
             if (object_call == null || object_call.Type != ValueTypeEnum.OBJECT || object_call.Object == null)
-                throw new RuntimeException(this, $"Значение не является значением объектного типа [{var_name.Content}]");
+                throw new RuntimeException(this, $"Значение не является значением объектного типа [{var_name.ToString()}]");
 
-            IVariable var = object_call.Object.Module.Variables.Get(var_name.Content, object_call.Object.Module.ModuleScope);
+            IVariable var = object_call.Object.Module.Variables.Get(var_name.ToString(), object_call.Object.Module.ModuleScope);
             if (!var.Public)
-                throw new RuntimeException(this, $"Переменная [{var_name.Content}] не имеет оператора Экспорт, и не доступна.");
+                throw new RuntimeException(this, $"Переменная [{var_name.ToString()}] не имеет оператора Экспорт, и не доступна.");
 
-            Value value = object_call.Object.Context.GetValue(var.StackNumber);
+            IValue value = object_call.Object.Context.GetValue(var.StackNumber);
             _context.CopyValue(statement.Variable1, value);
         }
 
@@ -337,32 +347,31 @@ namespace ScriptEngine.EngineBase.Interpreter
         /// Проверить результат вычислений.
         /// </summary>
         /// <param name="result"></param>
-        private Value CheckResult(Value left, Value right, OP_CODES code)
+        private void CheckResult(IValue result ,IValue left, IValue right, OP_CODES code)
         {
-            Value result = null;
+            bool result_bool = true;
 
             switch (code)
             {
                 case OP_CODES.OP_ADD:
-                    result = left + right;
+                    result_bool = Value.ADD(result,left,right);
                     break;
                 case OP_CODES.OP_SUB:
-                    result = left - right;
+                    result_bool = Value.SUB(result, left, right);
                     break;
                 case OP_CODES.OP_MUL:
-                    result = left * right;
+                    result_bool = Value.MUL(result, left, right);
                     break;
                 case OP_CODES.OP_DIV:
-                    result = left / right;
+                    result_bool = Value.DIV(result, left, right);
                     break;
                 case OP_CODES.OP_MOD:
-                    result = left % right;
+                    result_bool = Value.MOD(result, left, right);
                     break;
             }
 
-            if (result == null)
-                throw new RuntimeException(this, $"Невозможно расчитать {StringEnum.GetStringValue(code)}  {left.Content} и {right.Content}.");
-            return result;
+            if (!result_bool)
+                throw new RuntimeException(this, $"Невозможно расчитать {StringEnum.GetStringValue(code)}  {left.ToString()} и {right.ToString()}.");
         }
 
 
@@ -372,7 +381,7 @@ namespace ScriptEngine.EngineBase.Interpreter
         internal void Execute()
         {
             ScriptStatement statement;
-            Value v2, v3, result;
+            IValue v1,v2, v3;
 
             while (_instruction < _context.CurrentModule.Code.Count)
             {
@@ -395,7 +404,7 @@ namespace ScriptEngine.EngineBase.Interpreter
                         if (_stack.Count > 0)
                             v2 = _stack.Dequeue();
                         else
-                            v2 = new Value(ValueTypeEnum.NULL, "");
+                            v2 = new Value();
                         _context.SetValue(statement.Variable1, v2);
                         break;
 
@@ -406,9 +415,9 @@ namespace ScriptEngine.EngineBase.Interpreter
                         if (statement.Variable3 != null)
                         {
                             v3 = _context.GetValue(statement.Variable3);
-                            module_name = v3.Content;
+                            module_name = v3.ToString();
                         }
-                        FunctionCall(v2.Content, module_name);
+                        FunctionCall(v2.ToString(), module_name);
                         continue;
 
                     case OP_CODES.OP_RETURN:
@@ -425,9 +434,9 @@ namespace ScriptEngine.EngineBase.Interpreter
 
                     case OP_CODES.OP_IFNOT:
                         v2 = _context.GetValue(statement.Variable2);
-                        v3 = _context.GetValue(statement.Variable3);
                         if (!v2.Boolean)
                         {
+                            v3 = _context.GetValue(statement.Variable3);
                             _instruction = (int)v3.Number;
                             continue;
                         }
@@ -439,73 +448,57 @@ namespace ScriptEngine.EngineBase.Interpreter
 
 
                     case OP_CODES.OP_GT:
+                        v1 = _context.GetValue(statement.Variable1);
                         v2 = _context.GetValue(statement.Variable2);
                         v3 = _context.GetValue(statement.Variable3);
-                        _context.SetValue(statement.Variable1, v2 > v3);
+                        Value.GT(v1,v2, v3);
                         break;
                     case OP_CODES.OP_LT:
+                        v1 = _context.GetValue(statement.Variable1);
                         v2 = _context.GetValue(statement.Variable2);
                         v3 = _context.GetValue(statement.Variable3);
-                        _context.SetValue(statement.Variable1, v2 < v3);
+                        Value.LT(v1, v2, v3);
                         break;
                     case OP_CODES.OP_GE:
+                        v1 = _context.GetValue(statement.Variable1);
                         v2 = _context.GetValue(statement.Variable2);
                         v3 = _context.GetValue(statement.Variable3);
-                        _context.SetValue(statement.Variable1, v2 >= v3);
+                        Value.GE(v1, v2, v3);
                         break;
                     case OP_CODES.OP_LE:
+                        v1 = _context.GetValue(statement.Variable1);
                         v2 = _context.GetValue(statement.Variable2);
                         v3 = _context.GetValue(statement.Variable3);
-                        _context.SetValue(statement.Variable1, v2 <= v3);
+                        Value.LE(v1, v2, v3);
                         break;
                     case OP_CODES.OP_NOT:
+                        v1 = _context.GetValue(statement.Variable1);
                         v2 = _context.GetValue(statement.Variable2);
-                        result = new Value
-                        {
-                            Type = ValueTypeEnum.BOOLEAN,
-                            Boolean = !v2.ToBoolean()
-                        };
-                        _context.SetValue(statement.Variable1, result);
+                        v1.SetValue(!v2.ToBoolean());
                         break;
                     case OP_CODES.OP_OR:
+                        v1 = _context.GetValue(statement.Variable1);
                         v2 = _context.GetValue(statement.Variable2);
                         v3 = _context.GetValue(statement.Variable3);
-                        result = new Value
-                        {
-                            Type = ValueTypeEnum.BOOLEAN,
-                            Boolean = v2.ToBoolean() || v3.ToBoolean()
-                        };
-                        _context.SetValue(statement.Variable1, result);
+                        v1.SetValue(v2.ToBoolean() || v3.ToBoolean());
                         break;
                     case OP_CODES.OP_AND:
+                        v1 = _context.GetValue(statement.Variable1);
                         v2 = _context.GetValue(statement.Variable2);
                         v3 = _context.GetValue(statement.Variable3);
-                        result = new Value
-                        {
-                            Type = ValueTypeEnum.BOOLEAN,
-                            Boolean = v2.ToBoolean() && v3.ToBoolean()
-                        };
-                        _context.SetValue(statement.Variable1, result);
-                        break;
+                        v1.SetValue(v2.ToBoolean() && v3.ToBoolean());
+                          break;
                     case OP_CODES.OP_EQ:
+                        v1 = _context.GetValue(statement.Variable1);
                         v2 = _context.GetValue(statement.Variable2);
                         v3 = _context.GetValue(statement.Variable3);
-                        result = new Value
-                        {
-                            Type = ValueTypeEnum.BOOLEAN,
-                            Boolean = v2 == v3
-                        };
-                        _context.SetValue(statement.Variable1, result);
+                        v1.SetValue(Value.EQ(v2, v3));
                         break;
                     case OP_CODES.OP_UNEQ:
+                        v1 = _context.GetValue(statement.Variable1);
                         v2 = _context.GetValue(statement.Variable2);
                         v3 = _context.GetValue(statement.Variable3);
-                        result = new Value
-                        {
-                            Type = ValueTypeEnum.BOOLEAN,
-                            Boolean = v2 != v3
-                        };
-                        _context.SetValue(statement.Variable1, result);
+                        v1.SetValue(Value.UNEQ(v2, v3));
                         break;
 
                     case OP_CODES.OP_VAR_CLR:
@@ -516,29 +509,35 @@ namespace ScriptEngine.EngineBase.Interpreter
                         _context.SetValue(statement.Variable2, v3);
                         break;
                     case OP_CODES.OP_ADD:
+                        v1 = _context.GetValue(statement.Variable1);
                         v2 = _context.GetValue(statement.Variable2);
                         v3 = _context.GetValue(statement.Variable3);
-                        _context.SetValue(statement.Variable1, CheckResult(v2, v3, OP_CODES.OP_ADD));
+                        CheckResult(v1,v2, v3, OP_CODES.OP_ADD);
                         break;
                     case OP_CODES.OP_SUB:
+                        v1 = _context.GetValue(statement.Variable1);
                         v2 = _context.GetValue(statement.Variable2);
                         v3 = _context.GetValue(statement.Variable3);
-                        _context.SetValue(statement.Variable1, CheckResult(v2, v3, OP_CODES.OP_SUB));
+                        CheckResult(v1, v2, v3, OP_CODES.OP_SUB);
                         break;
                     case OP_CODES.OP_MUL:
+                        v1 = _context.GetValue(statement.Variable1);
                         v2 = _context.GetValue(statement.Variable2);
                         v3 = _context.GetValue(statement.Variable3);
-                        _context.SetValue(statement.Variable1, CheckResult(v2, v3, OP_CODES.OP_MUL));
+                        CheckResult(v1, v2, v3, OP_CODES.OP_MUL);
+
                         break;
                     case OP_CODES.OP_DIV:
+                        v1 = _context.GetValue(statement.Variable1);
                         v2 = _context.GetValue(statement.Variable2);
                         v3 = _context.GetValue(statement.Variable3);
-                        _context.SetValue(statement.Variable1, CheckResult(v2, v3, OP_CODES.OP_DIV));
+                        CheckResult(v1, v2, v3, OP_CODES.OP_DIV);
                         break;
                     case OP_CODES.OP_MOD:
+                        v1 = _context.GetValue(statement.Variable1);
                         v2 = _context.GetValue(statement.Variable2);
                         v3 = _context.GetValue(statement.Variable3);
-                        _context.SetValue(statement.Variable1, CheckResult(v2, v3, OP_CODES.OP_MOD));
+                        CheckResult(v1, v2, v3, OP_CODES.OP_MOD);
                         break;
 
                 }

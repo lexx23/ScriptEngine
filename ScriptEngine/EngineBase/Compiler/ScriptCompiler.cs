@@ -94,6 +94,8 @@ namespace ScriptEngine.EngineBase.Compiler
             _op_codes.Add(OP_CODES.OP_CALL, new op_code { code = OP_CODES.OP_CALL, type = OP_TYPE.WO_RESULT });
             _op_codes.Add(OP_CODES.OP_OBJECT_CALL, new op_code { code = OP_CODES.OP_OBJECT_CALL, type = OP_TYPE.WO_RESULT });
             _op_codes.Add(OP_CODES.OP_OBJECT_RESOLVE_VAR, new op_code { code = OP_CODES.OP_OBJECT_RESOLVE_VAR, type = OP_TYPE.RESULT });
+
+            _programm.LoadExtensions();
         }
 
 
@@ -126,7 +128,9 @@ namespace ScriptEngine.EngineBase.Compiler
         /// <returns></returns>
         private IVariable OptimizeCodes(op_code code,IVariable left, IVariable right)
         {
-            Value result = null;
+            bool result_bool = true;
+
+            IValue result = null;
             if (left.Value == null)
                 return null;
             else
@@ -146,19 +150,19 @@ namespace ScriptEngine.EngineBase.Compiler
             {
                 case OP_CODES.OP_GT:
                     result = new Value();
-                    result = left.Value > right.Value;
+                    result_bool = Value.GT(result,left.Value,right.Value);
                     break;
                 case OP_CODES.OP_LT:
                     result = new Value();
-                    result = left.Value < right.Value;
+                    result_bool = Value.LT(result,left.Value,right.Value);
                     break;
                 case OP_CODES.OP_GE:
                     result = new Value();
-                    result = left.Value >= right.Value;
+                    result_bool = Value.GE(result, left.Value, right.Value);
                     break;
                 case OP_CODES.OP_LE:
                     result = new Value();
-                    result = left.Value <= right.Value;
+                    result_bool = Value.LE(result, left.Value, right.Value);
                     break;
                 case OP_CODES.OP_NOT:
                     result = new Value();
@@ -178,36 +182,41 @@ namespace ScriptEngine.EngineBase.Compiler
                 case OP_CODES.OP_EQ:
                     result = new Value();
                     result.Type = ValueTypeEnum.BOOLEAN;
-                    result.Boolean = left.Value == right.Value;
+                    result.Boolean = Value.EQ(left.Value,right.Value);
                     break;
                 case OP_CODES.OP_UNEQ:
                     result = new Value();
                     result.Type = ValueTypeEnum.BOOLEAN;
-                    result.Boolean = left.Value != right.Value;
+                    result.Boolean = Value.UNEQ(left.Value, right.Value);
                     break;
 
 
                 case OP_CODES.OP_MUL:
-                    result = left.Value * right.Value;
+                    result = new Value();
+                    result_bool = Value.MUL(result, left.Value, right.Value);
                     break;
                 case OP_CODES.OP_ADD:
-                    result = left.Value + right.Value;
+                    result = new Value();
+                    result_bool = Value.ADD(result, left.Value, right.Value);
                     break;
                 case OP_CODES.OP_SUB:
-                    result = left.Value - right.Value;
+                    result = new Value();
+                    result_bool = Value.SUB(result, left.Value, right.Value);
                     break;
                 case OP_CODES.OP_DIV:
-                    result = left.Value / right.Value;
+                    result = new Value();
+                    result_bool = Value.DIV(result, left.Value, right.Value);
                     break;
                 case OP_CODES.OP_MOD:
-                    result = left.Value % right.Value;
+                    result = new Value();
+                    result_bool = Value.MOD(result, left.Value, right.Value);
                     break;
 
                 default:
                     return null;
             }
 
-            if (result != null)
+            if (result_bool)
             {
                 if (right != null)
                 {
@@ -224,7 +233,7 @@ namespace ScriptEngine.EngineBase.Compiler
                 return _programm.StaticVariables.Add(result);
             }
             else
-                throw new CompilerException($"Невозможно расчитать {StringEnum.GetStringValue(code.code)}  {left.Value.Content} и {right.Value.Content}.");
+                throw new CompilerException(_iterator.Current.CodeInformation,$"Невозможно расчитать {StringEnum.GetStringValue(code.code)}  {left.Value.String} и {right.Value.String}.");
         }
 
         /// <summary>
@@ -383,7 +392,7 @@ namespace ScriptEngine.EngineBase.Compiler
 
             right = ParseExpression(level);
 
-            Console.Write($"{left.Value?.ToString()} - {work_code.code.ToString()} - {right.Value?.ToString()}\n");
+            //Console.Write($"{left.Value?.ToString()} - {work_code.code.ToString()} - {right.Value?.ToString()}\n");
 
             return EmitCode(work_code, left, right);
         }
@@ -837,13 +846,13 @@ namespace ScriptEngine.EngineBase.Compiler
                 throw new CompilerException(function.CodeInformation, $"Обращение к процедуре [{function.Name}] как к функции.");
 
             // Патч вызова функции. Указываю правильный модуль.
-            if (work_function.Scope.Module != function.Scope.Module)
+            if (work_function.Scope != null && work_function.Scope.Module != function.Scope.Module)
             {
                 ScriptStatement statement = function.Scope.Module.StatementGet(function.EntryPoint);
-                statement.Variable3 = _programm.StaticVariables.Add(new Value(ValueTypeEnum.STRING, work_function.Scope.Module.Name));
+                statement.Variable3 = _programm.StaticVariables.Add(new Value(work_function.Scope.Module.Name));
             }
 
-
+            function.CodeInformation = null;
             if (function.Param.Count == work_function.Param.Count)
                 return;
 
@@ -881,7 +890,7 @@ namespace ScriptEngine.EngineBase.Compiler
             {
                 // Обработка пустого параметра. Кода стоит просто запятая.
                 if (_iterator.Current.Type == TokenTypeEnum.PUNCTUATION && _iterator.Current.SubType == TokenSubTypeEnum.P_COMMA)
-                    var = new Variable() { Scope = _scope, Name = "<<null>>", Status = VariableStatusEnum.CONSTANTVARIABLE, Value = new Value(ValueTypeEnum.NULL, "") };
+                    var = new Variable() { Scope = _scope, Name = "<<null>>", Status = VariableStatusEnum.CONSTANTVARIABLE, Value = new Value() };
                 else
                     // Получить параметр функции, может быть любое выражение или вызов.
                     var = ParseExpression((int)Priority.TOP);
@@ -921,7 +930,7 @@ namespace ScriptEngine.EngineBase.Compiler
                 foreach (IVariable var in function.Param)
                     EmitCode(OP_CODES.OP_PUSH, var, null);
 
-                IVariable function_name = _programm.StaticVariables.Add(new Value(ValueTypeEnum.STRING, function.Name));
+                IVariable function_name = _programm.StaticVariables.Add(new Value(function.Name));
 
                 // Добавить в код вызов функции из модуля по ее имени. 
                 function.EntryPoint = _current_module.ProgrammLine;
@@ -1007,8 +1016,9 @@ namespace ScriptEngine.EngineBase.Compiler
                     // Обращение к методу или свойству.
                     if (!ParseObjectFunctionCall(token, object_call, function_type, ref object_call, ref function))
                     {
-                        var = _programm.StaticVariables.Add(new Value(ValueTypeEnum.STRING, token.Content));
+                        var = _programm.StaticVariables.Add(new Value(token.Content));
                         object_call = EmitCode(OP_CODES.OP_OBJECT_RESOLVE_VAR, object_call, var);
+                        object_call.Ref = true;
 
                         // Проверка и изменение типа вызова обьекта, с процедуры на функцию.
                         if (function != null)
@@ -1580,6 +1590,7 @@ namespace ScriptEngine.EngineBase.Compiler
             ParserClass parser;
             Dictionary<string, bool> defines = new Dictionary<string, bool>();
             defines.Add("НаКлиенте", true);
+
 
             foreach (KeyValuePair<ScriptModule, string> module in modules)
             {

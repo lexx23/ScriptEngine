@@ -1,5 +1,7 @@
 ﻿using ScriptEngine.EngineBase.Compiler.Types.Variable;
+using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
 using ScriptEngine.EngineBase.Praser.Token;
+using System;
 using System.Collections.Generic;
 
 namespace ScriptEngine.EngineBase.Compiler.Types.Function
@@ -13,11 +15,10 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Function
         public IList<IVariable> Param { get; set; }
         public int EntryPoint { get; set; }
 
+        public Func<IVariable[], Value> Method { get; set; }
+
         public CodeInformation CodeInformation { get; set; }
 
-        public IVariable GetParamByIndex(int index)
-        {
-            return Param[index];
-        }
+
     }
 }

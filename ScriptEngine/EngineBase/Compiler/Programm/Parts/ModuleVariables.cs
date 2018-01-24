@@ -38,6 +38,7 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts
                 _vars.Remove(variable.Name + "-public-" + scope.Name);
         }
 
+        // TODO Перенести в глобальный модуль.
         /// <summary>
         /// Попытка переиспользовать переменную.
         /// </summary>
@@ -52,13 +53,17 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts
                     if (var.Value.Users <= 1)
                         continue;
 
-                    if (var.Value.Scope != scope)
-                        continue;
+                    //if (var.Value.Scope != scope)
+                    //    continue;
+
 
                     var.Value.Users = 1;
-                    ScriptStatement statement = _module.StatementAdd();
-                    statement.OP_CODE = Interpreter.OP_CODES.OP_VAR_CLR;
-                    statement.Variable2 = var.Value;
+                    if (var.Value.Ref)
+                    {
+                        ScriptStatement statement = _module.StatementAdd();
+                        statement.OP_CODE = Interpreter.OP_CODES.OP_VAR_CLR;
+                        statement.Variable2 = var.Value;
+                    }
 
                     scope.VarCount++;
                     return var.Value;
@@ -75,7 +80,7 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts
         /// <param name="scope"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public IVariable Add(string name, bool as_public, ScriptScope scope, Value value = null)
+        public IVariable Add(string name, bool as_public, ScriptScope scope, IValue value = null)
         {
             IVariable var;
 

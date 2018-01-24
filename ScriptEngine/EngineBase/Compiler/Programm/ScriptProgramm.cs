@@ -3,8 +3,11 @@ using ScriptEngine.EngineBase.Compiler.Types;
 using ScriptEngine.EngineBase.Compiler.Types.Function;
 using ScriptEngine.EngineBase.Compiler.Types.Variable;
 using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
+using ScriptEngine.EngineBase.Extensions;
+using System;
 using System.Collections.Generic;
-
+using System.IO;
+using System.Reflection;
 
 namespace ScriptEngine.EngineBase.Compiler.Programm
 {
@@ -67,7 +70,57 @@ namespace ScriptEngine.EngineBase.Compiler.Programm
             return _modules.ContainsKey(module_name);
         }
 
-    }
 
+        public void LoadExtensions()
+        {
+            string path = Directory.GetCurrentDirectory() + "\\LanguageExtensions\\";
+
+            foreach (string file in Directory.GetFiles(path, "*.dll", SearchOption.AllDirectories))
+            {
+                LoadExtension(file);
+            }
+        }
+
+        public void LoadExtension(string file)
+        {
+            Assembly assembly = Assembly.LoadFile(file);
+            if (assembly == null)
+                throw new Exception($"Файл расширения {file} не найден.");
+
+            foreach (Type type in assembly.ExportedTypes)
+            {
+                if (type.IsClass && type.BaseType == typeof(ExtensionBase))
+                {
+                    ScriptExtensionAttribute attribute = Attribute.GetCustomAttribute(type, typeof(ScriptExtensionAttribute), false) as ScriptExtensionAttribute;
+                    if (attribute != null)
+                    {
+
+                        Object extension = Activator.CreateInstance(type);
+
+                        if (attribute.AsGlobal)
+                        {
+
+                            foreach (MethodInfo method in type.GetTypeInfo().DeclaredMethods)
+                            {
+
+
+                                IFunction function = GlobalFunctions.Add("ТекущаяУниверсальнаяДатаВМиллисекундах");
+
+                                function.Type = FunctionTypeEnum.FUNCTION;
+                                function.Param = new List<IVariable>();
+                                function.Method = Extensions.MethodInfoExtensions.Bind(method, extension);
+                                //function.Method = (Func<Value>)Delegate.CreateDelegate(typeof(Func<Value>), extension, method);
+                                //IVariable ret = function.Method(null);
+                            }
+
+                        }
+                    }
+                }
+            }
+
+        }
+
+
+    }
 
 }
