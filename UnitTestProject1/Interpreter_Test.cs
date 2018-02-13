@@ -1,7 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ScriptEngine.EngineBase.Compiler;
 using ScriptEngine.EngineBase.Compiler.Programm;
-using ScriptEngine.EngineBase.Compiler.Programm.Parts;
+using ScriptEngine.EngineBase.Compiler.Programm.Parts.Module;
 using ScriptEngine.EngineBase.Exceptions;
 using ScriptEngine.EngineBase.Interpreter;
 using ScriptEngine.EngineBase.Interpreter.Context;
@@ -20,12 +20,16 @@ namespace UnitTests
         [TestMethod]
         public void Interpreter_ExtensionFunctionCall()
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("function", "Extension\\function call.scr");
+//            IDictionary<ScriptModule, string> files = new Dictionary<ScriptModule, string>();
+//            files.Add("function", "Extension\\function call.scr");
 
-            ScriptProgramm programm = Compile(files);
+            IDictionary<ScriptModule, string> modules = new Dictionary<ScriptModule, string>();
+            modules.Add(new ScriptModule("global", "global", ModuleTypeEnum.STARTUP,true,false), OpenModule("Extension\\function call.scr"));
+
+
+            ScriptProgramm programm = CompileObjects(modules);
             ScriptInterpreter interpreter = new ScriptInterpreter(programm);
-            interpreter.Debugger.AddBreakpoint("function", 12);
+            interpreter.Debugger.AddBreakpoint("global", 12);
 
             System.Diagnostics.Stopwatch sw = new Stopwatch();
             sw.Start();
@@ -33,8 +37,8 @@ namespace UnitTests
             //interpreter.Debug();
             sw.Stop();
 
-            Assert.AreEqual(4200, sw.ElapsedMilliseconds,200);
-            //Assert.AreEqual(1000000, interpreter.Debugger.RegisterGetValue("ф").Number);
+            Assert.AreEqual(2600, sw.ElapsedMilliseconds,160);
+            //Assert.AreEqual(1000000, interpreter.Debugger.RegisterGetValue("ф").AsNumber());
         }
 
         #endregion
@@ -53,6 +57,27 @@ namespace UnitTests
             ScriptProgramm programm = Compile(files);
             ScriptInterpreter interpreter = new ScriptInterpreter(programm);
             interpreter.Run();
+        }
+
+
+        [TestMethod]
+        public void Interpreter_OtherSpeedTestFunctionCall()
+        {
+            IDictionary<string, string> files = new Dictionary<string, string>();
+            files.Add("function", "Other\\speed_test_function_call.scr");
+
+            ScriptProgramm programm = Compile(files);
+            ScriptInterpreter interpreter = new ScriptInterpreter(programm);
+            interpreter.Debugger.AddBreakpoint("function", 12);
+
+            System.Diagnostics.Stopwatch sw = new Stopwatch();
+            sw.Start();
+            interpreter.Run();
+            //interpreter.Debug();
+            sw.Stop();
+
+            Assert.AreEqual(4800, sw.ElapsedMilliseconds, 200);
+            //Assert.AreEqual(1000000, interpreter.Debugger.RegisterGetValue("ф").Number);
         }
 
         [TestMethod]
@@ -87,7 +112,7 @@ namespace UnitTests
             interpreter.Debug();
 
             Assert.AreEqual(107, interpreter.CurrentLine);
-            Assert.AreEqual(1000000, interpreter.Debugger.RegisterGetValue("ф").ToInt());
+            Assert.AreEqual(1000000, interpreter.Debugger.RegisterGetValue("ф").AsInt());
         }
 
         #endregion
@@ -107,11 +132,11 @@ namespace UnitTests
             interpreter.Debug();
 
             Assert.AreEqual(14, interpreter.CurrentLine);
-            Assert.AreEqual(10, interpreter.Debugger.RegisterGetValue("ф").ToInt());
+            Assert.AreEqual(10, interpreter.Debugger.RegisterGetValue("ф").AsInt());
             interpreter.Debugger.Continue();
 
             Assert.AreEqual(28, interpreter.CurrentLine);
-            Assert.AreEqual(20, interpreter.Debugger.RegisterGetValue("ф").Number);
+            Assert.AreEqual(20, interpreter.Debugger.RegisterGetValue("ф").AsNumber());
             interpreter.Debugger.Continue();
         }
         #endregion
@@ -134,24 +159,24 @@ namespace UnitTests
             interpreter.Debug();
 
             Assert.AreEqual(7, interpreter.CurrentLine);
-            Assert.AreEqual(6, interpreter.Debugger.RegisterGetValue("ф").Number);
-            Assert.AreEqual(8, interpreter.Debugger.RegisterGetValue("б").Number);
+            Assert.AreEqual(6, interpreter.Debugger.RegisterGetValue("ф").AsNumber());
+            Assert.AreEqual(8, interpreter.Debugger.RegisterGetValue("б").AsNumber());
             interpreter.Debugger.Continue();
 
 
             Assert.AreEqual(14, interpreter.CurrentLine);
-            Assert.AreEqual(2, interpreter.Debugger.RegisterGetValue("ф").Number);
-            Assert.AreEqual(4, interpreter.Debugger.RegisterGetValue("б").Number);
+            Assert.AreEqual(2, interpreter.Debugger.RegisterGetValue("ф").AsNumber());
+            Assert.AreEqual(4, interpreter.Debugger.RegisterGetValue("б").AsNumber());
             interpreter.Debugger.Continue();
 
             Assert.AreEqual(25, interpreter.CurrentLine);
-            Assert.AreEqual(101, interpreter.Debugger.RegisterGetValue("ф").Number);
-            Assert.AreEqual(50, interpreter.Debugger.RegisterGetValue("б").Number);
+            Assert.AreEqual(101, interpreter.Debugger.RegisterGetValue("ф").AsNumber());
+            Assert.AreEqual(50, interpreter.Debugger.RegisterGetValue("б").AsNumber());
             interpreter.Debugger.Continue();
 
             Assert.AreEqual(36, interpreter.CurrentLine);
-            Assert.AreEqual(51, interpreter.Debugger.RegisterGetValue("ф").Number);
-            Assert.AreEqual(50, interpreter.Debugger.RegisterGetValue("б").Number);
+            Assert.AreEqual(51, interpreter.Debugger.RegisterGetValue("ф").AsNumber());
+            Assert.AreEqual(50, interpreter.Debugger.RegisterGetValue("б").AsNumber());
             interpreter.Debugger.Continue();
 
         }
@@ -177,27 +202,27 @@ namespace UnitTests
             interpreter.Debug();
 
             Assert.AreEqual(4, interpreter.CurrentLine);
-            Assert.AreEqual(100, interpreter.Debugger.RegisterGetValue("ф").Number);
+            Assert.AreEqual(100, interpreter.Debugger.RegisterGetValue("ф").AsNumber());
             interpreter.Debugger.Continue();
 
             Assert.AreEqual(9, interpreter.CurrentLine);
-            Assert.AreEqual(0, interpreter.Debugger.RegisterGetValue("ф").Number);
-            Assert.AreEqual(100, interpreter.Debugger.RegisterGetValue("б").Number);
+            Assert.AreEqual(0, interpreter.Debugger.RegisterGetValue("ф").AsNumber());
+            Assert.AreEqual(100, interpreter.Debugger.RegisterGetValue("б").AsNumber());
             interpreter.Debugger.Continue();
 
             Assert.AreEqual(20, interpreter.CurrentLine);
-            Assert.AreEqual(50, interpreter.Debugger.RegisterGetValue("ф").Number);
+            Assert.AreEqual(50, interpreter.Debugger.RegisterGetValue("ф").AsNumber());
             interpreter.Debugger.Continue();
 
 
             Assert.AreEqual(37, interpreter.CurrentLine);
-            Assert.AreEqual(400, interpreter.Debugger.RegisterGetValue("ф").Number);
-            Assert.AreEqual(0, interpreter.Debugger.RegisterGetValue("б").Number);
+            Assert.AreEqual(400, interpreter.Debugger.RegisterGetValue("ф").AsNumber());
+            Assert.AreEqual(0, interpreter.Debugger.RegisterGetValue("б").AsNumber());
             interpreter.Debugger.Continue();
 
             Assert.AreEqual(51, interpreter.CurrentLine);
-            Assert.AreEqual(401, interpreter.Debugger.RegisterGetValue("ф").Number);
-            Assert.AreEqual(199, interpreter.Debugger.RegisterGetValue("б").Number);
+            Assert.AreEqual(401, interpreter.Debugger.RegisterGetValue("ф").AsNumber());
+            Assert.AreEqual(199, interpreter.Debugger.RegisterGetValue("б").AsNumber());
             interpreter.Debugger.Continue();
         }
         #endregion
@@ -224,27 +249,27 @@ namespace UnitTests
             Assert.AreEqual(6, interpreter.CurrentLine);
             Assert.AreEqual("if", interpreter.CurrentModule.Name);
 
-            Assert.AreEqual(0, interpreter.Debugger.RegisterGetValue("ф").Number);
+            Assert.AreEqual(0, interpreter.Debugger.RegisterGetValue("ф").AsNumber());
             interpreter.Debugger.Continue();
 
             Assert.AreEqual(10, interpreter.CurrentLine);
-            Assert.AreEqual(10, interpreter.Debugger.RegisterGetValue("ф").Number);
+            Assert.AreEqual(10, interpreter.Debugger.RegisterGetValue("ф").AsNumber());
             interpreter.Debugger.Continue();
 
             Assert.AreEqual(14, interpreter.CurrentLine);
-            Assert.AreEqual(-100, interpreter.Debugger.RegisterGetValue("ф").Number);
+            Assert.AreEqual(-100, interpreter.Debugger.RegisterGetValue("ф").AsNumber());
             interpreter.Debugger.Continue();
 
             Assert.AreEqual(18, interpreter.CurrentLine);
-            Assert.AreEqual(-200, interpreter.Debugger.RegisterGetValue("ф").Number);
+            Assert.AreEqual(-200, interpreter.Debugger.RegisterGetValue("ф").AsNumber());
             interpreter.Debugger.Continue();
 
             Assert.AreEqual(22, interpreter.CurrentLine);
-            Assert.AreEqual(10, interpreter.Debugger.RegisterGetValue("ф").Number);
+            Assert.AreEqual(10, interpreter.Debugger.RegisterGetValue("ф").AsNumber());
             interpreter.Debugger.Continue();
 
             Assert.AreEqual(26, interpreter.CurrentLine);
-            Assert.AreEqual(30, interpreter.Debugger.RegisterGetValue("ф").Number);
+            Assert.AreEqual(30, interpreter.Debugger.RegisterGetValue("ф").AsNumber());
             interpreter.Debugger.Continue();
         }
 
@@ -268,31 +293,31 @@ namespace UnitTests
             Assert.AreEqual(12, interpreter.CurrentLine);
             Assert.AreEqual("if", interpreter.CurrentModule.Name);
 
-            Assert.AreEqual(1, interpreter.Debugger.RegisterGetValue("ф").Number);
+            Assert.AreEqual(1, interpreter.Debugger.RegisterGetValue("ф").AsNumber());
             interpreter.Debugger.Continue();
 
             Assert.AreEqual(22, interpreter.CurrentLine);
-            Assert.AreEqual(2, interpreter.Debugger.RegisterGetValue("ф").Number);
+            Assert.AreEqual(2, interpreter.Debugger.RegisterGetValue("ф").AsNumber());
             interpreter.Debugger.Continue();
 
             Assert.AreEqual(34, interpreter.CurrentLine);
-            Assert.AreEqual(3, interpreter.Debugger.RegisterGetValue("ф").Number);
+            Assert.AreEqual(3, interpreter.Debugger.RegisterGetValue("ф").AsNumber());
             interpreter.Debugger.Continue();
 
             Assert.AreEqual(46, interpreter.CurrentLine);
-            Assert.AreEqual(4, interpreter.Debugger.RegisterGetValue("ф").Number);
+            Assert.AreEqual(4, interpreter.Debugger.RegisterGetValue("ф").AsNumber());
             interpreter.Debugger.Continue();
 
             Assert.AreEqual(54, interpreter.CurrentLine);
-            Assert.AreEqual(2, interpreter.Debugger.RegisterGetValue("ф").Number);
+            Assert.AreEqual(2, interpreter.Debugger.RegisterGetValue("ф").AsNumber());
             interpreter.Debugger.Continue();
 
             Assert.AreEqual(62, interpreter.CurrentLine);
-            Assert.AreEqual(2, interpreter.Debugger.RegisterGetValue("ф").Number);
+            Assert.AreEqual(2, interpreter.Debugger.RegisterGetValue("ф").AsNumber());
             interpreter.Debugger.Continue();
 
             Assert.AreEqual(70, interpreter.CurrentLine);
-            Assert.AreEqual(1, interpreter.Debugger.RegisterGetValue("ф").Number);
+            Assert.AreEqual(1, interpreter.Debugger.RegisterGetValue("ф").AsNumber());
         }
 
 
@@ -311,19 +336,19 @@ namespace UnitTests
             interpreter.Debug();
 
             Assert.AreEqual(11, interpreter.CurrentLine);
-            Assert.AreEqual(1, interpreter.Debugger.RegisterGetValue("ф").Number);
+            Assert.AreEqual(1, interpreter.Debugger.RegisterGetValue("ф").AsNumber());
             interpreter.Debug();
 
             Assert.AreEqual(25, interpreter.CurrentLine);
-            Assert.AreEqual(1, interpreter.Debugger.RegisterGetValue("ф").Number);
+            Assert.AreEqual(1, interpreter.Debugger.RegisterGetValue("ф").AsNumber());
             interpreter.Debug();
 
             Assert.AreEqual(41, interpreter.CurrentLine);
-            Assert.AreEqual(3, interpreter.Debugger.RegisterGetValue("ф").Number);
+            Assert.AreEqual(3, interpreter.Debugger.RegisterGetValue("ф").AsNumber());
             interpreter.Debug();
 
             Assert.AreEqual(58, interpreter.CurrentLine);
-            Assert.AreEqual(4, interpreter.Debugger.RegisterGetValue("ф").Number);
+            Assert.AreEqual(4, interpreter.Debugger.RegisterGetValue("ф").AsNumber());
             interpreter.Debug();
         }
 
@@ -335,8 +360,8 @@ namespace UnitTests
         public void Interpreter_Objects_CrossObjectCall()
         {
             IDictionary<ScriptModule, string> modules = new Dictionary<ScriptModule, string>();
-            modules.Add(new ScriptModule("global", ModuleTypeEnum.STARTUP), OpenModule("Objects\\Cross object call\\global_module.scr"));
-            modules.Add(new ScriptModule("object", ModuleTypeEnum.OBJECT, false), OpenModule("Objects\\Cross object call\\object_module.scr"));
+            modules.Add(new ScriptModule("global", "global", ModuleTypeEnum.STARTUP,true), OpenModule("Objects\\Cross object call\\global_module.scr"));
+            modules.Add(new ScriptModule("object", "object", ModuleTypeEnum.OBJECT, true,true), OpenModule("Objects\\Cross object call\\object_module.scr"));
 
             ScriptProgramm programm = CompileObjects(modules);
             ScriptInterpreter interpreter = new ScriptInterpreter(programm);
@@ -349,32 +374,32 @@ namespace UnitTests
             Assert.AreEqual(7, interpreter.CurrentLine);
             Assert.AreEqual("global", interpreter.CurrentModule.Name);
 
-            Assert.AreEqual(100, interpreter.Debugger.ObjectGetValue("object", "Количество").Number);
+            Assert.AreEqual(100, interpreter.Debugger.ObjectGetValue("object", "Количество").AsNumber());
             interpreter.Debugger.StepOver();
 
             Assert.AreEqual(9, interpreter.CurrentLine);
-            Assert.AreEqual(100, interpreter.Debugger.RegisterGetValue("колво").Number);
+            Assert.AreEqual(100, interpreter.Debugger.RegisterGetValue("колво").AsNumber());
 
             interpreter.Debugger.StepOver();
             Assert.AreEqual(10, interpreter.CurrentLine);
-            Assert.AreEqual(100, interpreter.Debugger.RegisterGetValue("колво").Number);
-            Assert.AreEqual(101, interpreter.Debugger.ObjectGetValue("object", "Количество").Number);
+            Assert.AreEqual(100, interpreter.Debugger.RegisterGetValue("колво").AsNumber());
+            Assert.AreEqual(101, interpreter.Debugger.ObjectGetValue("object", "Количество").AsNumber());
 
             interpreter.Debugger.AddBreakpoint("object", 12);
             interpreter.Debugger.StepOver();
             Assert.AreEqual(12, interpreter.CurrentLine);
             Assert.AreEqual("object", interpreter.CurrentModule.Name);
-            Assert.AreEqual(101, interpreter.Debugger.RegisterGetValue("Количество").Number);
+            Assert.AreEqual(101, interpreter.Debugger.RegisterGetValue("Количество").AsNumber());
 
             interpreter.Debugger.AddBreakpoint("global", 12);
             interpreter.Debugger.Continue();
 
 
-            Assert.AreEqual(102, interpreter.Debugger.ObjectGetValue("object", "Количество").Number);
-            Assert.AreEqual(100, interpreter.Debugger.RegisterGetValue("колво").Number);
+            Assert.AreEqual(102, interpreter.Debugger.ObjectGetValue("object", "Количество").AsNumber());
+            Assert.AreEqual(100, interpreter.Debugger.RegisterGetValue("колво").AsNumber());
             interpreter.Debugger.StepOver();
-            Assert.AreEqual(102, interpreter.Debugger.ObjectGetValue("object", "Количество").Number);
-            Assert.AreEqual(102, interpreter.Debugger.RegisterGetValue("колво").Number);
+            Assert.AreEqual(102, interpreter.Debugger.ObjectGetValue("object", "Количество").AsNumber());
+            Assert.AreEqual(102, interpreter.Debugger.RegisterGetValue("колво").AsNumber());
 
             interpreter.Debugger.Continue();
             Assert.AreEqual(12, interpreter.CurrentLine);
@@ -386,28 +411,28 @@ namespace UnitTests
             Assert.AreEqual(22, interpreter.CurrentLine);
             Assert.AreEqual("global", interpreter.CurrentModule.Name);
 
-            Assert.AreEqual(105, interpreter.Debugger.ObjectGetValue("object", "Количество").Number);
-            Assert.AreEqual(105, interpreter.Debugger.RegisterGetValue("колво").Number);
+            Assert.AreEqual(105, interpreter.Debugger.ObjectGetValue("object", "Количество").AsNumber());
+            Assert.AreEqual(105, interpreter.Debugger.RegisterGetValue("колво").AsNumber());
             interpreter.Debugger.Continue();
 
             Assert.AreEqual(30, interpreter.CurrentLine);
             Assert.AreEqual("global", interpreter.CurrentModule.Name);
-            Assert.AreEqual(1, interpreter.Debugger.RegisterGetValue("ф").Number);
+            Assert.AreEqual(1, interpreter.Debugger.RegisterGetValue("ф").AsNumber());
             interpreter.Debugger.Continue();
 
             Assert.AreEqual(38, interpreter.CurrentLine);
             Assert.AreEqual("global", interpreter.CurrentModule.Name);
-            Assert.AreEqual(-1, interpreter.Debugger.RegisterGetValue("ф").Number);
+            Assert.AreEqual(-1, interpreter.Debugger.RegisterGetValue("ф").AsNumber());
             interpreter.Debugger.Continue();
 
             Assert.AreEqual(46, interpreter.CurrentLine);
             Assert.AreEqual("global", interpreter.CurrentModule.Name);
-            Assert.AreEqual(105, interpreter.Debugger.RegisterGetValue("ф").Number);
+            Assert.AreEqual(105, interpreter.Debugger.RegisterGetValue("ф").AsNumber());
             interpreter.Debugger.Continue();
 
             Assert.AreEqual(54, interpreter.CurrentLine);
             Assert.AreEqual("global", interpreter.CurrentModule.Name);
-            Assert.AreEqual(106, interpreter.Debugger.RegisterGetValue("ф").Number);
+            Assert.AreEqual(106, interpreter.Debugger.RegisterGetValue("ф").AsNumber());
         }
 
 
@@ -416,8 +441,8 @@ namespace UnitTests
         public void Interpreter_Objects_ProcedureAsFunction_Error()
         {
             IDictionary<ScriptModule, string> modules = new Dictionary<ScriptModule, string>();
-            modules.Add(new ScriptModule("global", ModuleTypeEnum.STARTUP), OpenModule("Objects\\Object procedure as function call\\global_module.scr"));
-            modules.Add(new ScriptModule("object", ModuleTypeEnum.OBJECT, false), OpenModule("Objects\\Object procedure as function call\\object_module.scr"));
+            modules.Add(new ScriptModule("global", "global", ModuleTypeEnum.STARTUP,true), OpenModule("Objects\\Object procedure as function call\\global_module.scr"));
+            modules.Add(new ScriptModule("object", "object", ModuleTypeEnum.OBJECT, true,true), OpenModule("Objects\\Object procedure as function call\\object_module.scr"));
 
             ScriptProgramm programm = CompileObjects(modules);
             ScriptInterpreter interpreter = new ScriptInterpreter(programm);
@@ -431,8 +456,8 @@ namespace UnitTests
         public void Interpreter_Objects_NotPublicFunctionCall_Error()
         {
             IDictionary<ScriptModule, string> modules = new Dictionary<ScriptModule, string>();
-            modules.Add(new ScriptModule("global", ModuleTypeEnum.STARTUP), OpenModule("Objects\\Object not public call error\\global_module.scr"));
-            modules.Add(new ScriptModule("object", ModuleTypeEnum.OBJECT, false), OpenModule("Objects\\Object not public call error\\object_module.scr"));
+            modules.Add(new ScriptModule("global", "global", ModuleTypeEnum.STARTUP,true), OpenModule("Objects\\Object not public call error\\global_module.scr"));
+            modules.Add(new ScriptModule("object", "object", ModuleTypeEnum.OBJECT, true,true), OpenModule("Objects\\Object not public call error\\object_module.scr"));
 
             ScriptProgramm programm = CompileObjects(modules);
             ScriptInterpreter interpreter = new ScriptInterpreter(programm);
@@ -446,8 +471,8 @@ namespace UnitTests
         public void Interpreter_Objects_NotPublicMethodCall_Error()
         {
             IDictionary<ScriptModule, string> modules = new Dictionary<ScriptModule, string>();
-            modules.Add(new ScriptModule("global", ModuleTypeEnum.STARTUP), OpenModule("Objects\\Not public method call\\global_module.scr"));
-            modules.Add(new ScriptModule("object", ModuleTypeEnum.OBJECT, false), OpenModule("Objects\\Not public method call\\object_module.scr"));
+            modules.Add(new ScriptModule("global", "global", ModuleTypeEnum.STARTUP,true), OpenModule("Objects\\Not public method call\\global_module.scr"));
+            modules.Add(new ScriptModule("object", "object", ModuleTypeEnum.OBJECT, true,true), OpenModule("Objects\\Not public method call\\object_module.scr"));
 
             ScriptProgramm programm = CompileObjects(modules);
             ScriptInterpreter interpreter = new ScriptInterpreter(programm);
@@ -462,8 +487,8 @@ namespace UnitTests
         public void Interpreter_GlobalFunctionCall()
         {
             IDictionary<ScriptModule, string> modules = new Dictionary<ScriptModule, string>();
-            modules.Add(new ScriptModule("global", ModuleTypeEnum.STARTUP), OpenModule("Global\\Function call\\global_module.scr"));
-            modules.Add(new ScriptModule("object", ModuleTypeEnum.COMMON, true), OpenModule("Global\\Function call\\object_module.scr"));
+            modules.Add(new ScriptModule("global","global", ModuleTypeEnum.STARTUP,true), OpenModule("Global\\Function call\\global_module.scr"));
+            modules.Add(new ScriptModule("object", "object", ModuleTypeEnum.COMMON, true,false), OpenModule("Global\\Function call\\object_module.scr"));
 
             ScriptProgramm programm = CompileObjects(modules);
             ScriptInterpreter interpreter = new ScriptInterpreter(programm);
@@ -479,43 +504,43 @@ namespace UnitTests
             Assert.AreEqual(6, interpreter.CurrentLine);
             Assert.AreEqual("global", interpreter.CurrentModule.Name);
 
-            Assert.AreEqual(100, interpreter.Debugger.RegisterGetValue("Количество").Number);
-            Assert.AreEqual(100, interpreter.Debugger.RegisterGetValue("колво").Number);
+            Assert.AreEqual(100, interpreter.Debugger.RegisterGetValue("Количество").AsNumber());
+            Assert.AreEqual(100, interpreter.Debugger.RegisterGetValue("колво").AsNumber());
             interpreter.Debugger.StepInto();
 
             Assert.AreEqual(2, interpreter.CurrentLine);
             Assert.AreEqual("object", interpreter.CurrentModule.Name);
-            Assert.AreEqual(100, interpreter.Debugger.RegisterGetValue("Количество").Number);
+            Assert.AreEqual(100, interpreter.Debugger.RegisterGetValue("Количество").AsNumber());
             interpreter.Debugger.StepOver();
-            Assert.AreEqual(101, interpreter.Debugger.RegisterGetValue("Количество").Number);
+            Assert.AreEqual(101, interpreter.Debugger.RegisterGetValue("Количество").AsNumber());
 
             interpreter.Debugger.Continue();
 
             Assert.AreEqual("global", interpreter.CurrentModule.Name);
             Assert.AreEqual(20, interpreter.CurrentLine);
-            Assert.AreEqual(115, interpreter.Debugger.RegisterGetValue("колво").Number);
-            Assert.AreEqual(105, interpreter.Debugger.RegisterGetValue("Количество").Number);
+            Assert.AreEqual(115, interpreter.Debugger.RegisterGetValue("колво").AsNumber());
+            Assert.AreEqual(105, interpreter.Debugger.RegisterGetValue("Количество").AsNumber());
             interpreter.Debugger.Continue();
 
 
             Assert.AreEqual(28, interpreter.CurrentLine);
             Assert.AreEqual("global", interpreter.CurrentModule.Name);
-            Assert.AreEqual(-1, interpreter.Debugger.RegisterGetValue("ф").Number);
+            Assert.AreEqual(-1, interpreter.Debugger.RegisterGetValue("ф").AsNumber());
             interpreter.Debugger.Continue();
 
             Assert.AreEqual(36, interpreter.CurrentLine);
             Assert.AreEqual("global", interpreter.CurrentModule.Name);
-            Assert.AreEqual(1, interpreter.Debugger.RegisterGetValue("ф").Number);
+            Assert.AreEqual(1, interpreter.Debugger.RegisterGetValue("ф").AsNumber());
             interpreter.Debugger.Continue();
 
             Assert.AreEqual(44, interpreter.CurrentLine);
             Assert.AreEqual("global", interpreter.CurrentModule.Name);
-            Assert.AreEqual(-1, interpreter.Debugger.RegisterGetValue("ф").Number);
+            Assert.AreEqual(-1, interpreter.Debugger.RegisterGetValue("ф").AsNumber());
             interpreter.Debugger.Continue();
 
             Assert.AreEqual(52, interpreter.CurrentLine);
             Assert.AreEqual("global", interpreter.CurrentModule.Name);
-            Assert.AreEqual(106, interpreter.Debugger.RegisterGetValue("ф").Number);
+            Assert.AreEqual(106, interpreter.Debugger.RegisterGetValue("ф").AsNumber());
         }
 
         #endregion
@@ -536,11 +561,12 @@ namespace UnitTests
             interpreter.Debug();
 
             interpreter.Debugger.StepOver();
-            Assert.AreEqual(1080, interpreter.Debugger.RegisterGetValue("а").Number);
             Assert.AreEqual(11, interpreter.CurrentLine);
+            Assert.AreEqual(1080, interpreter.Debugger.RegisterGetValue("а").AsNumber());
+
             interpreter.Debugger.StepOver();
-            Assert.AreEqual(1060, interpreter.Debugger.RegisterGetValue("а").Number);
             Assert.AreEqual(12, interpreter.CurrentLine);
+            Assert.AreEqual(1060, interpreter.Debugger.RegisterGetValue("а").AsNumber());
         }
 
         [TestMethod]
@@ -554,7 +580,7 @@ namespace UnitTests
             interpreter.Debugger.AddBreakpoint("function", 12);
             interpreter.Debug();
 
-            Assert.AreEqual(10, interpreter.Debugger.RegisterGetValue("а").Number);
+            Assert.AreEqual(10, interpreter.Debugger.RegisterGetValue("а").AsNumber());
         }
         #endregion
 
@@ -572,58 +598,57 @@ namespace UnitTests
             interpreter.Debug();
 
             // Тест1
-            Assert.AreEqual(100, interpreter.Debugger.RegisterGetValue("а").Number);
+            Assert.AreEqual(100, interpreter.Debugger.RegisterGetValue("а").AsNumber());
             interpreter.Debugger.StepInto();
             interpreter.Debugger.StepOver();
-            Assert.AreEqual(10, interpreter.Debugger.RegisterGetValue("парам").Number);
-            Assert.AreEqual(12, interpreter.Debugger.RegisterGetValue("парам1").Number);
+            Assert.AreEqual(10, interpreter.Debugger.RegisterGetValue("парам").AsNumber());
+            Assert.AreEqual(12, interpreter.Debugger.RegisterGetValue("парам1").AsNumber());
             interpreter.Debugger.StepOver();
-            Assert.AreEqual(100, interpreter.Debugger.RegisterGetValue("а").Number);
+            Assert.AreEqual(100, interpreter.Debugger.RegisterGetValue("а").AsNumber());
 
             // Тест2
             interpreter.Debugger.StepInto();
-            IList<FunctionHistoryData> stack_list = interpreter.Debugger.GetStackCall();
-            Assert.AreEqual(100, interpreter.Debugger.RegisterGetValue("парам").Number);
-            Assert.AreEqual(5, interpreter.Debugger.RegisterGetValue("парам1").Number);
+            Assert.AreEqual(100, interpreter.Debugger.RegisterGetValue("парам").AsNumber());
+            Assert.AreEqual(5, interpreter.Debugger.RegisterGetValue("парам1").AsNumber());
             interpreter.Debugger.StepOver();
-            Assert.AreEqual(10, interpreter.Debugger.RegisterGetValue("парам").Number);
-            Assert.AreEqual(5, interpreter.Debugger.RegisterGetValue("парам1").Number);
+            Assert.AreEqual(10, interpreter.Debugger.RegisterGetValue("парам").AsNumber());
+            Assert.AreEqual(5, interpreter.Debugger.RegisterGetValue("парам1").AsNumber());
             interpreter.Debugger.StepOver();
-            Assert.AreEqual(10, interpreter.Debugger.RegisterGetValue("а").Number);
+            Assert.AreEqual(10, interpreter.Debugger.RegisterGetValue("а").AsNumber());
 
 
             // Тест3
-            Assert.AreEqual(200, interpreter.Debugger.RegisterGetValue("б").Number);
+            Assert.AreEqual(200, interpreter.Debugger.RegisterGetValue("б").AsNumber());
             interpreter.Debugger.StepInto();
-            Assert.AreEqual(200, interpreter.Debugger.RegisterGetValue("парам1").Number);
+            Assert.AreEqual(200, interpreter.Debugger.RegisterGetValue("парам1").AsNumber());
             interpreter.Debugger.StepOver();
             interpreter.Debugger.StepOver();
-            Assert.AreEqual(10, interpreter.Debugger.RegisterGetValue("парам").Number);
-            Assert.AreEqual(210, interpreter.Debugger.RegisterGetValue("парам1").Number);
+            Assert.AreEqual(10, interpreter.Debugger.RegisterGetValue("парам").AsNumber());
+            Assert.AreEqual(210, interpreter.Debugger.RegisterGetValue("парам1").AsNumber());
             interpreter.Debugger.StepOver();
-            Assert.AreEqual(210, interpreter.Debugger.RegisterGetValue("б").Number);
+            Assert.AreEqual(210, interpreter.Debugger.RegisterGetValue("б").AsNumber());
 
             // Тест
-            Assert.AreEqual(10, interpreter.Debugger.RegisterGetValue("а").Number);
-            Assert.AreEqual(210, interpreter.Debugger.RegisterGetValue("б").Number);
+            Assert.AreEqual(10, interpreter.Debugger.RegisterGetValue("а").AsNumber());
+            Assert.AreEqual(210, interpreter.Debugger.RegisterGetValue("б").AsNumber());
             interpreter.Debugger.StepInto();
-            Assert.AreEqual(10, interpreter.Debugger.RegisterGetValue("парам").Number);
-            Assert.AreEqual(210, interpreter.Debugger.RegisterGetValue("парам1").Number);
+            Assert.AreEqual(10, interpreter.Debugger.RegisterGetValue("парам").AsNumber());
+            Assert.AreEqual(210, interpreter.Debugger.RegisterGetValue("парам1").AsNumber());
             interpreter.Debugger.StepOver();
-            Assert.AreEqual(10, interpreter.Debugger.RegisterGetValue("парам").Number);
-            Assert.AreEqual(210, interpreter.Debugger.RegisterGetValue("парам1").Number);
+            Assert.AreEqual(10, interpreter.Debugger.RegisterGetValue("парам").AsNumber());
+            Assert.AreEqual(210, interpreter.Debugger.RegisterGetValue("парам1").AsNumber());
             interpreter.Debugger.StepOver();
-            Assert.AreEqual(10, interpreter.Debugger.RegisterGetValue("парам").Number);
-            Assert.AreEqual(210, interpreter.Debugger.RegisterGetValue("парам1").Number);
+            Assert.AreEqual(10, interpreter.Debugger.RegisterGetValue("парам").AsNumber());
+            Assert.AreEqual(210, interpreter.Debugger.RegisterGetValue("парам1").AsNumber());
             interpreter.Debugger.StepOver();
-            Assert.AreEqual(600, interpreter.Debugger.RegisterGetValue("парам").Number);
-            Assert.AreEqual(210, interpreter.Debugger.RegisterGetValue("парам1").Number);
+            Assert.AreEqual(600, interpreter.Debugger.RegisterGetValue("парам").AsNumber());
+            Assert.AreEqual(210, interpreter.Debugger.RegisterGetValue("парам1").AsNumber());
             interpreter.Debugger.StepOver();
-            Assert.AreEqual(10, interpreter.Debugger.RegisterGetValue("парам").Number);
-            Assert.AreEqual(220, interpreter.Debugger.RegisterGetValue("парам1").Number);
+            Assert.AreEqual(10, interpreter.Debugger.RegisterGetValue("парам").AsNumber());
+            Assert.AreEqual(220, interpreter.Debugger.RegisterGetValue("парам1").AsNumber());
             interpreter.Debugger.StepOver();
-            Assert.AreEqual(10, interpreter.Debugger.RegisterGetValue("а").Number);
-            Assert.AreEqual(220, interpreter.Debugger.RegisterGetValue("б").Number);
+            Assert.AreEqual(10, interpreter.Debugger.RegisterGetValue("а").AsNumber());
+            Assert.AreEqual(220, interpreter.Debugger.RegisterGetValue("б").AsNumber());
 
         }
 
@@ -646,18 +671,18 @@ namespace UnitTests
             interpreter.Debug();
 
 
-            Assert.AreEqual(4, interpreter.Debugger.RegisterGetValue("в1").Number);
-            Assert.AreEqual(298.6875m, interpreter.Debugger.RegisterGetValue("а1").Number);
-            Assert.AreEqual(498.6875m, interpreter.Debugger.RegisterGetValue("а").Number);
-            Assert.AreEqual(2496.125m, interpreter.Debugger.RegisterGetValue("а2").Number);
-            Assert.AreEqual(2396.125m, interpreter.Debugger.RegisterGetValue("а3").Number);
-            Assert.AreEqual(494.6875m, interpreter.Debugger.RegisterGetValue("а4").Number);
-            Assert.AreEqual(-494.6875m, interpreter.Debugger.RegisterGetValue("а5").Number);
+            Assert.AreEqual(4, interpreter.Debugger.RegisterGetValue("в1").AsNumber());
+            Assert.AreEqual(298.6875m, interpreter.Debugger.RegisterGetValue("а1").AsNumber());
+            Assert.AreEqual(498.6875m, interpreter.Debugger.RegisterGetValue("а").AsNumber());
+            Assert.AreEqual(2496.125m, interpreter.Debugger.RegisterGetValue("а2").AsNumber());
+            Assert.AreEqual(2396.125m, interpreter.Debugger.RegisterGetValue("а3").AsNumber());
+            Assert.AreEqual(494.6875m, interpreter.Debugger.RegisterGetValue("а4").AsNumber());
+            Assert.AreEqual(-494.6875m, interpreter.Debugger.RegisterGetValue("а5").AsNumber());
             interpreter.Debug();
 
-            Assert.AreEqual(0.6m, interpreter.Debugger.RegisterGetValue("а6").Number);
+            Assert.AreEqual(0.6m, interpreter.Debugger.RegisterGetValue("а6").AsNumber());
             interpreter.Debug();
-            Assert.AreEqual(1, interpreter.Debugger.RegisterGetValue("а7").Number);
+            Assert.AreEqual(1, interpreter.Debugger.RegisterGetValue("а7").AsNumber());
         }
 
         #endregion
@@ -670,7 +695,7 @@ namespace UnitTests
             foreach (KeyValuePair<string, string> file in file_names)
             {
                 if (File.Exists(path + file.Value))
-                    files.Add(new ScriptModule(file.Key,ModuleTypeEnum.STARTUP) { FileName = file.Value }, File.ReadAllText(path + file.Value));
+                    files.Add(new ScriptModule(file.Key, file.Key, ModuleTypeEnum.STARTUP) { FileName = file.Value }, File.ReadAllText(path + file.Value));
                 else
                     throw new Exception($"Файл {path} не найден.");
             }

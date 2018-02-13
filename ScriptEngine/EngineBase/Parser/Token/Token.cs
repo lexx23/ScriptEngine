@@ -1,4 +1,5 @@
 ﻿using ScriptEngine.EngineBase.Exceptions;
+using ScriptEngine.EngineBase.Library.Attributes;
 using ScriptEngine.EngineBase.Parser.Token;
 using System;
 using System.Collections.Generic;
@@ -38,7 +39,7 @@ namespace ScriptEngine.EngineBase.Praser.Token
 
         public override string ToString()
         {
-            return StringEnum.GetStringValue(Type) + (SubType != TokenSubTypeEnum.NA ? " " + StringEnum.GetStringValue(SubType) : "");
+            return EnumStringAttribute.GetStringValue(Type) + (SubType != TokenSubTypeEnum.NA ? " " + EnumStringAttribute.GetStringValue(SubType) : "");
         }
 
     }

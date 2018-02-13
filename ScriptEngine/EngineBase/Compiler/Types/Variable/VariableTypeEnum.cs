@@ -4,9 +4,10 @@ using System.Text;
 
 namespace ScriptEngine.EngineBase.Compiler.Types.Variable
 {
-    public enum VariableStatusEnum
+    public enum VariableTypeEnum
     {
         STACKVARIABLE,
-        CONSTANTVARIABLE
+        CONSTANTVARIABLE,
+        REFERENCE
     }
 }

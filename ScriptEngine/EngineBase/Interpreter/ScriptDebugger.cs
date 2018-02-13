@@ -137,7 +137,18 @@ namespace ScriptEngine.EngineBase.Interpreter
         /// <returns></returns>
         public IValue RegisterGetValue(string name)
         {
-            return _interpreter.Context.GetValue(name);
+            IVariable var = null;
+
+            var = _interpreter.CurrentModule.Variables.Get(name, _interpreter.CurrentModule.ModuleScope);
+
+            if (var == null)
+                var = _interpreter.CurrentModule.Variables.Get(name, _interpreter.CurrentFunction.Scope);
+
+            if (var == null)
+                var = _interpreter.Programm.GlobalVariables.Get(name);
+
+
+            return var.Value;
         }
 
         /// <summary>
@@ -151,16 +162,12 @@ namespace ScriptEngine.EngineBase.Interpreter
 
             object_value = RegisterGetValue(object_name);
 
-            if (object_value != null && object_value.Object != null && object_value.Object.Context != null)
-                return object_value.Object.GetValue(var_name);
+            if (object_value != null && object_value.AsScriptObject() != null && object_value.AsScriptObject().Context != null)
+                return object_value.AsScriptObject().GetReference(var_name).Get();
 
             return null;
         }
 
-        public IList<FunctionHistoryData> GetStackCall()
-        {
-            return _interpreter.Context.FunctionContextsHolder.StackCall();
-        }
 
         internal void OnFunctionCall()
         {

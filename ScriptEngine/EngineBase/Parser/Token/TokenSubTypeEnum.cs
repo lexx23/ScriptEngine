@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ScriptEngine.EngineBase.Library.Attributes;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -6,136 +7,136 @@ namespace ScriptEngine.EngineBase.Parser.Token
 {
     public enum TokenSubTypeEnum
     {
-        [StringValue("символ препроцессора { # } ")]
+        [EnumStringAttribute("символ препроцессора { # } ")]
         PRECOMP,
         COMP,
-        [StringValue("Область { Region }")]
+        [EnumStringAttribute("Область { Region }")]
         I_REGION,
-        [StringValue("КонецОбласти { EndRegion }")]
+        [EnumStringAttribute("КонецОбласти { EndRegion }")]
         I_ENDREGION,
 
-        [StringValue("Перейти { Goto }")]
+        [EnumStringAttribute("Перейти { Goto }")]
         I_GOTO,
-        [StringValue("тильда { ~ }")]
+        [EnumStringAttribute("тильда { ~ }")]
         P_TILDE,
 
-        [StringValue("Если { If }")]
+        [EnumStringAttribute("Если { If }")]
         I_IF,
-        [StringValue("Тогда { Then }")]
+        [EnumStringAttribute("Тогда { Then }")]
         I_THEN,
-        [StringValue("Иначе { Else }")]
+        [EnumStringAttribute("Иначе { Else }")]
         I_ELSE,
-        [StringValue("ИначеЕсли { ElsIf }")]
+        [EnumStringAttribute("ИначеЕсли { ElsIf }")]
         I_ELSEIF,
-        [StringValue("КонецЕсли { EndIf }")]
+        [EnumStringAttribute("КонецЕсли { EndIf }")]
         I_ENDIF,
 
-        [StringValue("Для { For }")]
+        [EnumStringAttribute("Для { For }")]
         I_FOR,
-        [StringValue("По { To }")]
+        [EnumStringAttribute("По { To }")]
         I_TO,
-        [StringValue("Пока { While }")]
+        [EnumStringAttribute("Пока { While }")]
         I_WHILE,
-        [StringValue("Цикл { Do }")]
+        [EnumStringAttribute("Цикл { Do }")]
         I_LOOP,
-        [StringValue("КонецЦикла { EndDo }")]
+        [EnumStringAttribute("КонецЦикла { EndDo }")]
         I_ENDLOOP,
-        [StringValue("Продолжить { Continue }")]
+        [EnumStringAttribute("Продолжить { Continue }")]
         I_CONTINUE,
-        [StringValue("Пррервать { Break }")]
+        [EnumStringAttribute("Пррервать { Break }")]
         I_BREAK,
 
-        [StringValue("Функция { Function }")]
+        [EnumStringAttribute("Функция { Function }")]
         I_FUNCTION,
-        [StringValue("КонецФункции { EndFunction }")]
+        [EnumStringAttribute("КонецФункции { EndFunction }")]
         I_ENDFUNCTION,
 
-        [StringValue("Процедура { Procedure }")]
+        [EnumStringAttribute("Процедура { Procedure }")]
         I_PROCEDURE,
-        [StringValue("КонецПроцедуры { EndProcedure }")]
+        [EnumStringAttribute("КонецПроцедуры { EndProcedure }")]
         I_ENDPROCEDURE,
 
-        [StringValue("Возврат { Return }")]
+        [EnumStringAttribute("Возврат { Return }")]
         I_RETURN,
 
 
-        [StringValue("Не { Not }")]
+        [EnumStringAttribute("Не { Not }")]
         I_LOGIC_NOT,
-        [StringValue("И { And }")]
+        [EnumStringAttribute("И { And }")]
         I_LOGIC_AND,
-        [StringValue("Или { Or )")]
+        [EnumStringAttribute("Или { Or )")]
         I_LOGIC_OR,
 
-        [StringValue("Перем { Var }")]
+        [EnumStringAttribute("Перем { Var }")]
         I_VARDEF,
-        [StringValue("Знач { Val }")]
+        [EnumStringAttribute("Знач { Val }")]
         I_VAL,
 
-        [StringValue("Экспорт { Export }")]
+        [EnumStringAttribute("Экспорт { Export }")]
         I_EXPORT,
 
-        [StringValue("Истина { True }")]
+        [EnumStringAttribute("Истина { True }")]
         I_LOGIC_TRUE,
-        [StringValue("Ложь { False }")]
+        [EnumStringAttribute("Ложь { False }")]
         I_LOGIC_FALSE,
 
-        [StringValue("больше либо равно { >= }")]
+        [EnumStringAttribute("больше либо равно { >= }")]
         P_LOGIC_GEQ,
-        [StringValue("меньше либо равно { <= }")]
+        [EnumStringAttribute("меньше либо равно { <= }")]
         P_LOGIC_LEQ,
-        [StringValue("не равен { <> }")]
+        [EnumStringAttribute("не равен { <> }")]
         P_LOGIC_UNEQ,
-        [StringValue("больше { > }")]
+        [EnumStringAttribute("больше { > }")]
         P_LOGIC_GREATER,
-        [StringValue("меньше { < }")]
+        [EnumStringAttribute("меньше { < }")]
         P_LOGIC_LESS,
 
 
-        [StringValue("произведение { * }")]
+        [EnumStringAttribute("произведение { * }")]
         P_MUL,
-        [StringValue("деление { / }")]
+        [EnumStringAttribute("деление { / }")]
         P_DIV,
-        [StringValue("модуль { % }")]
+        [EnumStringAttribute("модуль { % }")]
         P_MOD,
 
-        [StringValue("плюс { + }")]
+        [EnumStringAttribute("плюс { + }")]
         P_ADD,
-        [StringValue("минус { - }")]
+        [EnumStringAttribute("минус { - }")]
         P_SUB,
-        [StringValue("равно { = }")]
+        [EnumStringAttribute("равно { = }")]
         P_ASSIGN,
 
-        [StringValue("точка { . }")]
+        [EnumStringAttribute("точка { . }")]
         P_DOT,
 
-        [StringValue("запятая { , }")]
+        [EnumStringAttribute("запятая { , }")]
         P_COMMA,
-        [StringValue("двоеточие { : }")]
+        [EnumStringAttribute("двоеточие { : }")]
         P_COLON,
-        [StringValue("точка с запятой { ; }")]
+        [EnumStringAttribute("точка с запятой { ; }")]
         P_SEMICOLON,
-        [StringValue("вопрос { ? }")]
+        [EnumStringAttribute("вопрос { ? }")]
         P_QUESTION,
 
 
-        [StringValue("открывающая скобка { ( }")]
+        [EnumStringAttribute("открывающая скобка { ( }")]
         P_PARENTHESESOPEN,
-        [StringValue("закрывающая скобка { ) }")]
+        [EnumStringAttribute("закрывающая скобка { ) }")]
         P_PARENTHESESCLOSE,
         SQBRACKETOPEN,
         SQBRACKETCLOSE,
 
 
-        [StringValue("дата")]
+        [EnumStringAttribute("дата")]
         L_DATE,
-        [StringValue("строка")]
+        [EnumStringAttribute("строка")]
         L_STRING,
-        [StringValue("неопределено ( null )")]
+        [EnumStringAttribute("неопределено ( null )")]
         N_NULL,
 
-        [StringValue("")]
+        [EnumStringAttribute("")]
         NA,
-        [StringValue("конец файла")]
+        [EnumStringAttribute("конец файла")]
         EOF,
         ANY
 

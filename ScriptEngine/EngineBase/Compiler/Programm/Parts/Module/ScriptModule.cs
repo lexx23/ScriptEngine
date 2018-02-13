@@ -3,9 +3,9 @@ using ScriptEngine.EngineBase.Compiler.Types.Function;
 using ScriptEngine.EngineBase.Compiler.Types.Variable;
 using System.Collections.Generic;
 
-namespace ScriptEngine.EngineBase.Compiler.Programm.Parts
+namespace ScriptEngine.EngineBase.Compiler.Programm.Parts.Module
 {
-    public class ScriptModule
+    public class ScriptModule:IModuleName,IModulePlace
     {
         private ModuleVariables _vars;
         private ModuleFunctions _functions;
@@ -14,8 +14,13 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts
         private ScriptScope _module_scope;
 
         public string Name { get; set; }
-        public string FileName { get; set; }
+        public string Alias { get; set; }
+
         public bool AsGlobal { get; set; }
+        public bool AsObject { get; set; }
+
+        public string FileName { get; set; }
+
         public ModuleVariables Variables { get => _vars; }
         public ModuleFunctions Functions { get => _functions; }
         public ModuleTypeEnum Type { get; set; }
@@ -30,11 +35,13 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts
             get => _code.Count;
         }
 
-        public ScriptModule(string name, ModuleTypeEnum type, bool compile_as_global = false)
+        public ScriptModule(string name,string alias, ModuleTypeEnum type, bool as_global = false, bool as_object = false)
         {
             Name = name;
+            Alias = alias;
             Type = type;
-            AsGlobal = compile_as_global;
+            AsGlobal = as_global;
+            AsObject = as_object;
 
             // Стартовый модуль компилирую как глобальный.
             if (type == ModuleTypeEnum.STARTUP)

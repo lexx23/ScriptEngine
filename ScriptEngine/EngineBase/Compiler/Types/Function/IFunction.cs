@@ -1,4 +1,5 @@
-﻿using ScriptEngine.EngineBase.Compiler.Types.Variable;
+﻿using ScriptEngine.EngineBase.Compiler.Types.Function.Parameters;
+using ScriptEngine.EngineBase.Compiler.Types.Variable;
 using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
 using ScriptEngine.EngineBase.Praser.Token;
 using System;
@@ -12,10 +13,13 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Function
         FunctionTypeEnum Type { get; set; }
         bool Public { get; set; }
         ScriptScope Scope { get; set; }
-        IList<IVariable> Param { get; set; }
+
+        IList<IVariable> CallParameters { get; set; }
+        FunctionParameters DefinedParameters { get; set; }
+
         int EntryPoint { get; set; }
 
-        Func<IVariable[], Value> Method { get; set; }
+        Func<IValue[], IValue> Method { get; set; }
 
         CodeInformation CodeInformation { get; set; }
 

@@ -4,6 +4,7 @@ using System.Collections;
 using ScriptEngine.EngineBase.Exceptions;
 using ScriptEngine.EngineBase.Praser.Token;
 using ScriptEngine.EngineBase.Parser.Token;
+using ScriptEngine.EngineBase.Library.Attributes;
 
 namespace ScriptEngine.EngineBase.Parser.Token
 {
@@ -54,11 +55,11 @@ namespace ScriptEngine.EngineBase.Parser.Token
             if (subtype != TokenSubTypeEnum.ANY)
             {
                 if (Current.Type != type || Current.SubType != subtype)
-                    throw new CompilerException(Current.CodeInformation, $"Ожидается [{StringEnum.GetStringValue(type) + (subtype != TokenSubTypeEnum.NA ? "-" + StringEnum.GetStringValue(subtype) : "")}] а найден [{Current.ToString()}]");
+                    throw new CompilerException(Current.CodeInformation, $"Ожидается [{EnumStringAttribute.GetStringValue(type) + (subtype != TokenSubTypeEnum.NA ? "-" + EnumStringAttribute.GetStringValue(subtype) : "")}] а найден [{Current.ToString()}]");
             }
             else
                 if (Current.Type != type)
-                throw new CompilerException(Current.CodeInformation, $"Ожидается [{StringEnum.GetStringValue(type)}] а найден [{StringEnum.GetStringValue(Current.SubType)}]");
+                throw new CompilerException(Current.CodeInformation, $"Ожидается [{EnumStringAttribute.GetStringValue(type)}] а найден [{EnumStringAttribute.GetStringValue(Current.SubType)}]");
         }
 
         /// <summary>
@@ -119,7 +120,7 @@ namespace ScriptEngine.EngineBase.Parser.Token
         public void ExpectToken(TokenTypeEnum type, TokenSubTypeEnum subtype = TokenSubTypeEnum.NA)
         {
             if (Current.Type != type || Current.SubType != subtype)
-                throw new CompilerException(Current.CodeInformation, $"Ожидается [{StringEnum.GetStringValue(type) + (subtype != TokenSubTypeEnum.NA ? "-" + StringEnum.GetStringValue(subtype) : "")}] а найден [{Current.ToString()}]");
+                throw new CompilerException(Current.CodeInformation, $"Ожидается [{EnumStringAttribute.GetStringValue(type) + (subtype != TokenSubTypeEnum.NA ? "-" + EnumStringAttribute.GetStringValue(subtype) : "")}] а найден [{Current.ToString()}]");
 
             MoveNext();
         }

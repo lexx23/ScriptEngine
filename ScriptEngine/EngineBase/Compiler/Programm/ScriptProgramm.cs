@@ -1,10 +1,8 @@
-﻿using ScriptEngine.EngineBase.Compiler.Programm.Parts;
+﻿using ScriptEngine.EngineBase.Compiler.Programm.ModuleLoader;
+using ScriptEngine.EngineBase.Compiler.Programm.Parts;
+using ScriptEngine.EngineBase.Compiler.Programm.Parts.Module;
 using ScriptEngine.EngineBase.Compiler.Types;
-using ScriptEngine.EngineBase.Compiler.Types.Function;
-using ScriptEngine.EngineBase.Compiler.Types.Variable;
 using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
-using ScriptEngine.EngineBase.Extensions;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
@@ -53,11 +51,22 @@ namespace ScriptEngine.EngineBase.Compiler.Programm
         {
             _modules.Add(module.Name, module);
 
-            if (!module.AsGlobal && module.Type == ModuleTypeEnum.COMMON)
-                GlobalVariables.Add(module.Name, new Value(ValueTypeEnum.OBJECT, module.Name));
+            string object_name, object_alias;
+            object_name = module.Name;
+            object_alias = module.Alias;
 
-            if (module.Type == ModuleTypeEnum.OBJECT)
-                GlobalVariables.Add(module.Name, new Value(ValueTypeEnum.OBJECT, module.Name));
+            if (!module.AsObject)
+            {
+                object_name = "<<" + module.Name + ">>";
+                object_alias = "<<" + module.Alias + ">>";
+            }
+
+
+            IValue module_object = ValueFactory.Create();
+            GlobalVariables.Create(object_name, module_object);
+            if (object_name != object_alias)
+                GlobalVariables.Create(object_alias, module_object);
+
         }
 
         /// <summary>
@@ -71,56 +80,17 @@ namespace ScriptEngine.EngineBase.Compiler.Programm
         }
 
 
-        public void LoadExtensions()
+        public void LoadLibraries()
         {
             string path = Directory.GetCurrentDirectory() + "\\LanguageExtensions\\";
+            Loader loader = new Loader(this);
 
             foreach (string file in Directory.GetFiles(path, "*.dll", SearchOption.AllDirectories))
             {
-                LoadExtension(file);
+                Assembly assembly = Assembly.LoadFile(file);
+                loader.LoadFromAssembly(assembly);
             }
         }
-
-        public void LoadExtension(string file)
-        {
-            Assembly assembly = Assembly.LoadFile(file);
-            if (assembly == null)
-                throw new Exception($"Файл расширения {file} не найден.");
-
-            foreach (Type type in assembly.ExportedTypes)
-            {
-                if (type.IsClass && type.BaseType == typeof(ExtensionBase))
-                {
-                    ScriptExtensionAttribute attribute = Attribute.GetCustomAttribute(type, typeof(ScriptExtensionAttribute), false) as ScriptExtensionAttribute;
-                    if (attribute != null)
-                    {
-
-                        Object extension = Activator.CreateInstance(type);
-
-                        if (attribute.AsGlobal)
-                        {
-
-                            foreach (MethodInfo method in type.GetTypeInfo().DeclaredMethods)
-                            {
-
-
-                                IFunction function = GlobalFunctions.Add("ТекущаяУниверсальнаяДатаВМиллисекундах");
-
-                                function.Type = FunctionTypeEnum.FUNCTION;
-                                function.Param = new List<IVariable>();
-                                function.Method = Extensions.MethodInfoExtensions.Bind(method, extension);
-                                //function.Method = (Func<Value>)Delegate.CreateDelegate(typeof(Func<Value>), extension, method);
-                                //IVariable ret = function.Method(null);
-                            }
-
-                        }
-                    }
-                }
-            }
-
-        }
-
-
     }
 
 }

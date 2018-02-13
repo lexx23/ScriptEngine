@@ -1,25 +1,20 @@
 ﻿using ScriptEngine.EngineBase.Interpreter.Context;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
 {
-    public interface IValue
+    public interface IValue: IEquatable<IValue>, IComparable<IValue>
     {
-        ValueTypeEnum Type { get; set; }
+        ValueTypeEnum Type { get;}
+        bool ReadOnly { get; }
 
-        string String { get; set; }
-        decimal Number { get; set; }
-        bool Boolean { get; set; }
-        DateTime Date { get; set; }
-        ObjectContext Object { get; set; }
+        int AsInt();
+        bool AsBoolean();
+        string AsString();
+        DateTime AsDate();
+        decimal AsNumber();
+        ScriptObjectContext AsScriptObject();
 
-        int ToInt();
-        bool ToNumber(out decimal left_result);
-        bool ToBoolean();
-        void SetValue(IValue value);
-        void SetValue(bool value);
         IValue Clone();
     }
 }

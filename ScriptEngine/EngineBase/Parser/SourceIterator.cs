@@ -128,9 +128,11 @@ namespace ScriptEngine.EngineBase
             SkipChars();
             if (_current_symbol == '/' && GetForwardSymbol() == '/')
             {
-                GoToSymbol('\n');
-                MoveNext();
-                SkipComment();
+                if (GoToSymbol('\n'))
+                {
+                    MoveNext();
+                    SkipComment();
+                }
             }
 
         }
@@ -203,8 +205,8 @@ namespace ScriptEngine.EngineBase
             _cursor++;
             CodeInformation.ColumnNumber++;
 
-            if (_source.Length+1 == _cursor)
-                throw new CompilerException(CodeInformation,"Итератор исходного кода находится в конце файла.");
+            if (_source.Length + 1 == _cursor)
+                throw new CompilerException(CodeInformation, "Итератор исходного кода находится в конце файла.");
 
 
             if (End)
@@ -225,36 +227,21 @@ namespace ScriptEngine.EngineBase
         /// Перейти до указанного символа и вернуть пройденные символы.
         /// </summary>
         /// <param name="symbol">Символ до которого передвинуть курсор</param>
-        private void GoToSymbol(char symbol)
+        private bool GoToSymbol(char symbol)
         {
             CodeInformation information = CodeInformation.Clone();
             do
             {
                 if (!MoveNext())
-                    throw new CompilerException(information, "Ожидается символ: { " + symbol + " }");
+                    if (Char.IsSymbol(symbol))
+                        throw new CompilerException(information, "Ожидается символ: { " + symbol + " }");
+                    else
+                        return false;
             }
             while (_current_symbol != symbol);
-
+            return true;
         }
 
-        /// <summary>
-        /// Перейти до любого из указанных символов и вернуть пройденные символы.
-        /// </summary>
-        /// <param name="symbol">Символ для до которого передвинуть курсор</param>
-        public string GoToSymbols(string symbols)
-        {
-            string buffer = String.Empty;
-            CodeInformation information = CodeInformation.Clone();
-
-            do
-            {
-                AddToBuffer(_current_symbol, ref buffer);
-                MoveNext();
-            }
-            while (symbols.IndexOf(_current_symbol) == -1);
-
-            return buffer;
-        }
 
         /// <summary>
         /// Получить все буквы и цифры.
@@ -266,7 +253,7 @@ namespace ScriptEngine.EngineBase
 
             while (true)
             {
-                if (!Char.IsLetter(_current_symbol) && !Char.IsNumber(_current_symbol) &&  _current_symbol != '_')
+                if (!Char.IsLetter(_current_symbol) && !Char.IsNumber(_current_symbol) && _current_symbol != '_')
                     break;
 
                 AddToBuffer(_current_symbol, ref buffer);

@@ -4,11 +4,11 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace ScriptEngine.EngineBase.Compiler.Programm.Parts
+namespace ScriptEngine.EngineBase.Compiler.Programm.Parts.Module
 {
     public class ModuleFunctions
     {
-        private IDictionary<string, IFunction> _functions;
+        private IDictionary<string,IFunction> _functions;
 
 
         private ScriptModule _module;
@@ -20,27 +20,35 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts
         }
 
         /// <summary>
-        /// Добавить функцию в модуль.
+        /// Создать функцию в модуле.
         /// </summary>
         /// <param name="name"></param>
         /// <param name="module_name"></param>
         /// <param name="scope"></param>
         /// <returns></returns>
-        public IFunction Add(string name, bool as_public = false, ScriptScope scope = null)
+        public IFunction Create(string name, bool as_public = false)
         {
             Function function;
 
-            if (scope == null)
-                scope = _module.ModuleScope;
-
-            if (!_functions.ContainsKey(name + "-" + scope.Name))
+            if (!_functions.ContainsKey(name))
             {
-                function = new Function() { Name = name, Scope = scope, Type = FunctionTypeEnum.PROCEDURE, Public = as_public };
-                _functions.Add(name + "-" + scope.Name, function);
+                function = new Function() { Name = name, Scope = _module.ModuleScope, Type = FunctionTypeEnum.PROCEDURE, Public = as_public };
+                _functions.Add(name,function);
                 return function;
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Добавить функцию в модуль.
+        /// </summary>
+        /// <param name="function"></param>
+        /// <param name="as_public"></param>
+        public void Add(string name,IFunction function)
+        {
+            if (!_functions.ContainsKey(name))
+                _functions.Add(name,function);
         }
 
         /// <summary>
@@ -49,14 +57,10 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts
         /// <param name="name"></param>
         /// <param name="scope"></param>
         /// <returns></returns>
-        public IFunction Get(string name, ScriptScope scope = null)
+        public IFunction Get(string name)
         {
-            if (scope == null)
-                scope = _module.ModuleScope;
-
-            if (_functions.ContainsKey(name + "-" + scope.Name))
-                return _functions[name + "-" + scope.Name];
-
+            if (_functions.TryGetValue(name, out IFunction function))
+                return function;
             return null;
         }
     }

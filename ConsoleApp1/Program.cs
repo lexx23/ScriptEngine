@@ -1,6 +1,6 @@
 ﻿using ScriptEngine.EngineBase.Compiler;
 using ScriptEngine.EngineBase.Compiler.Programm;
-using ScriptEngine.EngineBase.Compiler.Programm.Parts;
+using ScriptEngine.EngineBase.Compiler.Programm.Parts.Module;
 using ScriptEngine.EngineBase.Interpreter;
 using System;
 using System.Collections.Generic;
@@ -37,7 +37,7 @@ namespace ConsoleApp1
             foreach (KeyValuePair<string, string> file in file_names)
             {
                 if (File.Exists(path + file.Value))
-                    files.Add(new ScriptModule(file.Key, ModuleTypeEnum.STARTUP) { FileName = file.Value }, File.ReadAllText(path + file.Value));
+                    files.Add(new ScriptModule(file.Key, file.Key, ModuleTypeEnum.STARTUP) { FileName = file.Value }, File.ReadAllText(path + file.Value));
                 else
                     throw new Exception($"Файл {path} не найден.");
             }

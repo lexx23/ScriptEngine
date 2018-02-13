@@ -21,7 +21,7 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>
-        public IVariable Add(IValue value)
+        public IVariable Create(IValue value)
         {
             IVariable tmp_var;
             if (Exist(value))
@@ -33,7 +33,7 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts
 
             tmp_var = new Variable();
             tmp_var.Name = "<<static>>";
-            tmp_var.Status = VariableStatusEnum.CONSTANTVARIABLE;
+            tmp_var.Type = VariableTypeEnum.CONSTANTVARIABLE;
             tmp_var.Value = value;
 
             _static_vars.Add(value, tmp_var);

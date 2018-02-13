@@ -1,7 +1,7 @@
-﻿using ScriptEngine.EngineBase.Compiler.Programm;
-using ScriptEngine.EngineBase.Compiler.Programm.Parts;
+﻿using ScriptEngine.EngineBase.Compiler.Programm.Parts.Module;
+using ScriptEngine.EngineBase.Compiler.Types.Variable;
+using System.Collections.Generic;
 using System;
-
 
 namespace ScriptEngine.EngineBase.Compiler.Types
 {
@@ -10,11 +10,15 @@ namespace ScriptEngine.EngineBase.Compiler.Types
         public String Name { get; set; }
         public ScriptModule Module { get; set; }
         public ScopeTypeEnum Type { get; set; }
+
+        public IList<IVariable> Vars { get; set; }
+
         public int StackIndex { get; set; }
         public int VarCount { get; set; }
 
         public ScriptScope()
         {
+            Vars = new List<IVariable>();
             VarCount = 0;
         }
     }

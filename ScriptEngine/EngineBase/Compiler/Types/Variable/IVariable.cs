@@ -7,11 +7,15 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable
     {
         String Name { get; set; }
         ScriptScope Scope { get; set; }
+
+        VariableTypeEnum Type { get; set; }
+        IVariableReference Reference { get; set; }
         IValue Value { get; set; }
-        VariableStatusEnum Status { get; set; }
-        bool Ref { get; set; }
+
         bool Public { get; set; }
         int StackNumber { get; set; }
         int Users { get; set; }
+
+        bool HaveValue();
     }
 }

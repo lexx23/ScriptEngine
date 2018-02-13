@@ -3,7 +3,7 @@ using ScriptEngine.EngineBase.Compiler.Types.Function;
 using ScriptEngine.EngineBase.Compiler.Types.Variable;
 using ScriptEngine.EngineBase.Interpreter;
 using ScriptEngine.EngineBase.Praser.Token;
-
+using System;
 
 namespace ScriptEngine.EngineBase.Compiler.Programm
 {
@@ -13,6 +13,7 @@ namespace ScriptEngine.EngineBase.Compiler.Programm
         public IVariable Variable1 { get; set; }
         public IVariable Variable2 { get; set; }
         public IVariable Variable3 { get; set; }
+        public IFunction Function { get; set; }
         public int Line { get; set; }
 
         public override string ToString()

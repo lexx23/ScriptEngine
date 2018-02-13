@@ -26,7 +26,7 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts
         /// <param name="name"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public IVariable Add(string name, Value value = null)
+        public IVariable Create(string name, IValue value = null)
         {
             if (name == string.Empty)
                 name = "<<var_" + _vars.Count.ToString() + ">>";
@@ -38,13 +38,15 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts
             {
                 Name = name,
                 Value = value,
-                Status = VariableStatusEnum.STACKVARIABLE,
+                Type = VariableTypeEnum.STACKVARIABLE,
                 Users = 1,
                 Scope = _global_scope,
                 StackNumber = _global_scope.VarCount
             };
 
+            _global_scope.Vars.Add(var);
             _global_scope.VarCount++;
+
             _vars.Add(name, var);
             return var;
         }

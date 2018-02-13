@@ -1,7 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ScriptEngine.EngineBase.Compiler;
 using ScriptEngine.EngineBase.Compiler.Programm;
-using ScriptEngine.EngineBase.Compiler.Programm.Parts;
+using ScriptEngine.EngineBase.Compiler.Programm.Parts.Module;
 using ScriptEngine.EngineBase.Exceptions;
 using System;
 using System.Collections.Generic;
@@ -288,8 +288,8 @@ namespace UnitTests
         public void Compile_Global_CommonWithCodeError()
         {
             IDictionary<ScriptModule, string> modules = new Dictionary<ScriptModule, string>();
-            modules.Add(new ScriptModule("global", ModuleTypeEnum.STARTUP), OpenModule("Global\\Common with code error\\global_module.scr"));
-            modules.Add(new ScriptModule("object", ModuleTypeEnum.COMMON, true), OpenModule("Global\\Common with code error\\object_module.scr"));
+            modules.Add(new ScriptModule("global", "global", ModuleTypeEnum.STARTUP), OpenModule("Global\\Common with code error\\global_module.scr"));
+            modules.Add(new ScriptModule("object", "object", ModuleTypeEnum.COMMON, true), OpenModule("Global\\Common with code error\\object_module.scr"));
 
             CompileObjects(modules);
         }
@@ -303,8 +303,8 @@ namespace UnitTests
         public void Сompile_Objects_CrossObjectCall()
         {
             IDictionary<ScriptModule, string> modules = new Dictionary<ScriptModule, string>();
-            modules.Add(new ScriptModule("global", ModuleTypeEnum.STARTUP), OpenModule("Objects\\Cross object call\\global_module.scr"));
-            modules.Add(new ScriptModule("object", ModuleTypeEnum.OBJECT,false), OpenModule("Objects\\Cross object call\\object_module.scr"));
+            modules.Add(new ScriptModule("global", "global", ModuleTypeEnum.STARTUP), OpenModule("Objects\\Cross object call\\global_module.scr"));
+            modules.Add(new ScriptModule("object", "object", ModuleTypeEnum.OBJECT,false,true), OpenModule("Objects\\Cross object call\\object_module.scr"));
 
             CompileObjects(modules);
         }
@@ -563,7 +563,7 @@ namespace UnitTests
             foreach (KeyValuePair<string, string> file in file_names)
             {
                 if (File.Exists(path + file.Value))
-                    files.Add(new ScriptModule(file.Key, ModuleTypeEnum.STARTUP) { FileName = file.Value }, File.ReadAllText(path + file.Value));
+                    files.Add(new ScriptModule(file.Key, file.Key, ModuleTypeEnum.STARTUP) { FileName = file.Value }, File.ReadAllText(path + file.Value));
                 else
                     throw new Exception($"Файл {path} не найден.");
             }

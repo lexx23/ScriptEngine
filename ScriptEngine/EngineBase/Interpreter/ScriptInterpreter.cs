@@ -1,33 +1,37 @@
-﻿using ScriptEngine.EngineBase.Compiler.Programm;
-using ScriptEngine.EngineBase.Compiler.Programm.Parts;
-using ScriptEngine.EngineBase.Compiler.Types;
+﻿using ScriptEngine.EngineBase.Compiler.Programm.Parts.Module;
+using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
 using ScriptEngine.EngineBase.Compiler.Types.Function;
 using ScriptEngine.EngineBase.Compiler.Types.Variable;
-using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
-using ScriptEngine.EngineBase.Exceptions;
 using ScriptEngine.EngineBase.Interpreter.Context;
+using ScriptEngine.EngineBase.Compiler.Programm;
 using ScriptEngine.EngineBase.Parser.Token;
-using System;
+using ScriptEngine.EngineBase.Exceptions;
 using System.Collections.Generic;
-
+using System.Linq;
+using System;
+using System.Threading.Tasks;
+using ScriptEngine.EngineBase.Library.Attributes;
+using ScriptEngine.EngineBase.Compiler.Types.Function.Parameters;
 
 namespace ScriptEngine.EngineBase.Interpreter
 {
     public class ScriptInterpreter
     {
-        private ScriptProgramm _programm;
         private int _instruction;
-        private ScriptProgrammContext _context;
+        private ScriptProgramm _programm;
+        private Context.InterpreterContext _context;
+
 
         private ScriptDebugger _debugger;
-        private Queue<IValue> _stack;
+        private Queue<IVariableReference> _stack;
+        private IValue _return_value;
         private int _current_line;
 
         public ScriptDebugger Debugger { get => _debugger; }
         public int IstructionIndex { get => _instruction; }
         public int CurrentLine { get => _current_line; }
         public ScriptProgramm Programm { get => _programm; }
-        public ScriptProgrammContext Context { get => _context; }
+        //public ScriptProgrammContext Context { get => _context; }
         public IFunction CurrentFunction { get => _context.CurrentFunction; }
         public ScriptModule CurrentModule { get => _context.CurrentModule; }
 
@@ -37,8 +41,9 @@ namespace ScriptEngine.EngineBase.Interpreter
             _instruction = int.MaxValue;
 
             _debugger = new ScriptDebugger(this);
-            _stack = new Queue<IValue>();
-            _context = new ScriptProgrammContext(_programm);
+            _stack = new Queue<IVariableReference>();
+            _context = new Context.InterpreterContext(_programm);
+
         }
 
 
@@ -67,22 +72,22 @@ namespace ScriptEngine.EngineBase.Interpreter
 
             foreach (KeyValuePair<string, ScriptModule> module_kv in _programm.Modules)
             {
-                if (module_kv.Value.Type == ModuleTypeEnum.COMMON && !module_kv.Value.AsGlobal)
-                {
-                    IVariable object_var = _programm.GlobalVariables.Get(module_kv.Key);
-                    _context.SetValue(object_var, CreateObject(module_kv.Key, module_kv.Value));
-                }
-
-                if (module_kv.Value.Type == ModuleTypeEnum.OBJECT)
-                {
-                    IVariable object_var = _programm.GlobalVariables.Get(module_kv.Key);
-                    _context.SetValue(object_var, CreateObject(module_kv.Key, module_kv.Value));
-                }
-
                 if (module_kv.Value.Type == ModuleTypeEnum.STARTUP)
-                {
                     startup_module = module_kv.Value.Name;
-                    _context.SetStartModule(module_kv.Value);
+
+
+                if (module_kv.Value.AsGlobal && module_kv.Value.AsObject)
+                {
+                    IVariable object_var = _programm.GlobalVariables.Get(module_kv.Key);
+                    object_var.Value = CreateObject(module_kv.Key, module_kv.Value);
+                    continue;
+                }
+
+                if (module_kv.Value.AsGlobal && !module_kv.Value.AsObject)
+                {
+                    IVariable object_var = _programm.GlobalVariables.Get("<<" + module_kv.Key + ">>");
+                    object_var.Value = CreateObject(module_kv.Key, module_kv.Value);
+                    continue;
                 }
             }
 
@@ -97,22 +102,25 @@ namespace ScriptEngine.EngineBase.Interpreter
         /// <param name="name"></param>
         /// <param name="type"></param>
         /// <returns></returns>
-        private Value CreateObject(string name, ScriptModule type)
+        private IValue CreateObject(string name, ScriptModule type)
         {
-            ObjectContext object_context = _context.ModuleContextsHolder.CreateModuleContext(name, type);
+            IFunction function;
+            ScriptObjectContext object_context = _context.CreateObject(type);
 
-            FunctionCall("<<entry_point>>", type.Name);
-
-            Value var = new Value
+            if (type.AsObject)
             {
-                Type = ValueTypeEnum.OBJECT,
-                Object = object_context
-            };
+                function = type.Functions.Get("<<entry_point>>");
 
-            Execute();
+                if (function != null)
+                {
+                    FunctionCall(function, object_context);
+                    Execute();
+                    _context.Reset();
+                }
+            }
 
-            _context.ModuleContextsHolder.DeleteModuleContext(name);
-            return var;
+            IValue value = ValueFactory.Create(object_context);
+            return value;
         }
 
         /// <summary>
@@ -122,39 +130,17 @@ namespace ScriptEngine.EngineBase.Interpreter
         public void FunctionCall(string name, string module_name)
         {
             IFunction function;
-            bool change_context = false;
-
-            if (module_name != string.Empty)
-            {
-                ScriptModule module;
-                module = _programm[module_name];
-                change_context = true;
-
-                // Если контекста нет то создаем новый.
-                if (!_context.ModuleContextsHolder.ExistModuleContext(module_name))
-                    _context.ModuleContextsHolder.CreateModuleContext(module_name, module);
-                _context.ModuleContextsHolder.SetModuleContext(module_name, _instruction);
-            }
-
-            function = _context.CurrentModule.Functions.Get(name);
-
-            if (function == null)
-                function = _programm.GlobalFunctions.Get(name);
+            function = _programm[module_name].Functions.Get(name);
 
             if (function == null)
                 throw new Exception($"Функция [{name}] не найдена.");
 
+            IVariable var = null;
+            var = _programm.GlobalVariables.Get("<<" + function.Scope.Module.Name + ">>");
+            if(var == null)
+                throw new Exception($"Не найден контекст модуля [{module_name}].");
 
-            if(function.Method != null)
-            {
-                Value result = function.Method(null);
-                _stack.Enqueue(result);
-                _instruction++;
-                return;
-            }
-
-
-            FunctionCall(function, change_context);
+            FunctionCall(function, var.Value.AsScriptObject());
         }
 
         /// <summary>
@@ -162,24 +148,66 @@ namespace ScriptEngine.EngineBase.Interpreter
         /// </summary>
         /// <param name="function"></param>
         /// <returns></returns>
-        private IVariable FunctionCall(IFunction function, bool change_context)
+        private IVariable FunctionCall(IFunction function,ScriptObjectContext context)
         {
-            int tmp_instruction;
+            if (function.Scope != null)
+            {
+                _context.Set(context,function,_instruction);
+                // добавить из стека в текущий (новый) контекст, переменные функции
+                SetFunctionParams(function);
+            }
+            else
+            {
+                IValue result = function.Method(InternalFunctionParams(function));
+                _return_value = result;
+                _instruction++;
+                return null;
+            }
 
-            tmp_instruction = _instruction;
-            // сохранить позицию кода, и создать новый контекст функции
-            if (change_context)
-                tmp_instruction = _instruction * -1;
-
-            _context.FunctionContextsHolder.CreateFunctionContext(function, tmp_instruction);
+            //создать новый контекст функции
             _instruction = function.EntryPoint;
-
-            // добавить из стека в текущий (новый) контекст, переменные функции
-            SetFunctionParams(function);
-
             _debugger.OnFunctionCall();
 
             return null;
+        }
+
+
+        /// <summary>
+        /// Подготовка параметров для внешней функции.
+        /// </summary>
+        /// <param name="function"></param>
+        /// <returns></returns>
+        private IValue[] InternalFunctionParams(IFunction function)
+        {
+            return null;
+            //IList<Value> function_params = new List<Value>();
+            //IVariable stack_param;
+            //if (function.Param != null)
+            //    foreach (IVariable function_param in function.Param)
+            //    {
+            //        if (_stack.Count > 0)
+            //        {
+            //            stack_param = _stack.Dequeue();
+            //            if (stack_param?.Value.Type != ValueTypeEnum.NULL)
+            //            {
+            //                function_param.Scope = function.Scope;
+            //                // Если есть значение, значит это параметр по значению.
+            //                if (function_param.Type == VariableTypeEnum.CONSTANTVARIABLE)
+            //                    function_params.Add((Value)stack_param);
+            //                else
+            //                    // Параметр который передается как адрес. Изменение внутри функции, приведет к изменению и вне.
+            //                    function_params.Add((Value)stack_param);
+            //            }
+            //            else
+            //                // Пустой параметр, тот который не указан между запятых. Функция Тест(,123) 
+            //                function_params.Add(new Value());
+            //        }
+            //        else
+            //            // Параметры по умолчанию.
+            //            function_params.Add((Value)function_param.Value);
+            //    }
+
+            //return function_params.ToArray();
         }
 
 
@@ -189,69 +217,56 @@ namespace ScriptEngine.EngineBase.Interpreter
         /// <param name="function"></param>
         private void SetFunctionParams(IFunction function)
         {
-            List<string> function_params = new List<string>();
-            IValue stack_param;
-            if (function.Param != null)
-                foreach (IVariable function_param in function.Param)
+            IVariableReference stack_param;
+            IList<string> function_params = new List<string>();
+
+            if (function.DefinedParameters != null)
+                foreach (FunctionParameter function_param in function.DefinedParameters)
                 {
                     if (_stack.Count > 0)
                     {
                         stack_param = _stack.Dequeue();
-                        if (stack_param?.Type != ValueTypeEnum.NULL)
+                        if (stack_param != null)
                         {
-                            function_param.Scope = function.Scope;
                             // Если есть значение, значит это параметр по значению.
-                            if (function_param.Status == VariableStatusEnum.CONSTANTVARIABLE)
+                            if (function_param.Type == VariableTypeEnum.CONSTANTVARIABLE)
                             {
-                                _context.SetValue(function_param, stack_param.Clone());
-                                function_params.Add(function_param.Name + " = " + stack_param.ToString());
+                                function_param.InternalVariable.Value = stack_param.Get();
+                                if (_debugger.Debug)
+                                    function_params.Add(function_param.Name + " = " + stack_param.ToString());
                             }
                             else
                             {
                                 // Параметр который передается как адрес. Изменение внутри функции, приведет к изменению и вне.
-                                _context.CopyValue(function_param, stack_param);
-                                function_params.Add(function_param.Name + " = " + stack_param.ToString());
+                                IVariableReference reference = new ScriptReference(stack_param);
+                                _context.Update(function_param.InternalVariable, reference);
+                                if (_debugger.Debug)
+                                    function_params.Add(function_param.Name + " = " + stack_param.ToString());
                             }
                         }
                         else
                         {
-                            // Пустой параметр, тот который не указан между запятых. Функция Тест(,123) 
-                            _context.SetValue(function_param, new Value());
-                            function_params.Add(function_param.Name + " = Null");
+                            // Пустой параметр, тот который не указан между запятых. Тест(,123) 
+                            function_param.InternalVariable.Value = ValueFactory.Create();
+                            if (_debugger.Debug)
+                                function_params.Add(function_param.Name + " = Null");
                         }
                     }
                     else
                     {
                         // Параметры по умолчанию.
-                        _context.SetValue(function_param, function_param.Value?.Clone());
-                        function_params.Add(function_param.Name + " = " + function_param.Value?.ToString());
+                        function_param.InternalVariable.Value = function_param.DefaultValue;
+                        if (_debugger.Debug)
+                            function_params.Add(function_param.Name + " = " + function_param.DefaultValue?.ToString());
                     }
                 }
 
-            // Для дебага, сохраняем параметры функции. Используется при развороте вызовов стека.
-            _context.FunctionContextsHolder.SetFunctionParams(function_params);
+            //Для дебага, сохраняем параметры функции. Используется при развороте вызовов стека.
+           // if (_debugger.Debug)
+            //    _context.FunctionContextsHolder.SetFunctionParams(function_params);
         }
 
 
-        /// <summary>
-        /// Выход из функции return
-        /// </summary>
-        public void FunctionReturn(IVariable return_var)
-        {
-            IValue var = null;
-
-            // забираем возвращаемое значение из текущего контекста
-            if (return_var != null)
-            {
-                var = _context.GetValue(return_var).Clone();
-                _stack.Enqueue(var);
-            }
-
-            // установка предыдущего контекста, и предыдущей функции.
-            _instruction = _context.RestoreContext();
-
-            _debugger.OnFunctionReturn();
-        }
 
         /// <summary>
         /// Проверка параметров вызываемой функции, на соответствие прототипу.
@@ -274,24 +289,24 @@ namespace ScriptEngine.EngineBase.Interpreter
 
             function.EntryPoint = work_function.EntryPoint;
 
-            if (function.Param.Count == work_function.Param.Count)
+            if (function.CallParameters.Count == work_function.DefinedParameters.Count)
                 return work_function;
 
             // Блок проверки параметров.
-            if (function.Param.Count > work_function.Param.Count)
+            if (function.CallParameters.Count > work_function.DefinedParameters.Count)
                 throw new RuntimeException(this, $"Много фактических параметров [{work_function.Name}].");
 
             int i, param_count;
-            param_count = i = function.Param.Count;
+            param_count = i = function.CallParameters.Count;
 
-            while (i < work_function.Param.Count)
+            while (i < work_function.DefinedParameters.Count)
             {
-                if (work_function.Param[i].Status == VariableStatusEnum.CONSTANTVARIABLE && work_function.Param[i].Value != null)
+                if (work_function.DefinedParameters[i].DefaultValue != null)
                     param_count++;
                 i++;
             }
 
-            if (param_count < work_function.Param.Count)
+            if (param_count < work_function.DefinedParameters.Count)
                 throw new RuntimeException(this, $"Недостаточно фактических параметров [{work_function.Name}].");
 
             return work_function;
@@ -304,76 +319,54 @@ namespace ScriptEngine.EngineBase.Interpreter
         /// <param name="statement"></param>
         private void ObjectCall(ScriptStatement statement)
         {
-            IValue object_call = _context.GetValue(statement.Variable2);
-            IValue function_index = _context.GetValue(statement.Variable3);
+            IValue object_call = statement.Variable2.Value;
+            IValue function_index = statement.Variable3.Value;
 
             IFunction function;
-            function = _context.CurrentModule.ObjectCallGet((int)function_index.Number);
+            function = _context.CurrentModule.ObjectCallGet(function_index.AsInt());
 
-            if (object_call == null || object_call.Type != ValueTypeEnum.OBJECT || object_call.Object == null)
+            if (object_call == null || object_call.Type != ValueTypeEnum.OBJECT || object_call.AsScriptObject() == null)
                 throw new RuntimeException(this, $"Значение не является значением объектного типа [{function.Name}]");
 
-            IFunction work_function = CheckObjectFunctionCall(object_call.Object.Module, function);
+            IFunction work_function = CheckObjectFunctionCall(object_call.AsScriptObject().Module, function);
 
             if (!work_function.Public)
                 throw new RuntimeException(this, $"Функция [{function.Name}] не имеет оператора Экспорт, и не доступна.");
 
-            _context.ModuleContextsHolder.SetModuleContext(object_call.Object, _instruction);
-            FunctionCall(work_function, true);
+            FunctionCall(work_function, object_call.AsScriptObject());
         }
 
         /// <summary>
         /// Получить значение свойства обьекта.
         /// </summary>
         /// <param name="statement"></param>
-        private void ObjectResoleVariable(ScriptStatement statement)
+        private void ObjectResolveVariable(ScriptStatement statement)
         {
             IValue var_name;
-            var_name = _context.GetValue(statement.Variable3);
+            var_name = statement.Variable3.Value;
 
-            IValue object_call = _context.GetValue(statement.Variable2);
-            if (object_call == null || object_call.Type != ValueTypeEnum.OBJECT || object_call.Object == null)
+            IValue object_call = statement.Variable2.Value;
+            if (object_call == null || object_call.Type != ValueTypeEnum.OBJECT || object_call.AsScriptObject() == null)
                 throw new RuntimeException(this, $"Значение не является значением объектного типа [{var_name.ToString()}]");
 
-            IVariable var = object_call.Object.Module.Variables.Get(var_name.ToString(), object_call.Object.Module.ModuleScope);
+            IVariable var = object_call.AsScriptObject().Module.Variables.Get(var_name.AsString(), object_call.AsScriptObject().Module.ModuleScope);
+            if (var == null)
+                throw new RuntimeException(this, $"У обьекта [{object_call.AsScriptObject().Module.Name}] нет свойства [{var_name.ToString()}].");
             if (!var.Public)
-                throw new RuntimeException(this, $"Переменная [{var_name.ToString()}] не имеет оператора Экспорт, и не доступна.");
+                throw new RuntimeException(this, $"Свойство [{var_name.ToString()}] не имеет оператора Экспорт, и не доступно.");
 
-            IValue value = object_call.Object.Context.GetValue(var.StackNumber);
-            _context.CopyValue(statement.Variable1, value);
+            IVariableReference var_ref = object_call.AsScriptObject().GetReference(var);
+            _context.Update(statement.Variable1, var_ref);
         }
 
         /// <summary>
         /// Проверить результат вычислений.
         /// </summary>
         /// <param name="result"></param>
-        private void CheckResult(IValue result ,IValue left, IValue right, OP_CODES code)
+        private void ErrorResult(string left, string right, OP_CODES code)
         {
-            bool result_bool = true;
-
-            switch (code)
-            {
-                case OP_CODES.OP_ADD:
-                    result_bool = Value.ADD(result,left,right);
-                    break;
-                case OP_CODES.OP_SUB:
-                    result_bool = Value.SUB(result, left, right);
-                    break;
-                case OP_CODES.OP_MUL:
-                    result_bool = Value.MUL(result, left, right);
-                    break;
-                case OP_CODES.OP_DIV:
-                    result_bool = Value.DIV(result, left, right);
-                    break;
-                case OP_CODES.OP_MOD:
-                    result_bool = Value.MOD(result, left, right);
-                    break;
-            }
-
-            if (!result_bool)
-                throw new RuntimeException(this, $"Невозможно расчитать {StringEnum.GetStringValue(code)}  {left.ToString()} и {right.ToString()}.");
+            throw new RuntimeException(this, $"Невозможно расчитать {EnumStringAttribute.GetStringValue(code)}  {left} и {right}.");
         }
-
 
         /// <summary>
         /// Выполнить код модуля.
@@ -381,47 +374,57 @@ namespace ScriptEngine.EngineBase.Interpreter
         internal void Execute()
         {
             ScriptStatement statement;
-            IValue v1,v2, v3;
+            //IList<ScriptStatement> code = CurrentModule.Code;
 
-            while (_instruction < _context.CurrentModule.Code.Count)
+            while (true)
             {
-                if (_instruction == int.MaxValue || _instruction < 0)
+                if (_instruction == int.MaxValue || _instruction < 0 || _instruction >= _context.CurrentModule.Code.Count)
                     return;
 
-                statement = _context.CurrentModule.Code[_instruction];
+                statement = CurrentModule.Code[_instruction];
                 _current_line = statement.Line;
 
-                if (_debugger.OnExecute(statement))
+                if (_debugger.Debug && _debugger.OnExecute(statement))
                     return;
 
                 switch (statement.OP_CODE)
                 {
                     case OP_CODES.OP_PUSH:
-                        v2 = _context.GetValue(statement.Variable2);
-                        _stack.Enqueue(v2);
+                        _stack.Enqueue(statement.Variable2.Reference);
                         break;
                     case OP_CODES.OP_POP:
-                        if (_stack.Count > 0)
-                            v2 = _stack.Dequeue();
-                        else
-                            v2 = new Value();
-                        _context.SetValue(statement.Variable1, v2);
+                        if (_return_value != null)
+                        {
+                            statement.Variable1.Value = _return_value;
+                            _return_value = null;
+                        }
                         break;
 
                     case OP_CODES.OP_CALL:
-                        string module_name = string.Empty;
-
-                        v2 = _context.GetValue(statement.Variable2);
-                        if (statement.Variable3 != null)
+                        ScriptObjectContext context;
+                        if (_context.CurrentModule != statement.Function.Scope.Module)
                         {
-                            v3 = _context.GetValue(statement.Variable3);
-                            module_name = v3.ToString();
+                            IVariable var = null;
+                            var = _programm.GlobalVariables.Get("<<" + statement.Function.Scope.Module.Name + ">>");
+                            context = var.Value.AsScriptObject();
                         }
-                        FunctionCall(v2.ToString(), module_name);
+                        else
+                            context = _context.Current;
+
+                        FunctionCall(statement.Function, context);
                         continue;
 
                     case OP_CODES.OP_RETURN:
-                        FunctionReturn(statement.Variable2);
+                        // забираем возвращаемое значение из текущего контекста
+                        if (statement.Variable2 != null)
+                            _return_value = statement.Variable2.Value;
+
+                        // установка предыдущего контекста, и предыдущей функции.
+                        _instruction = _context.Restore();
+                        if (_return_value == null)
+                            _instruction++;
+
+                        _debugger.OnFunctionReturn();
                         break;
 
 
@@ -429,117 +432,72 @@ namespace ScriptEngine.EngineBase.Interpreter
                         ObjectCall(statement);
                         continue;
                     case OP_CODES.OP_OBJECT_RESOLVE_VAR:
-                        ObjectResoleVariable(statement);
+                        ObjectResolveVariable(statement);
                         break;
 
                     case OP_CODES.OP_IFNOT:
-                        v2 = _context.GetValue(statement.Variable2);
-                        if (!v2.Boolean)
+                        if (!statement.Variable2.Value.AsBoolean())
                         {
-                            v3 = _context.GetValue(statement.Variable3);
-                            _instruction = (int)v3.Number;
+                            _instruction = statement.Variable3.Value.AsInt();
                             continue;
                         }
                         break;
                     case OP_CODES.OP_JMP:
-                        v2 = _context.GetValue(statement.Variable2);
-                        _instruction = (int)v2.Number;
+                        _instruction = statement.Variable2.Value.AsInt();
                         continue;
 
 
                     case OP_CODES.OP_GT:
-                        v1 = _context.GetValue(statement.Variable1);
-                        v2 = _context.GetValue(statement.Variable2);
-                        v3 = _context.GetValue(statement.Variable3);
-                        Value.GT(v1,v2, v3);
+                        statement.Variable1.Value = ValueFactory.GT(statement.Variable2.Value, statement.Variable3.Value);
                         break;
                     case OP_CODES.OP_LT:
-                        v1 = _context.GetValue(statement.Variable1);
-                        v2 = _context.GetValue(statement.Variable2);
-                        v3 = _context.GetValue(statement.Variable3);
-                        Value.LT(v1, v2, v3);
+                        statement.Variable1.Value = ValueFactory.LT(statement.Variable2.Value, statement.Variable3.Value);
                         break;
                     case OP_CODES.OP_GE:
-                        v1 = _context.GetValue(statement.Variable1);
-                        v2 = _context.GetValue(statement.Variable2);
-                        v3 = _context.GetValue(statement.Variable3);
-                        Value.GE(v1, v2, v3);
+                        statement.Variable1.Value = ValueFactory.GE(statement.Variable2.Value, statement.Variable3.Value);
                         break;
                     case OP_CODES.OP_LE:
-                        v1 = _context.GetValue(statement.Variable1);
-                        v2 = _context.GetValue(statement.Variable2);
-                        v3 = _context.GetValue(statement.Variable3);
-                        Value.LE(v1, v2, v3);
+                        statement.Variable1.Value = ValueFactory.LE(statement.Variable2.Value, statement.Variable3.Value);
                         break;
                     case OP_CODES.OP_NOT:
-                        v1 = _context.GetValue(statement.Variable1);
-                        v2 = _context.GetValue(statement.Variable2);
-                        v1.SetValue(!v2.ToBoolean());
+                        statement.Variable1.Value = ValueFactory.Create(!statement.Variable2.Value.AsBoolean()); 
                         break;
                     case OP_CODES.OP_OR:
-                        v1 = _context.GetValue(statement.Variable1);
-                        v2 = _context.GetValue(statement.Variable2);
-                        v3 = _context.GetValue(statement.Variable3);
-                        v1.SetValue(v2.ToBoolean() || v3.ToBoolean());
+                        statement.Variable1.Value = ValueFactory.Create(statement.Variable2.Value.AsBoolean() || statement.Variable3.Value.AsBoolean());
                         break;
                     case OP_CODES.OP_AND:
-                        v1 = _context.GetValue(statement.Variable1);
-                        v2 = _context.GetValue(statement.Variable2);
-                        v3 = _context.GetValue(statement.Variable3);
-                        v1.SetValue(v2.ToBoolean() && v3.ToBoolean());
-                          break;
+                        statement.Variable1.Value = ValueFactory.Create(statement.Variable2.Value.AsBoolean() && statement.Variable3.Value.AsBoolean());
+                        break;
                     case OP_CODES.OP_EQ:
-                        v1 = _context.GetValue(statement.Variable1);
-                        v2 = _context.GetValue(statement.Variable2);
-                        v3 = _context.GetValue(statement.Variable3);
-                        v1.SetValue(Value.EQ(v2, v3));
+                        statement.Variable1.Value = ValueFactory.EQ(statement.Variable2.Value, statement.Variable3.Value);
                         break;
                     case OP_CODES.OP_UNEQ:
-                        v1 = _context.GetValue(statement.Variable1);
-                        v2 = _context.GetValue(statement.Variable2);
-                        v3 = _context.GetValue(statement.Variable3);
-                        v1.SetValue(Value.UNEQ(v2, v3));
+                        statement.Variable1.Value = ValueFactory.UNEQ(statement.Variable2.Value, statement.Variable3.Value);
                         break;
 
                     case OP_CODES.OP_VAR_CLR:
-                        _context.ClearValue(statement.Variable2);
+                        _context.Update(statement.Variable2,new SimpleReference());
                         break;
                     case OP_CODES.OP_STORE:
-                        v3 = _context.GetValue(statement.Variable3);
-                        _context.SetValue(statement.Variable2, v3);
+                        statement.Variable2.Value = statement.Variable3.Value;
                         break;
+
+
                     case OP_CODES.OP_ADD:
-                        v1 = _context.GetValue(statement.Variable1);
-                        v2 = _context.GetValue(statement.Variable2);
-                        v3 = _context.GetValue(statement.Variable3);
-                        CheckResult(v1,v2, v3, OP_CODES.OP_ADD);
+                        statement.Variable1.Value = ValueFactory.ADD(statement.Variable2.Value, statement.Variable3.Value);
                         break;
                     case OP_CODES.OP_SUB:
-                        v1 = _context.GetValue(statement.Variable1);
-                        v2 = _context.GetValue(statement.Variable2);
-                        v3 = _context.GetValue(statement.Variable3);
-                        CheckResult(v1, v2, v3, OP_CODES.OP_SUB);
+                        statement.Variable1.Value = ValueFactory.SUB(statement.Variable2.Value, statement.Variable3.Value);
                         break;
                     case OP_CODES.OP_MUL:
-                        v1 = _context.GetValue(statement.Variable1);
-                        v2 = _context.GetValue(statement.Variable2);
-                        v3 = _context.GetValue(statement.Variable3);
-                        CheckResult(v1, v2, v3, OP_CODES.OP_MUL);
-
+                        statement.Variable1.Value = ValueFactory.MUL(statement.Variable2.Value, statement.Variable3.Value);
                         break;
                     case OP_CODES.OP_DIV:
-                        v1 = _context.GetValue(statement.Variable1);
-                        v2 = _context.GetValue(statement.Variable2);
-                        v3 = _context.GetValue(statement.Variable3);
-                        CheckResult(v1, v2, v3, OP_CODES.OP_DIV);
+                        statement.Variable1.Value = ValueFactory.DIV(statement.Variable2.Value, statement.Variable3.Value);
                         break;
                     case OP_CODES.OP_MOD:
-                        v1 = _context.GetValue(statement.Variable1);
-                        v2 = _context.GetValue(statement.Variable2);
-                        v3 = _context.GetValue(statement.Variable3);
-                        CheckResult(v1, v2, v3, OP_CODES.OP_MOD);
+                        statement.Variable1.Value = ValueFactory.MOD(statement.Variable2.Value, statement.Variable3.Value);
                         break;
-
                 }
                 _instruction++;
             }

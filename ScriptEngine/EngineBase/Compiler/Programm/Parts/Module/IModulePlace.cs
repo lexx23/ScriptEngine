@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ScriptEngine.EngineBase.Extensions
+namespace ScriptEngine.EngineBase.Compiler.Programm.Parts.Module
 {
     /// <summary>
     /// Параметры Global и Object задают поведение расширения.
@@ -9,12 +9,9 @@ namespace ScriptEngine.EngineBase.Extensions
     /// <para>Global = true, Object = true  Расширение представляется как обьект и, этот обьект, добавляется в глобальный контекст.</para>
     /// <para>Global = false, Object = true  Расширение представляется как обьект и, этот обьект, становится доступным в операторе Новый.</para>
     /// </summary>
-    [AttributeUsage(AttributeTargets.Class)]
-    public class ScriptExtensionAttribute : Attribute
+    public interface IModulePlace
     {
-        public bool AsGlobal { get; set; }
-        public bool AsObject {get; set;}
-        public string Name { get; set; }
-        public string Alias { get; set; }
+        bool AsGlobal { get; set; }
+        bool AsObject {get; set;}
     }
 }

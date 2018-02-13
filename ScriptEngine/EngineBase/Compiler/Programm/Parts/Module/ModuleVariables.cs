@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace ScriptEngine.EngineBase.Compiler.Programm.Parts
+namespace ScriptEngine.EngineBase.Compiler.Programm.Parts.Module
 {
     public class ModuleVariables
     {
@@ -53,19 +53,22 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts
                     if (var.Value.Users <= 1)
                         continue;
 
-                    //if (var.Value.Scope != scope)
-                    //    continue;
-
+                    if (var.Value.Scope != scope)
+                        continue;
 
                     var.Value.Users = 1;
-                    if (var.Value.Ref)
+                    if (var.Value.Type == VariableTypeEnum.REFERENCE)
                     {
                         ScriptStatement statement = _module.StatementAdd();
                         statement.OP_CODE = Interpreter.OP_CODES.OP_VAR_CLR;
                         statement.Variable2 = var.Value;
                     }
 
-                    scope.VarCount++;
+                    if (!scope.Vars.Contains(var.Value))
+                    {
+                        scope.Vars.Add(var.Value);
+                        scope.VarCount++;
+                    }
                     return var.Value;
                 }
             }
@@ -74,17 +77,17 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts
         }
 
         /// <summary>
-        /// Добавить переменную в модуль. Если такая переменная уже существует вернуть null.
+        /// Создать переменную в модуле. Если такая переменная уже существует вернуть null.
         /// </summary>
         /// <param name="name"></param>
         /// <param name="scope"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public IVariable Add(string name, bool as_public, ScriptScope scope, IValue value = null)
+        public IVariable Create(string name, bool as_public, ScriptScope scope, IValue value = null)
         {
             IVariable var;
 
-            if (scope == null)
+            if (scope == null || as_public)
                 scope = _module.ModuleScope;
 
             if (name == string.Empty)
@@ -95,13 +98,9 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts
                     return var;
             }
             else
-            {
-                if (as_public)
-                    scope = _module.ModuleScope;
-
                 if (_vars.ContainsKey(name + "-" + scope.Name))
-                    return null;
-            }
+                return null;
+
 
             var = new Variable()
             {
@@ -109,15 +108,35 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts
                 Scope = scope,
                 Value = value,
                 Public = as_public,
-                Status = VariableStatusEnum.STACKVARIABLE,
+                Type = VariableTypeEnum.STACKVARIABLE,
                 Users = 1,
                 StackNumber = scope.VarCount
             };
 
+            scope.Vars.Add(var);
             scope.VarCount++;
 
             _vars.Add(name + "-" + scope.Name, var);
             return var;
+        }
+
+        /// <summary>
+        /// Добавить переменную в модуль.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="variable"></param>
+        /// <returns></returns>
+        public bool Create(string name, IVariable variable)
+        {
+
+            if (variable.Scope == null)
+                variable.Scope = _module.ModuleScope;
+
+            if (_vars.ContainsKey(name + "-" + variable.Scope.Name))
+                return false;
+
+            _vars.Add(name + "-" + variable.Scope.Name, variable);
+            return true;
         }
 
         /// <summary>

@@ -3,59 +3,59 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using ScriptEngine.EngineBase.Compiler.Types.Variable;
 using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
 
-namespace ScriptEngine.EngineBase.Extensions
+namespace ScriptEngine.EngineBase.Library
 {
 
     public static class MethodInfoExtensions
     {
-        private static Func<Object, IVariable[], Value> CreateForNonVoidInstanceMethod(MethodInfo method)
+        private static readonly MethodInfo _convert_method = typeof(MethodInfoExtensions).GetMethod("Convert");
+
+        private static Func<Object, IValue[], IValue> CreateForNonVoidInstanceMethod(MethodInfo method)
         {
             ParameterExpression instanceParameter = Expression.Parameter(typeof(Object), "target");
-            ParameterExpression argumentsParameter = Expression.Parameter(typeof(IVariable[]), "arguments");
+            ParameterExpression argumentsParameter = Expression.Parameter(typeof(IValue[]), "arguments");
 
             MethodCallExpression call = Expression.Call(
                 Expression.Convert(instanceParameter, method.DeclaringType),
                 method,
                 CreateParameterExpressions(method, argumentsParameter));
 
-            Expression<Func<Object, IVariable[], Value>> lambda = Expression.Lambda<Func<Object, IVariable[], Value>>(
-                Expression.Convert(call, typeof(Value)),
+            Expression<Func<Object, IValue[], IValue>> lambda = Expression.Lambda<Func<Object, IValue[], IValue>>(
+                Expression.Convert(call, typeof(IValue)),
                 instanceParameter,
                 argumentsParameter);
 
             return lambda.Compile();
         }
 
-        private static Func<IVariable[], Value> CreateForNonVoidStaticMethod(MethodInfo method)
+        private static Func<IValue[], IValue> CreateForNonVoidStaticMethod(MethodInfo method)
         {
-            ParameterExpression argumentsParameter = Expression.Parameter(typeof(IVariable[]), "arguments");
+            ParameterExpression argumentsParameter = Expression.Parameter(typeof(IValue[]), "arguments");
 
             MethodCallExpression call = Expression.Call(
                 method,
                 CreateParameterExpressions(method, argumentsParameter));
 
-            Expression<Func<IVariable[], Value>> lambda = Expression.Lambda<Func<IVariable[], Value>>(
-                Expression.Convert(call, typeof(Object)),
+            Expression<Func<IValue[], IValue>> lambda = Expression.Lambda<Func<IValue[], IValue>>(
+                Expression.Convert(call, typeof(IValue)),
                 argumentsParameter);
 
             return lambda.Compile();
         }
 
-        private static Action<Object, IVariable[]> CreateForVoidInstanceMethod(MethodInfo method)
+        private static Action<Object, IValue[]> CreateForVoidInstanceMethod(MethodInfo method)
         {
             ParameterExpression instanceParameter = Expression.Parameter(typeof(Object), "target");
-            ParameterExpression argumentsParameter = Expression.Parameter(typeof(IVariable[]), "arguments");
+            ParameterExpression argumentsParameter = Expression.Parameter(typeof(IValue[]), "arguments");
 
             MethodCallExpression call = Expression.Call(
                 Expression.Convert(instanceParameter, method.DeclaringType),
                 method,
                 CreateParameterExpressions(method, argumentsParameter));
 
-            Expression<Action<Object, IVariable[]>> lambda = Expression.Lambda<Action<Object, IVariable[]>>(
+            Expression<Action<Object, IValue[]>> lambda = Expression.Lambda<Action<Object, IValue[]>>(
                 call,
                 instanceParameter,
                 argumentsParameter);
@@ -63,35 +63,58 @@ namespace ScriptEngine.EngineBase.Extensions
             return lambda.Compile();
         }
 
-        private static Action<IVariable[]> CreateForVoidStaticMethod(MethodInfo method)
+        private static Action<IValue[]> CreateForVoidStaticMethod(MethodInfo method)
         {
-            ParameterExpression argumentsParameter = Expression.Parameter(typeof(IVariable[]), "arguments");
+            ParameterExpression argumentsParameter = Expression.Parameter(typeof(IValue[]), "arguments");
 
             MethodCallExpression call = Expression.Call(
                 method,
                 CreateParameterExpressions(method, argumentsParameter));
 
-            Expression<Action<IVariable[]>> lambda = Expression.Lambda<Action<IVariable[]>>(
+            Expression<Action<IValue[]>> lambda = Expression.Lambda<Action<IValue[]>>(
                 call,
                 argumentsParameter);
 
             return lambda.Compile();
         }
+
+        //public static T Convert<T>(IValue value)
+        //{
+        //    return (T)value.GetRawValue();
+        //}
+
 
         private static Expression[] CreateParameterExpressions(MethodInfo method, Expression argumentsParameter)
         {
-            return method.GetParameters().Select((parameter, index) =>
-                Expression.Convert(
-                    Expression.ArrayIndex(argumentsParameter, Expression.Constant(index)), parameter.ParameterType)).Cast<Expression>().ToArray();
+            IList<Expression> list = new List<Expression>();
+            int i = 0;
+            foreach (ParameterInfo info in method.GetParameters())
+            {
+                if (info.ParameterType.IsEnum)
+                {
+                    MethodInfo generic_method = _convert_method.MakeGenericMethod(info.ParameterType);
+                    MethodCallExpression call = Expression.Call(generic_method, Expression.ArrayIndex(argumentsParameter, Expression.Constant(i)));
+                    list.Add(call);
+                }
+                else
+                    list.Add(Expression.Convert(Expression.ArrayIndex(argumentsParameter, Expression.Constant(i)), info.ParameterType));
+                    //MethodInfo convert_method = typeof(IValue).GetMethod("AsString");
+                    //MethodCallExpression call = Expression.Call(Expression.ArrayIndex(argumentsParameter, Expression.Constant(i)), convert_method);
+                    //list.Add(call);
+                i++;
+            }
+
+            return list.ToArray();
         }
 
-        public static Func<IVariable[], Value> Bind(this MethodInfo method,object target)
+        public static Func<IValue[], IValue> Bind(this MethodInfo method, object target)
         {
+
             if (method.IsStatic)
             {
                 if (method.ReturnType == typeof(void))
                 {
-                    Action<IVariable[]> wrapped = CreateForVoidStaticMethod(method);
+                    Action<IValue[]> wrapped = CreateForVoidStaticMethod(method);
                     return (parameters) =>
                     {
                         wrapped(parameters);
@@ -100,13 +123,13 @@ namespace ScriptEngine.EngineBase.Extensions
                 }
                 else
                 {
-                    Func<IVariable[], Value> wrapped = CreateForNonVoidStaticMethod(method);
+                    Func<IValue[], IValue> wrapped = CreateForNonVoidStaticMethod(method);
                     return (parameters) => wrapped(parameters);
                 }
             }
             if (method.ReturnType == typeof(void))
             {
-                Action<object, IVariable[]> wrapped = CreateForVoidInstanceMethod(method);
+                Action<object, IValue[]> wrapped = CreateForVoidInstanceMethod(method);
                 return (parameters) =>
                 {
                     wrapped(target, parameters);
@@ -115,8 +138,8 @@ namespace ScriptEngine.EngineBase.Extensions
             }
             else
             {
-                Func<object, IVariable[], Value> wrapped = CreateForNonVoidInstanceMethod(method);
-                return (parameters) => wrapped(target,parameters);
+                Func<object, IValue[], IValue> wrapped = CreateForNonVoidInstanceMethod(method);
+                return (parameters) => wrapped(target, parameters);
             }
         }
 
@@ -141,7 +164,6 @@ namespace ScriptEngine.EngineBase.Extensions
                     case 4:
                         actionGenericType = typeof(Action<,,,>);
                         break;
-#if NET_FX_4 //See #define NET_FX_4 as the head of this file
                     case 5:
                         actionGenericType = typeof(Action<,,,,>);
                         break;
@@ -178,7 +200,6 @@ namespace ScriptEngine.EngineBase.Extensions
                     case 16:
                         actionGenericType = typeof(Action<,,,,,,,,,,,,,,,>);
                         break;
-#endif
                     default:
                         throw new NotSupportedException("Lambdas may only have up to 16 parameters.");
                 }
@@ -201,44 +222,42 @@ namespace ScriptEngine.EngineBase.Extensions
                 case 4:
                     functionGenericType = typeof(Func<,,,,>);
                     break;
-#if NET_FX_4 //See #define NET_FX_4 as the head of this file
                 case 5:
-                    funcGenericType = typeof(Func<,,,,,>);
+                    functionGenericType = typeof(Func<,,,,,>);
                     break;
                 case 6:
-                    funcGenericType = typeof(Func<,,,,,,>);
+                    functionGenericType = typeof(Func<,,,,,,>);
                     break;
                 case 7:
-                    funcGenericType = typeof(Func<,,,,,,,>);
+                    functionGenericType = typeof(Func<,,,,,,,>);
                     break;
                 case 8:
-                    funcGenericType = typeof(Func<,,,,,,,,>);
+                    functionGenericType = typeof(Func<,,,,,,,,>);
                     break;
                 case 9:
-                    funcGenericType = typeof(Func<,,,,,,,,,>);
+                    functionGenericType = typeof(Func<,,,,,,,,,>);
                     break;
                 case 10:
-                    funcGenericType = typeof(Func<,,,,,,,,,,>);
+                    functionGenericType = typeof(Func<,,,,,,,,,,>);
                     break;
                 case 11:
-                    funcGenericType = typeof(Func<,,,,,,,,,,,>);
+                    functionGenericType = typeof(Func<,,,,,,,,,,,>);
                     break;
                 case 12:
-                    funcGenericType = typeof(Func<,,,,,,,,,,,,>);
+                    functionGenericType = typeof(Func<,,,,,,,,,,,,>);
                     break;
                 case 13:
-                    funcGenericType = typeof(Func<,,,,,,,,,,,,,>);
+                    functionGenericType = typeof(Func<,,,,,,,,,,,,,>);
                     break;
                 case 14:
-                    funcGenericType = typeof(Func<,,,,,,,,,,,,,,>);
+                    functionGenericType = typeof(Func<,,,,,,,,,,,,,,>);
                     break;
                 case 15:
-                    funcGenericType = typeof(Func<,,,,,,,,,,,,,,,>);
+                    functionGenericType = typeof(Func<,,,,,,,,,,,,,,,>);
                     break;
                 case 16:
-                    funcGenericType = typeof(Func<,,,,,,,,,,,,,,,,>);
+                    functionGenericType = typeof(Func<,,,,,,,,,,,,,,,,>);
                     break;
-#endif
                 default:
                     throw new NotSupportedException("Lambdas may only have up to 16 parameters.");
             }
