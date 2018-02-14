@@ -5,15 +5,15 @@ using ScriptEngine.EngineBase.Interpreter.Context;
 
 namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value.Values
 {
-    class ScriptObjectValue : IValue
+    class ObjectValue : IValue
     {
-        private ScriptObjectContext _value;
+        private object _value;
 
         public ValueTypeEnum Type => ValueTypeEnum.OBJECT;
 
         public bool ReadOnly => throw new NotImplementedException();
 
-        public ScriptObjectValue(ScriptObjectContext value)
+        public ObjectValue(object value)
         {
             _value = value;
         }
@@ -41,34 +41,28 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value.Values
 
         public ScriptObjectContext AsScriptObject()
         {
-            return _value;
+            throw new NotImplementedException();
         }
 
         public string AsString()
         {
-            return _value.ModuleName;
+            throw new NotImplementedException();
         }
 
-        public IValue Clone()
+        public object AsObject()
+        {
+            return _value;
+        }
+
+
+        public int CompareTo(IValue other)
         {
             throw new NotImplementedException();
         }
 
         public bool Equals(IValue other)
         {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-
-            if (other.Type == ValueTypeEnum.OBJECT)
-                return _value.ModuleName == other.AsScriptObject().ModuleName && _value.Context == other.AsScriptObject().Context;
-
-            return false;
-        }
-
-        public int CompareTo(IValue other)
-        {
-
-            throw new Exception("Операции сравнения на больше-меньше допустимы только для значений совпадающих примитивных типов (Булево, Число, Строка, Дата)");
+            throw new NotImplementedException();
         }
     }
 }

@@ -41,10 +41,11 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value.Values
             throw new NotImplementedException();
         }
 
-        public IValue Clone()
+        public object AsObject()
         {
-            return ValueFactory.Create();
+            return null;
         }
+
         public bool Equals(IValue other)
         {
             if (other is null) return false;

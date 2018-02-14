@@ -20,9 +20,6 @@ namespace UnitTests
         [TestMethod]
         public void Interpreter_ExtensionFunctionCall()
         {
-//            IDictionary<ScriptModule, string> files = new Dictionary<ScriptModule, string>();
-//            files.Add("function", "Extension\\function call.scr");
-
             IDictionary<ScriptModule, string> modules = new Dictionary<ScriptModule, string>();
             modules.Add(new ScriptModule("global", "global", ModuleTypeEnum.STARTUP,true,false), OpenModule("Extension\\function call.scr"));
 
@@ -37,7 +34,7 @@ namespace UnitTests
             //interpreter.Debug();
             sw.Stop();
 
-            Assert.AreEqual(2600, sw.ElapsedMilliseconds,160);
+            Assert.AreEqual(1800, sw.ElapsedMilliseconds,150);
             //Assert.AreEqual(1000000, interpreter.Debugger.RegisterGetValue("ф").AsNumber());
         }
 
@@ -61,6 +58,28 @@ namespace UnitTests
 
 
         [TestMethod]
+        public void Interpreter_OtherSpeedTestLibraryFunctionCall()
+        {
+            IDictionary<ScriptModule, string> modules = new Dictionary<ScriptModule, string>();
+            modules.Add(new ScriptModule("global", "global", ModuleTypeEnum.STARTUP, true, false), OpenModule("Other\\speed_test_library_call.scr"));
+
+
+            ScriptProgramm programm = CompileObjects(modules);
+            ScriptInterpreter interpreter = new ScriptInterpreter(programm);
+            interpreter.Debugger.AddBreakpoint("global", 12);
+
+            System.Diagnostics.Stopwatch sw = new Stopwatch();
+            sw.Start();
+            interpreter.Run();
+            //interpreter.Debug();
+            sw.Stop();
+
+            Assert.AreEqual(1800, sw.ElapsedMilliseconds, 150);
+            //Assert.AreEqual(1000000, interpreter.Debugger.RegisterGetValue("ф").AsNumber());
+        }
+
+
+        [TestMethod]
         public void Interpreter_OtherSpeedTestFunctionCall()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
@@ -76,7 +95,7 @@ namespace UnitTests
             //interpreter.Debug();
             sw.Stop();
 
-            Assert.AreEqual(4800, sw.ElapsedMilliseconds, 200);
+            Assert.AreEqual(3200, sw.ElapsedMilliseconds, 150);
             //Assert.AreEqual(1000000, interpreter.Debugger.RegisterGetValue("ф").Number);
         }
 

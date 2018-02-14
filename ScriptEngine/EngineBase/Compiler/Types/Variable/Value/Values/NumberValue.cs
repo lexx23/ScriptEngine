@@ -51,9 +51,9 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
             return _value.ToString("n3");
         }
 
-        public IValue Clone()
+        public object AsObject()
         {
-            return ValueFactory.Create(_value);
+            return _value;
         }
 
         public bool Equals(IValue other)

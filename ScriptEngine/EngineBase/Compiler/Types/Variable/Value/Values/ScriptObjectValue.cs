@@ -5,18 +5,19 @@ using ScriptEngine.EngineBase.Interpreter.Context;
 
 namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value.Values
 {
-    class DateValue : IValue
+    class ScriptObjectValue : IValue
     {
-        private DateTime _value;
+        private ScriptObjectContext _value;
 
-        public ValueTypeEnum Type => ValueTypeEnum.DATE;
+        public ValueTypeEnum Type => ValueTypeEnum.SCRIPT_OBJECT;
 
         public bool ReadOnly => throw new NotImplementedException();
 
-        public DateValue(DateTime value)
+        public ScriptObjectValue(ScriptObjectContext value)
         {
             _value = value;
         }
+
 
         public bool AsBoolean()
         {
@@ -35,17 +36,17 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value.Values
 
         public decimal AsNumber()
         {
-            return _value.Ticks;
+            throw new NotImplementedException();
         }
 
         public ScriptObjectContext AsScriptObject()
         {
-            throw new NotImplementedException();
+            return _value;
         }
 
         public string AsString()
         {
-            return _value.ToString("dd.MM.yyyy hh.mm:ss");
+            return _value.ModuleName;
         }
 
         public object AsObject()
@@ -53,27 +54,22 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value.Values
             return _value;
         }
 
+
         public bool Equals(IValue other)
         {
             if (other is null) return false;
             if (ReferenceEquals(this, other)) return true;
 
-            if (other.Type == ValueTypeEnum.DATE)
-                return _value == other.AsDate();
+            if (other.Type == ValueTypeEnum.SCRIPT_OBJECT)
+                return _value.ModuleName == other.AsScriptObject().ModuleName && _value.Context == other.AsScriptObject().Context;
 
             return false;
         }
 
         public int CompareTo(IValue other)
         {
-            switch (other.Type)
-            {
-                case ValueTypeEnum.DATE:
-                    return _value.CompareTo(other.AsDate());
 
-                default:
-                    throw new Exception("Операции сравнения на больше-меньше допустимы только для значений совпадающих примитивных типов (Булево, Число, Строка, Дата)");
-            }
+            throw new Exception("Операции сравнения на больше-меньше допустимы только для значений совпадающих примитивных типов (Булево, Число, Строка, Дата)");
         }
     }
 }

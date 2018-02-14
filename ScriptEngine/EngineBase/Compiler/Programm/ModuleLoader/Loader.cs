@@ -1,7 +1,9 @@
 ﻿using ScriptEngine.EngineBase.Compiler.Programm.Parts.Module;
 using ScriptEngine.EngineBase.Compiler.Types.Function;
+using ScriptEngine.EngineBase.Compiler.Types.Function.Parameters;
 using ScriptEngine.EngineBase.Compiler.Types.Variable;
 using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
+using ScriptEngine.EngineBase.Extensions;
 using ScriptEngine.EngineBase.Interpreter.Context;
 using ScriptEngine.EngineBase.Library;
 using ScriptEngine.EngineBase.Library.Attributes;
@@ -22,25 +24,24 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.ModuleLoader
             _programm = programm;
         }
 
-        private IList<IVariable> GetFunctionParams(MethodInfo method)
+        private void GetFunctionParameters(IFunction function, MethodInfo method)
         {
-            IList<IVariable> func_params = new List<IVariable>();
-
+            IValue default_value = null;
+            FunctionParameters parameters = new FunctionParameters();
             foreach (ParameterInfo param_info in method.GetParameters())
             {
-                IVariable var = new Variable();
-
-
                 if (param_info.HasDefaultValue)
-                {
-                    var.Type = VariableTypeEnum.CONSTANTVARIABLE;
-                    var.Value = ValueFactory.Create(param_info.ParameterType, param_info.DefaultValue);
-                }
+                    default_value = ValueFactory.Create(param_info.ParameterType, param_info.DefaultValue);
 
-                func_params.Add(var);
+                FunctionByValueParameterAttribute[] by_val_attribute = param_info.GetCustomAttributes<FunctionByValueParameterAttribute>().ToArray();
+                if (by_val_attribute.Length > 0)
+                    parameters.CreateByVal(param_info.Name, null, default_value);
+                else
+                    parameters.CreateByRef(param_info.Name, null, default_value);
+
             }
 
-            return func_params;
+            function.DefinedParameters = parameters;
         }
 
         private void LoadEnums(Assembly assembly)
@@ -54,7 +55,7 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.ModuleLoader
                 IFunction function = enum_module.Functions.Create("GetPropertyByName", true);
                 //function.Param = new IVariable[] { new Variable() {Type = VariableTypeEnum.STACKVARIABLE } };
 
-                foreach(IVariable var in new_enum)
+                foreach (IVariable var in new_enum)
                     enum_module.Variables.Create(var.Name, var);
 
                 _programm.ModuleAdd(enum_module);
@@ -80,7 +81,7 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.ModuleLoader
                         IFunction function = _programm.GlobalFunctions.Create(method_attr.Name);
                         function.Name = method_attr.Name;
                         function.Type = method.ReturnType == typeof(void) ? FunctionTypeEnum.PROCEDURE : FunctionTypeEnum.FUNCTION;
-                        //function.Params = GetFunctionParams(method);
+                        GetFunctionParameters(function, method);
                         function.Method = Library.MethodInfoExtensions.Bind(method, extension);
                         _programm.GlobalFunctions.Add(method_attr.Alias, function);
 

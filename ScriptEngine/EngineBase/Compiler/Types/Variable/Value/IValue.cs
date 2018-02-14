@@ -13,8 +13,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
         string AsString();
         DateTime AsDate();
         decimal AsNumber();
+        object AsObject();
         ScriptObjectContext AsScriptObject();
-
-        IValue Clone();
     }
 }

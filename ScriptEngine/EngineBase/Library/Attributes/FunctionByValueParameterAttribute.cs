@@ -8,12 +8,7 @@ using System.Text;
 namespace ScriptEngine.EngineBase.Extensions
 {
     [AttributeUsage(AttributeTargets.Parameter)]
-    public class FunctionDefaultParameterAttribute : Attribute
+    public class FunctionByValueParameterAttribute : Attribute
     {
-        public bool ByVal { get; set; }
-        public IValue Default { get; set; }
-
-        //public FunctionDefaultParameterAttribute(string value) => Default = new Value(value);
-        //public FunctionDefaultParameterAttribute(decimal value) => Default = new Value(value);
     }
 }

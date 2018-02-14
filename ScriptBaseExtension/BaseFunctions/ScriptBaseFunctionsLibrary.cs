@@ -1,5 +1,6 @@
 ﻿using ScriptBaseFunctionsLibrary.Enums;
 using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
+using ScriptEngine.EngineBase.Extensions;
 using ScriptEngine.EngineBase.Library.Attributes;
 using System;
 
@@ -9,7 +10,7 @@ namespace ScriptBaseLibrary
     public class ScriptBaseFunctionsLibrary
     {
         [LibraryClassMethodAttribute(Name = "Сообщить", Alias = "Message")]
-        public void Message(string text, MessageStatusEnumInner type = MessageStatusEnumInner.WithoutStatus)
+        public void Message([FunctionByValueParameter]string text, MessageStatusEnumInner type = MessageStatusEnumInner.WithoutStatus)
         {
             //if (type == null)
             //    type.Value = MessageStatusEnum.Instance["Обычное"];

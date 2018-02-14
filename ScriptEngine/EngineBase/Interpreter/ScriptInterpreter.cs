@@ -19,19 +19,18 @@ namespace ScriptEngine.EngineBase.Interpreter
     {
         private int _instruction;
         private ScriptProgramm _programm;
-        private Context.InterpreterContext _context;
+        private InterpreterContext _context;
 
-
-        private ScriptDebugger _debugger;
         private Queue<IVariableReference> _stack;
+        private IList<ScriptStatement> _code;
+        private ScriptDebugger _debugger;
         private IValue _return_value;
         private int _current_line;
 
-        public ScriptDebugger Debugger { get => _debugger; }
-        public int IstructionIndex { get => _instruction; }
         public int CurrentLine { get => _current_line; }
+        public int IstructionIndex { get => _instruction; }
+        public ScriptDebugger Debugger { get => _debugger; }
         public ScriptProgramm Programm { get => _programm; }
-        //public ScriptProgrammContext Context { get => _context; }
         public IFunction CurrentFunction { get => _context.CurrentFunction; }
         public ScriptModule CurrentModule { get => _context.CurrentModule; }
 
@@ -97,7 +96,7 @@ namespace ScriptEngine.EngineBase.Interpreter
         }
 
         /// <summary>
-        /// Инициализация обьектов по умолчанию.
+        /// Инициализация объектов по умолчанию.
         /// </summary>
         /// <param name="name"></param>
         /// <param name="type"></param>
@@ -137,7 +136,7 @@ namespace ScriptEngine.EngineBase.Interpreter
 
             IVariable var = null;
             var = _programm.GlobalVariables.Get("<<" + function.Scope.Module.Name + ">>");
-            if(var == null)
+            if (var == null)
                 throw new Exception($"Не найден контекст модуля [{module_name}].");
 
             FunctionCall(function, var.Value.AsScriptObject());
@@ -148,11 +147,12 @@ namespace ScriptEngine.EngineBase.Interpreter
         /// </summary>
         /// <param name="function"></param>
         /// <returns></returns>
-        private IVariable FunctionCall(IFunction function,ScriptObjectContext context)
+        private IVariable FunctionCall(IFunction function, ScriptObjectContext context)
         {
             if (function.Scope != null)
             {
-                _context.Set(context,function,_instruction);
+                _context.Set(context, function, _instruction);
+                _code = _context.CurrentModule.Code;
                 // добавить из стека в текущий (новый) контекст, переменные функции
                 SetFunctionParams(function);
             }
@@ -164,7 +164,6 @@ namespace ScriptEngine.EngineBase.Interpreter
                 return null;
             }
 
-            //создать новый контекст функции
             _instruction = function.EntryPoint;
             _debugger.OnFunctionCall();
 
@@ -179,35 +178,39 @@ namespace ScriptEngine.EngineBase.Interpreter
         /// <returns></returns>
         private IValue[] InternalFunctionParams(IFunction function)
         {
-            return null;
-            //IList<Value> function_params = new List<Value>();
-            //IVariable stack_param;
-            //if (function.Param != null)
-            //    foreach (IVariable function_param in function.Param)
-            //    {
-            //        if (_stack.Count > 0)
-            //        {
-            //            stack_param = _stack.Dequeue();
-            //            if (stack_param?.Value.Type != ValueTypeEnum.NULL)
-            //            {
-            //                function_param.Scope = function.Scope;
-            //                // Если есть значение, значит это параметр по значению.
-            //                if (function_param.Type == VariableTypeEnum.CONSTANTVARIABLE)
-            //                    function_params.Add((Value)stack_param);
-            //                else
-            //                    // Параметр который передается как адрес. Изменение внутри функции, приведет к изменению и вне.
-            //                    function_params.Add((Value)stack_param);
-            //            }
-            //            else
-            //                // Пустой параметр, тот который не указан между запятых. Функция Тест(,123) 
-            //                function_params.Add(new Value());
-            //        }
-            //        else
-            //            // Параметры по умолчанию.
-            //            function_params.Add((Value)function_param.Value);
-            //    }
+            IVariableReference stack_param;
+            IValue[] function_params = new IValue[function.DefinedParameters.Count];
 
-            //return function_params.ToArray();
+            int i = 0;
+            FunctionParameter function_param;
+
+            if (function.DefinedParameters != null)
+                while (i < function_params.Length)
+                {
+                    function_param = function.DefinedParameters[i];
+                    if (_stack.Count > 0)
+                    {
+                        stack_param = _stack.Dequeue();
+                        if (stack_param != null)
+                        {
+                            // Если есть значение, значит это параметр по значению.
+                            if (function_param.Type == VariableTypeEnum.CONSTANTVARIABLE)
+                                function_params[i] = stack_param.Get();
+                            else
+                                // Параметр который передается как адрес. Изменение внутри функции, приведет к изменению и вне.
+                                function_params[i] = stack_param.Get();
+                        }
+                        else
+                            // Пустой параметр, тот который не указан между запятых. Функция Тест(,123) 
+                            function_params[i] = ValueFactory.Create();
+                    }
+                    else
+                        // Параметры по умолчанию.
+                        function_params[i] = function_param.DefaultValue;
+                    i++;
+                }
+
+            return function_params;
         }
 
 
@@ -217,12 +220,15 @@ namespace ScriptEngine.EngineBase.Interpreter
         /// <param name="function"></param>
         private void SetFunctionParams(IFunction function)
         {
+            int i = 0;
+            FunctionParameter function_param;
             IVariableReference stack_param;
-            IList<string> function_params = new List<string>();
 
             if (function.DefinedParameters != null)
-                foreach (FunctionParameter function_param in function.DefinedParameters)
+                while (i < function.DefinedParameters.Count)
                 {
+                    function_param = function.DefinedParameters[i];
+
                     if (_stack.Count > 0)
                     {
                         stack_param = _stack.Dequeue();
@@ -230,40 +236,26 @@ namespace ScriptEngine.EngineBase.Interpreter
                         {
                             // Если есть значение, значит это параметр по значению.
                             if (function_param.Type == VariableTypeEnum.CONSTANTVARIABLE)
-                            {
                                 function_param.InternalVariable.Value = stack_param.Get();
-                                if (_debugger.Debug)
-                                    function_params.Add(function_param.Name + " = " + stack_param.ToString());
-                            }
                             else
                             {
                                 // Параметр который передается как адрес. Изменение внутри функции, приведет к изменению и вне.
                                 IVariableReference reference = new ScriptReference(stack_param);
                                 _context.Update(function_param.InternalVariable, reference);
-                                if (_debugger.Debug)
-                                    function_params.Add(function_param.Name + " = " + stack_param.ToString());
                             }
                         }
                         else
                         {
                             // Пустой параметр, тот который не указан между запятых. Тест(,123) 
                             function_param.InternalVariable.Value = ValueFactory.Create();
-                            if (_debugger.Debug)
-                                function_params.Add(function_param.Name + " = Null");
                         }
                     }
                     else
-                    {
                         // Параметры по умолчанию.
                         function_param.InternalVariable.Value = function_param.DefaultValue;
-                        if (_debugger.Debug)
-                            function_params.Add(function_param.Name + " = " + function_param.DefaultValue?.ToString());
-                    }
-                }
 
-            //Для дебага, сохраняем параметры функции. Используется при развороте вызовов стека.
-           // if (_debugger.Debug)
-            //    _context.FunctionContextsHolder.SetFunctionParams(function_params);
+                    i++;
+                }
         }
 
 
@@ -281,7 +273,7 @@ namespace ScriptEngine.EngineBase.Interpreter
             work_function = module.Functions.Get(function.Name);
 
             if (work_function == null)
-                throw new RuntimeException(this, $"Процедура или функция с именем [{function.Name}] не определена, у обьекта [{module.Name}].");
+                throw new RuntimeException(this, $"Процедура или функция с именем [{function.Name}] не определена, у объекта [{module.Name}].");
 
             // Проверка типа использования. Если используется процедура как функция то ошибка.
             if (work_function.Type == FunctionTypeEnum.PROCEDURE && work_function.Type != function.Type)
@@ -314,7 +306,7 @@ namespace ScriptEngine.EngineBase.Interpreter
 
 
         /// <summary>
-        /// Вызов метода у обьекта.
+        /// Вызов метода у объекта.
         /// </summary>
         /// <param name="statement"></param>
         private void ObjectCall(ScriptStatement statement)
@@ -325,7 +317,7 @@ namespace ScriptEngine.EngineBase.Interpreter
             IFunction function;
             function = _context.CurrentModule.ObjectCallGet(function_index.AsInt());
 
-            if (object_call == null || object_call.Type != ValueTypeEnum.OBJECT || object_call.AsScriptObject() == null)
+            if (object_call == null || object_call.Type != ValueTypeEnum.SCRIPT_OBJECT || object_call.AsScriptObject() == null)
                 throw new RuntimeException(this, $"Значение не является значением объектного типа [{function.Name}]");
 
             IFunction work_function = CheckObjectFunctionCall(object_call.AsScriptObject().Module, function);
@@ -337,7 +329,7 @@ namespace ScriptEngine.EngineBase.Interpreter
         }
 
         /// <summary>
-        /// Получить значение свойства обьекта.
+        /// Получить значение свойства объекта.
         /// </summary>
         /// <param name="statement"></param>
         private void ObjectResolveVariable(ScriptStatement statement)
@@ -346,12 +338,12 @@ namespace ScriptEngine.EngineBase.Interpreter
             var_name = statement.Variable3.Value;
 
             IValue object_call = statement.Variable2.Value;
-            if (object_call == null || object_call.Type != ValueTypeEnum.OBJECT || object_call.AsScriptObject() == null)
+            if (object_call == null || object_call.Type != ValueTypeEnum.SCRIPT_OBJECT || object_call.AsScriptObject() == null)
                 throw new RuntimeException(this, $"Значение не является значением объектного типа [{var_name.ToString()}]");
 
             IVariable var = object_call.AsScriptObject().Module.Variables.Get(var_name.AsString(), object_call.AsScriptObject().Module.ModuleScope);
             if (var == null)
-                throw new RuntimeException(this, $"У обьекта [{object_call.AsScriptObject().Module.Name}] нет свойства [{var_name.ToString()}].");
+                throw new RuntimeException(this, $"У объекта [{object_call.AsScriptObject().Module.Name}] нет свойства [{var_name.ToString()}].");
             if (!var.Public)
                 throw new RuntimeException(this, $"Свойство [{var_name.ToString()}] не имеет оператора Экспорт, и не доступно.");
 
@@ -365,7 +357,7 @@ namespace ScriptEngine.EngineBase.Interpreter
         /// <param name="result"></param>
         private void ErrorResult(string left, string right, OP_CODES code)
         {
-            throw new RuntimeException(this, $"Невозможно расчитать {EnumStringAttribute.GetStringValue(code)}  {left} и {right}.");
+            throw new RuntimeException(this, $"Невозможно рассчитать {EnumStringAttribute.GetStringValue(code)}  {left} и {right}.");
         }
 
         /// <summary>
@@ -374,14 +366,13 @@ namespace ScriptEngine.EngineBase.Interpreter
         internal void Execute()
         {
             ScriptStatement statement;
-            //IList<ScriptStatement> code = CurrentModule.Code;
 
             while (true)
             {
-                if (_instruction == int.MaxValue || _instruction < 0 || _instruction >= _context.CurrentModule.Code.Count)
+                if (_instruction == int.MaxValue || _instruction < 0 || _instruction >= _code.Count)
                     return;
 
-                statement = CurrentModule.Code[_instruction];
+                statement = _code[_instruction];
                 _current_line = statement.Line;
 
                 if (_debugger.Debug && _debugger.OnExecute(statement))
@@ -402,7 +393,7 @@ namespace ScriptEngine.EngineBase.Interpreter
 
                     case OP_CODES.OP_CALL:
                         ScriptObjectContext context;
-                        if (_context.CurrentModule != statement.Function.Scope.Module)
+                        if (statement.Function.Scope != null && _context.CurrentModule != statement.Function.Scope.Module)
                         {
                             IVariable var = null;
                             var = _programm.GlobalVariables.Get("<<" + statement.Function.Scope.Module.Name + ">>");
@@ -421,6 +412,8 @@ namespace ScriptEngine.EngineBase.Interpreter
 
                         // установка предыдущего контекста, и предыдущей функции.
                         _instruction = _context.Restore();
+                        _code = _context.CurrentModule.Code;
+
                         if (_return_value == null)
                             _instruction++;
 
@@ -460,7 +453,7 @@ namespace ScriptEngine.EngineBase.Interpreter
                         statement.Variable1.Value = ValueFactory.LE(statement.Variable2.Value, statement.Variable3.Value);
                         break;
                     case OP_CODES.OP_NOT:
-                        statement.Variable1.Value = ValueFactory.Create(!statement.Variable2.Value.AsBoolean()); 
+                        statement.Variable1.Value = ValueFactory.Create(!statement.Variable2.Value.AsBoolean());
                         break;
                     case OP_CODES.OP_OR:
                         statement.Variable1.Value = ValueFactory.Create(statement.Variable2.Value.AsBoolean() || statement.Variable3.Value.AsBoolean());
@@ -476,7 +469,7 @@ namespace ScriptEngine.EngineBase.Interpreter
                         break;
 
                     case OP_CODES.OP_VAR_CLR:
-                        _context.Update(statement.Variable2,new SimpleReference());
+                        _context.Update(statement.Variable2, new SimpleReference());
                         break;
                     case OP_CODES.OP_STORE:
                         statement.Variable2.Value = statement.Variable3.Value;

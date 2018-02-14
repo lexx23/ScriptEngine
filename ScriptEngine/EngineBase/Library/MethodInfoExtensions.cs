@@ -10,8 +10,6 @@ namespace ScriptEngine.EngineBase.Library
 
     public static class MethodInfoExtensions
     {
-        private static readonly MethodInfo _convert_method = typeof(MethodInfoExtensions).GetMethod("Convert");
-
         private static Func<Object, IValue[], IValue> CreateForNonVoidInstanceMethod(MethodInfo method)
         {
             ParameterExpression instanceParameter = Expression.Parameter(typeof(Object), "target");
@@ -78,29 +76,25 @@ namespace ScriptEngine.EngineBase.Library
             return lambda.Compile();
         }
 
-        //public static T Convert<T>(IValue value)
-        //{
-        //    return (T)value.GetRawValue();
-        //}
-
-
         private static Expression[] CreateParameterExpressions(MethodInfo method, Expression argumentsParameter)
         {
             IList<Expression> list = new List<Expression>();
             int i = 0;
+            MethodCallExpression call;
             foreach (ParameterInfo info in method.GetParameters())
             {
-                if (info.ParameterType.IsEnum)
+                switch (info.ParameterType.Name)
                 {
-                    MethodInfo generic_method = _convert_method.MakeGenericMethod(info.ParameterType);
-                    MethodCallExpression call = Expression.Call(generic_method, Expression.ArrayIndex(argumentsParameter, Expression.Constant(i)));
-                    list.Add(call);
+                    case "String":
+                        call = Expression.Call(Expression.ArrayIndex(argumentsParameter, Expression.Constant(i)), typeof(IValue).GetMethod("AsString"));
+                        list.Add(call);
+                        break;
+
+                    default:
+                        call = Expression.Call(Expression.ArrayIndex(argumentsParameter, Expression.Constant(i)), typeof(IValue).GetMethod("AsObject"));
+                        list.Add(Expression.Convert(call, info.ParameterType));
+                        break;
                 }
-                else
-                    list.Add(Expression.Convert(Expression.ArrayIndex(argumentsParameter, Expression.Constant(i)), info.ParameterType));
-                    //MethodInfo convert_method = typeof(IValue).GetMethod("AsString");
-                    //MethodCallExpression call = Expression.Call(Expression.ArrayIndex(argumentsParameter, Expression.Constant(i)), convert_method);
-                    //list.Add(call);
                 i++;
             }
 

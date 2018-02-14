@@ -11,6 +11,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
         STRING,
         NUMBER,
         BOOLEAN,
+        SCRIPT_OBJECT,
         OBJECT
     }
 }

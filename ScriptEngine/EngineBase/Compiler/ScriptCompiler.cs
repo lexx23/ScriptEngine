@@ -96,7 +96,7 @@ namespace ScriptEngine.EngineBase.Compiler
             _op_codes.Add(OP_CODES.OP_OBJECT_CALL, new op_code { code = OP_CODES.OP_OBJECT_CALL, type = OP_TYPE.WO_RESULT });
             _op_codes.Add(OP_CODES.OP_OBJECT_RESOLVE_VAR, new op_code { code = OP_CODES.OP_OBJECT_RESOLVE_VAR, type = OP_TYPE.RESULT });
 
-            //_programm.LoadLibraries();
+            _programm.LoadLibraries();
         }
 
 
@@ -376,8 +376,6 @@ namespace ScriptEngine.EngineBase.Compiler
 
             right = ParseExpression(level);
 
-            //Console.Write($"{left.Value?.ToString()} - {work_code.code.ToString()} - {right.Value?.ToString()}\n");
-
             return EmitCode(work_code, left, right);
         }
 
@@ -466,7 +464,7 @@ namespace ScriptEngine.EngineBase.Compiler
             }
 
             // Если не найдена, то создать новую для последующей проверки. 
-            // Переменная может не существовать только в том случае, если она глобальная и обьявлена в модуле, который еще не обработан.
+            // Переменная может не существовать только в том случае, если она глобальная и объявлена в модуле, который еще не обработан.
             if (var == null && !create)
             {
                 if (!_deferred_var.ContainsKey(token.Content + _scope.Name))
@@ -533,14 +531,14 @@ namespace ScriptEngine.EngineBase.Compiler
                 // Проверка оператора Экспорт.
                 if (_iterator.CheckToken(TokenTypeEnum.IDENTIFIER, TokenSubTypeEnum.I_EXPORT))
                 {
-                    // Обьвление находится в функции.
+                    // Объявление находится в функции.
                     if (_scope.Type != ScopeTypeEnum.MODULE)
                         throw new CompilerException("Локальные переменные не могут быть экспортированы.");
 
                     export = true;
                 }
 
-                // Если есть оператор Экспорт, тогда в зависимости от типа модуля и его параметров, добовляем переменную в глобальный модуль или делаем ее "публичной", доступной для обращения через обьект этого модуля.
+                // Если есть оператор Экспорт, тогда в зависимости от типа модуля и его параметров, добавляем переменную в глобальный модуль или делаем ее "публичной", доступной для обращения через обьект этого модуля.
                 foreach (TokenClass var in vars)
                 {
                     if (export)
@@ -586,18 +584,18 @@ namespace ScriptEngine.EngineBase.Compiler
             _iterator.MoveNext();
             // Установить точку входа модуля.
             SetModuleEntryPoint();
-            // Забрать левую часть выражения. Возможные варианты: переменная, вызов функции, вызов обьекта.
+            // Забрать левую часть выражения. Возможные варианты: переменная, вызов функции, вызов объекта.
             left = GetVariable(token, FunctionTypeEnum.PROCEDURE, true);
             // Если есть присвоение
             if (_iterator.CheckToken(TokenTypeEnum.PUNCTUATION, TokenSubTypeEnum.P_ASSIGN))
             {
-                // Забрать правую часть выражения. Возможные варианты: переменная, вызов функции, вызов обьекта, выражение.
+                // Забрать правую часть выражения. Возможные варианты: переменная, вызов функции, вызов объекта, выражение.
                 right = ParseExpression((int)Priority.TOP);
                 // Добавить в код модуля присвоение значения.
                 EmitCode(OP_CODES.OP_STORE, left, right);
             }
             else
-                // Увеличить количество использований, для того что бы переменная могла быть использована в другом месте.
+                // Увеличить количество пользователей, для того что бы переменная могла быть использована в другом месте.
                 if (left.Users == 1)
                 left.Users++;
 
@@ -722,11 +720,11 @@ namespace ScriptEngine.EngineBase.Compiler
                 IToken function_name;
                 ScriptScope old_scope = _scope;
 
-                // Проверка где обьявили.
+                // Проверка где объявили.
                 if (_scope.Type != ScopeTypeEnum.MODULE)
-                    throw new CompilerException(_iterator.Current.CodeInformation, "Процедуры и функциии могут распологаться только в теле модуля.");
+                    throw new CompilerException(_iterator.Current.CodeInformation, "Процедуры и функции могут располагаться только в теле модуля.");
 
-                // Проверка порядка расположения вызовов и обьявлений в модуле.
+                // Проверка порядка расположения вызовов и объявлений в модуле.
                 if (_module_entry_point != -1)
                     throw new CompilerException(_iterator.Current.CodeInformation, "Определения процедур и функций должны размещаться перед операторами тела модуля.");
 
@@ -762,7 +760,7 @@ namespace ScriptEngine.EngineBase.Compiler
                 if (_programm.GlobalFunctions.Get(function_name.Content) != null || _current_module.Functions.Get(function_name.Content) != null)
                     throw new CompilerException(function_name.CodeInformation, $"Процедура или функция с указанным именем уже определена ({function_name.Content})");
 
-                // Если есть оператор Экспорт. Тогда в зависимости от типа модуля и его параметров, добовляем функцию в глобальный модуль или делаем ее "публичной", доступной для обращения через обьект этого модуля.
+                // Если есть оператор Экспорт. Тогда в зависимости от типа модуля и его параметров, добавляем функцию в глобальный модуль или делаем ее "публичной", доступной для обращения через обьект этого модуля.
                 if (_iterator.CheckToken(TokenTypeEnum.IDENTIFIER, TokenSubTypeEnum.I_EXPORT))
                 {
                     if (_current_module.AsGlobal && !_current_module.AsObject)
@@ -946,10 +944,10 @@ namespace ScriptEngine.EngineBase.Compiler
 
         #endregion
 
-        #region Обьекты
+        #region Объекты
 
         /// <summary>
-        /// Парсер вызовов функций обьекта.
+        /// Парсер вызовов функций объекта.
         /// </summary>
         private bool ParseObjectFunctionCall(IToken token, IVariable object_call, FunctionTypeEnum function_type, ref IVariable result, ref Function function)
         {
@@ -977,7 +975,7 @@ namespace ScriptEngine.EngineBase.Compiler
 
                 IVariable function_name_var = _programm.StaticVariables.Create(ValueFactory.Create(function_number));
 
-                // Вызов функции обьекта.
+                // Вызов функции объекта.
                 EmitCode(OP_CODES.OP_OBJECT_CALL, object_call, function_name_var);
                 result = EmitCode(OP_CODES.OP_POP, null, null);
                 return true;
@@ -987,7 +985,7 @@ namespace ScriptEngine.EngineBase.Compiler
         }
 
         /// <summary>
-        /// Парсинг частей, разделенных точкой, вызова обьекта. 
+        /// Парсинг частей, разделенных точкой, вызова объекта. 
         /// </summary>
         /// <param name="object_call"></param>
         private IVariable ParseObjectCallParts(IVariable object_call, FunctionTypeEnum function_type)
@@ -1008,7 +1006,7 @@ namespace ScriptEngine.EngineBase.Compiler
                         object_call = EmitCode(OP_CODES.OP_OBJECT_RESOLVE_VAR, object_call, var);
                         object_call.Type = VariableTypeEnum.REFERENCE;
 
-                        // Проверка и изменение типа вызова обьекта, с процедуры на функцию.
+                        // Проверка и изменение типа вызова объекта, с процедуры на функцию.
                         if (function != null)
                         {
                             function.Type = FunctionTypeEnum.FUNCTION;
@@ -1023,7 +1021,7 @@ namespace ScriptEngine.EngineBase.Compiler
 
 
         /// <summary>
-        /// Парсинг обращения к обьекту.
+        /// Парсинг обращения к объекту.
         /// </summary>
         /// <param name="token"></param>
         /// <param name="function_type"></param>
@@ -1189,7 +1187,7 @@ namespace ScriptEngine.EngineBase.Compiler
 
 
         /// <summary>
-        /// Парсин оператора Пока, КонецЦикла.
+        /// Парсим оператора Пока, КонецЦикла.
         /// </summary>
         /// <returns></returns>
         private bool ParseWhile()
@@ -1355,7 +1353,7 @@ namespace ScriptEngine.EngineBase.Compiler
         }
 
         /// <summary>
-        /// Парсин оператор "короткий" Если ?().
+        /// Парсер оператора "короткий" Если ?().
         /// </summary>
         /// <returns></returns>
         private IVariable ParseIfShort()
@@ -1386,7 +1384,7 @@ namespace ScriptEngine.EngineBase.Compiler
 
                 true_result = ParseExpression((int)Priority.TOP);
                 EmitCode(OP_CODES.OP_STORE, result, true_result);
-                // Защита от очистки заначения.
+                // Защита от очистки значения.
                 result.Users = 1;
                 // Переход в конец false.
                 EmitCode(OP_CODES.OP_JMP, null, null);
@@ -1403,7 +1401,7 @@ namespace ScriptEngine.EngineBase.Compiler
                 false_result = ParseExpression((int)Priority.TOP);
 
                 EmitCode(OP_CODES.OP_STORE, result, false_result);
-                // Защита от очистки заначения.
+                // Защита от очистки значения.
                 result.Users = 1;
                 jmp_statement.Variable2 = _programm.StaticVariables.Create(ValueFactory.Create(_current_module.ProgrammLine));
 
@@ -1531,11 +1529,11 @@ namespace ScriptEngine.EngineBase.Compiler
                 if (ParseGoto())
                     continue;
 
-                // Парсим обьявление переменных, оператор Перем.
+                // Парсим объявление переменных, оператор Перем.
                 if (ParseVariableDefine())
                     continue;
 
-                // Парсим обьявление функций и процедур.
+                // Парсим объявление функций и процедур.
                 if (ParseFunctionDefine())
                     continue;
 

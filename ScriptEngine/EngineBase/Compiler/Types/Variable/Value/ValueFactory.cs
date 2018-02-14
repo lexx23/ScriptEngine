@@ -17,6 +17,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
         public static IValue Create(string value) => new StringValue(value);
         public static IValue Create(decimal value) => new NumberValue(value);
         public static IValue Create(DateTime value) => new DateValue(value);
+        public static IValue Create(object value) => new ObjectValue(value);
         public static IValue Create(ScriptObjectContext value) => new ScriptObjectValue(value);
 
         public static IValue Create(bool value) => value == true? _bool_value_true: _bool_value_false;
@@ -69,7 +70,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
                 return Create((bool)value);
 
             if (type.IsEnum)
-                return Create((decimal)value);
+                return Create(value);
 
             throw new Exception($"Тип {type.ToString()} не поддерживается.");
         }
