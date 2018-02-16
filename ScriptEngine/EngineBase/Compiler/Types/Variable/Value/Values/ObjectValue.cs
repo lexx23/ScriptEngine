@@ -7,46 +7,47 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value.Values
 {
     class ObjectValue : IValue
     {
+        private IValue _internal_value;
         private object _value;
 
         public ValueTypeEnum Type => ValueTypeEnum.OBJECT;
 
-        public bool ReadOnly => throw new NotImplementedException();
 
-        public ObjectValue(object value)
+        public ObjectValue(object value,IValue internal_value)
         {
             _value = value;
+            _internal_value = internal_value;
         }
 
 
         public bool AsBoolean()
         {
-            throw new NotImplementedException();
+            return _internal_value.AsBoolean();
         }
 
         public DateTime AsDate()
         {
-            throw new NotImplementedException();
+            return _internal_value.AsDate();
         }
 
         public int AsInt()
         {
-            throw new NotImplementedException();
+            return _internal_value.AsInt();
         }
 
         public decimal AsNumber()
         {
-            throw new NotImplementedException();
+            return _internal_value.AsNumber();
         }
 
         public ScriptObjectContext AsScriptObject()
         {
-            throw new NotImplementedException();
+            return _internal_value.AsScriptObject();
         }
 
         public string AsString()
         {
-            throw new NotImplementedException();
+            return _internal_value.AsString();
         }
 
         public object AsObject()
@@ -57,12 +58,18 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value.Values
 
         public int CompareTo(IValue other)
         {
-            throw new NotImplementedException();
+            throw new Exception("Операции сравнения на больше-меньше допустимы только для значений совпадающих примитивных типов (Булево, Число, Строка, Дата)");
         }
 
         public bool Equals(IValue other)
         {
-            throw new NotImplementedException();
+            if (other is null) return false;
+            if (ReferenceEquals(this, other)) return true;
+
+            if (other.Type == ValueTypeEnum.STRING)
+                return _value == other.AsObject();
+
+            return false;
         }
     }
 }

@@ -69,8 +69,11 @@ namespace ScriptEngine.EngineBase.Interpreter.Context
         private void Set(ScriptObjectContext context)
         {
             _current = context;
-            for (int i = 0; i < _current.Context.Length; i++)
-                _current.Context[i].Set();
+            if (context.Module.Instance == null)
+            {
+                for (int i = 0; i < _current.Context.Length; i++)
+                    _current.Context[i].Set();
+            }
         }
 
 

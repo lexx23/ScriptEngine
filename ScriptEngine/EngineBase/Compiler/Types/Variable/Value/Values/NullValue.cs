@@ -9,8 +9,6 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value.Values
     {
         public ValueTypeEnum Type => ValueTypeEnum.NULL;
 
-        public bool ReadOnly => throw new NotImplementedException();
-
         public bool AsBoolean()
         {
             throw new NotImplementedException();

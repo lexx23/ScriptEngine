@@ -10,7 +10,6 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
         private bool _value;
 
         public ValueTypeEnum Type => ValueTypeEnum.BOOLEAN;
-        public bool ReadOnly { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
         public BooleanValue(bool value)
         {

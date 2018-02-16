@@ -126,7 +126,7 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts.Module
         /// <param name="name"></param>
         /// <param name="variable"></param>
         /// <returns></returns>
-        public bool Create(string name, IVariable variable)
+        public bool Add(string name, IVariable variable)
         {
 
             if (variable.Scope == null)
@@ -136,6 +136,8 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts.Module
                 return false;
 
             _vars.Add(name + "-" + variable.Scope.Name, variable);
+            _module.ModuleScope.Vars.Add(variable);
+            _module.ModuleScope.VarCount++;
             return true;
         }
 

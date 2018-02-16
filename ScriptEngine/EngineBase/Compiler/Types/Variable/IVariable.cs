@@ -15,7 +15,6 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable
         bool Public { get; set; }
         int StackNumber { get; set; }
         int Users { get; set; }
-
-        bool HaveValue();
+          
     }
 }

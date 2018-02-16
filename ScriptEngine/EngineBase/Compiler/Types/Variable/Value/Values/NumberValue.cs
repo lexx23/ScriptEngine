@@ -11,8 +11,6 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
 
         public ValueTypeEnum Type => ValueTypeEnum.NUMBER;
 
-        public bool ReadOnly => throw new NotImplementedException();
-
         public NumberValue(decimal value)
         {
             _value = value;

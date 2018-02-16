@@ -1,76 +1,51 @@
-﻿using ScriptEngine.EngineBase.Compiler.Types.Variable;
-using ScriptEngine.EngineBase.Parser.Token;
+﻿using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
+using ScriptEngine.EngineBase.Compiler.Types.Variable;
+using ScriptEngine.EngineBase.Library.Attributes;
+using ScriptEngine.EngineBase.Library.BaseTypes;
 using System.Collections.Generic;
-using System.Collections;
 using System.Reflection;
 using System.Linq;
 using System;
-using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
-using ScriptEngine.EngineBase.Library.Attributes;
+
 
 namespace ScriptEngine.EngineBase.Library
 {
-    public class BaseEnum : IEnumerable<IVariable>
+    public class BaseEnum : SimpleArray,ILibraryModule
     {
-        private IList<IVariable> _property_holder;
+        public IList<IVariable> Properties { get; set; }
 
         public BaseEnum()
         {
-            _property_holder = new List<IVariable>();
+            Properties = new List<IVariable>();
         }
 
         public BaseEnum(Type enum_type) : this()
         {
             if (enum_type.IsEnum)
             {
+                IList<IVariable> array = new List<IVariable>();
+
                 foreach (FieldInfo field in enum_type.GetFields().Where(x => x.GetCustomAttributes(typeof(EnumStringAttribute), false).Length > 0))
                 {
-                    EnumStringAttribute attr = field.GetCustomAttributes<EnumStringAttribute>().First<EnumStringAttribute>();
+                    EnumStringAttribute attr = field.GetCustomAttributes<EnumStringAttribute>().First();
 
-                    //IValue value = new Value(field.Name)
-                    //{
-                    //    ReadOnly = true
-                    //};
-                    //value.SetValue(field.GetValue(null));
+                    IValue value = ValueFactory.Create(field.FieldType, field.GetValue(null), ValueFactory.Create(attr.Value));
 
-                    //IVariable var = new Variable() { Name = field.Name, Value = value, Public = true,Type = VariableTypeEnum.CONSTANTVARIABLE };
-                    //AddProperty(var);
-                    //IVariable var_alias = new Variable() { Name = attr.Value, Value = value, Public = true, Type = VariableTypeEnum.CONSTANTVARIABLE };
-                    //AddProperty(var_alias);
+                    IVariable var = new Variable() { Name = field.Name, Public = true, Reference = new SimpleReference(), Value = value };
+                    array.Add(var);
+                    Properties.Add(var);
+                    IVariable var_alias = new Variable() { Name = attr.Value, Public = true, Reference = new SimpleReference(), Value = value };
+                    Properties.Add(var_alias);
                 }
+
+                Array = array.ToArray();
+                array = null;
             }
         }
 
 
-        public bool GetPropertyByName(string name, out IVariable variable)
+        public void Constructor(params IVariable[] parameters)
         {
-            foreach (IVariable var in _property_holder.AsParallel().Where(x => x.Name == name))
-            {
-                if (var != null)
-                {
-                    variable = var;
-                    return true;
-                }
-            }
-
-            variable = null;
-            return false;
-        }
-
-        public void AddProperty(IVariable value)
-        {
-            _property_holder.Add(value);
-        }
-
-
-        public IEnumerator<IVariable> GetEnumerator()
-        {
-            return _property_holder.GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
         }
     }
 }

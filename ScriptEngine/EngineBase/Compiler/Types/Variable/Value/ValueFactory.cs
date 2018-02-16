@@ -1,5 +1,6 @@
 ﻿using ScriptEngine.EngineBase.Compiler.Types.Variable.Value.Values;
 using ScriptEngine.EngineBase.Interpreter.Context;
+using ScriptEngine.EngineBase.Library.Attributes;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -17,12 +18,17 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
         public static IValue Create(string value) => new StringValue(value);
         public static IValue Create(decimal value) => new NumberValue(value);
         public static IValue Create(DateTime value) => new DateValue(value);
-        public static IValue Create(object value) => new ObjectValue(value);
+        public static IValue Create(object value,IValue internal_value) => new ObjectValue(value,internal_value);
         public static IValue Create(ScriptObjectContext value) => new ScriptObjectValue(value);
 
-        public static IValue Create(bool value) => value == true? _bool_value_true: _bool_value_false;
+        public static IValue Create(bool value) => value == true ? _bool_value_true : _bool_value_false;
 
-
+        /// <summary>
+        /// Конструктор для типов скрипта.
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
         public static IValue Create(ValueTypeEnum type, string value)
         {
             switch (type)
@@ -42,20 +48,26 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
                     if (value.ToLower() == "истина" || value.ToLower() == "true")
                         return Create(true);
 
-                    throw new Exception($"Ошибка преобразования в логическй тип, значения [{value}]");
+                    throw new Exception($"Ошибка преобразования в логический тип, значения [{value}]");
 
                 case ValueTypeEnum.DATE:
                     string[] formats = { "yyyyMMddhhmmss", "yyyyMMdd", "yyyyMMddhhmm" };
                     if (DateTime.TryParseExact(value, formats, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out DateTime date))
                         return Create(date);
-                    break;
+
+                    throw new Exception($"Ошибка преобразования в тип даты, значения [{value}]");
 
             }
             return Create();
         }
 
-
-       public static IValue Create(Type type, object value)
+        /// <summary>
+        /// Конструктор для типов c#.
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static IValue Create(Type type, object value,IValue internal_value = null)
         {
             if (type == typeof(int))
                 return Create((decimal)value);
@@ -70,7 +82,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
                 return Create((bool)value);
 
             if (type.IsEnum)
-                return Create(value);
+                return Create(value,internal_value);
 
             throw new Exception($"Тип {type.ToString()} не поддерживается.");
         }
@@ -166,7 +178,6 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
 
             throw new Exception($"Невозможно вычислить сумму [{left.AsString()}] и [{right.AsString()}].");
         }
-
 
 
         /// <summary>

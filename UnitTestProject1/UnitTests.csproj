@@ -247,13 +247,13 @@
     <None Update="Scripts\Interpreter\Objects\Object procedure as function call\object_module.scr">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Scripts\Interpreter\Other\speed_test.scr">
+    <None Update="Scripts\SpeedTest\speed_test.scr">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Scripts\Interpreter\Other\speed_test_function_call.scr">
+    <None Update="Scripts\SpeedTest\speed_test_function_call.scr">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Scripts\Interpreter\Other\speed_test_library_call.scr">
+    <None Update="Scripts\SpeedTest\speed_test_library_call.scr">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Scripts\Interpreter\Other\throw_error_runtime.scr">

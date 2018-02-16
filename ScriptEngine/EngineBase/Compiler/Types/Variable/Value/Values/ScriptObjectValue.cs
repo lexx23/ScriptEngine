@@ -11,7 +11,6 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value.Values
 
         public ValueTypeEnum Type => ValueTypeEnum.SCRIPT_OBJECT;
 
-        public bool ReadOnly => throw new NotImplementedException();
 
         public ScriptObjectValue(ScriptObjectContext value)
         {

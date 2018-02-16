@@ -78,27 +78,28 @@ namespace ScriptEngine.EngineBase.Library
 
         private static Expression[] CreateParameterExpressions(MethodInfo method, Expression argumentsParameter)
         {
-            IList<Expression> list = new List<Expression>();
-            int i = 0;
             MethodCallExpression call;
+            Expression[] list = new Expression[method.GetParameters().Length];
+            int i = 0;
+
             foreach (ParameterInfo info in method.GetParameters())
             {
                 switch (info.ParameterType.Name)
                 {
                     case "String":
                         call = Expression.Call(Expression.ArrayIndex(argumentsParameter, Expression.Constant(i)), typeof(IValue).GetMethod("AsString"));
-                        list.Add(call);
+                        list[i] = call;
                         break;
 
                     default:
                         call = Expression.Call(Expression.ArrayIndex(argumentsParameter, Expression.Constant(i)), typeof(IValue).GetMethod("AsObject"));
-                        list.Add(Expression.Convert(call, info.ParameterType));
+                        list[i] = Expression.Convert(call, info.ParameterType);
                         break;
                 }
                 i++;
             }
 
-            return list.ToArray();
+            return list;
         }
 
         public static Func<IValue[], IValue> Bind(this MethodInfo method, object target)

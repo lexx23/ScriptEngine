@@ -27,6 +27,13 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts.Module
         public IList<ScriptStatement> Code { get => _code; }
         public ScriptScope ModuleScope { get => _module_scope; }
 
+        public object Instance { get; set; }
+
+        public T GetInstance<T>()
+        {
+            return (T)Instance;
+        }
+
         /// <summary>
         /// Номер линии программы.
         /// </summary>
@@ -43,6 +50,11 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts.Module
             AsGlobal = as_global;
             AsObject = as_object;
 
+            Instance = null;
+
+            if (Alias == string.Empty)
+                Alias = Name;
+
             // Стартовый модуль компилирую как глобальный.
             if (type == ModuleTypeEnum.STARTUP)
                 AsGlobal = true;
@@ -57,7 +69,7 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts.Module
         }
 
         /// <summary>
-        /// Добавить обращение к обьекту.
+        /// Добавить обращение к объекту.
         /// </summary>
         /// <param name="function"></param>
         /// <returns></returns>

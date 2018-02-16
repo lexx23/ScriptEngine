@@ -1,7 +1,7 @@
-﻿using ScriptBaseFunctionsLibrary.Enums;
-using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
-using ScriptEngine.EngineBase.Extensions;
+﻿using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
 using ScriptEngine.EngineBase.Library.Attributes;
+using ScriptEngine.EngineBase.Extensions;
+using ScriptBaseFunctionsLibrary.Enums;
 using System;
 
 namespace ScriptBaseLibrary
@@ -9,6 +9,9 @@ namespace ScriptBaseLibrary
     [LibraryClassAttribute(AsGlobal = true, AsObject = false)]
     public class ScriptBaseFunctionsLibrary
     {
+        //[LiПараметрЗапуска
+
+
         [LibraryClassMethodAttribute(Name = "Сообщить", Alias = "Message")]
         public void Message([FunctionByValueParameter]string text, MessageStatusEnumInner type = MessageStatusEnumInner.WithoutStatus)
         {

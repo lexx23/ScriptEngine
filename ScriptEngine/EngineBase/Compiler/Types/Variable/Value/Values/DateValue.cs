@@ -11,8 +11,6 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value.Values
 
         public ValueTypeEnum Type => ValueTypeEnum.DATE;
 
-        public bool ReadOnly => throw new NotImplementedException();
-
         public DateValue(DateTime value)
         {
             _value = value;

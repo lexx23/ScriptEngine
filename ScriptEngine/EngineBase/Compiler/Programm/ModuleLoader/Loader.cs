@@ -1,16 +1,14 @@
-﻿using ScriptEngine.EngineBase.Compiler.Programm.Parts.Module;
-using ScriptEngine.EngineBase.Compiler.Types.Function;
-using ScriptEngine.EngineBase.Compiler.Types.Function.Parameters;
-using ScriptEngine.EngineBase.Compiler.Types.Variable;
+﻿using ScriptEngine.EngineBase.Compiler.Types.Function.Parameters;
+using ScriptEngine.EngineBase.Compiler.Programm.Parts.Module;
 using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
-using ScriptEngine.EngineBase.Extensions;
-using ScriptEngine.EngineBase.Interpreter.Context;
-using ScriptEngine.EngineBase.Library;
+using ScriptEngine.EngineBase.Compiler.Types.Function;
+using ScriptEngine.EngineBase.Compiler.Types.Variable;
 using ScriptEngine.EngineBase.Library.Attributes;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using ScriptEngine.EngineBase.Extensions;
+using ScriptEngine.EngineBase.Library;
 using System.Reflection;
+using System.Linq;
+using System;
 
 
 namespace ScriptEngine.EngineBase.Compiler.Programm.ModuleLoader
@@ -51,12 +49,13 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.ModuleLoader
                 LibraryEnumAttribute attribute = (LibraryEnumAttribute)Attribute.GetCustomAttribute(type, typeof(LibraryEnumAttribute), false);
                 BaseEnum new_enum = new BaseEnum(type);
 
-                ScriptModule enum_module = new ScriptModule(attribute.Name, attribute.Alias, ModuleTypeEnum.ENUM);
-                IFunction function = enum_module.Functions.Create("GetPropertyByName", true);
+                ScriptModule enum_module = new ScriptModule(attribute.Name, attribute.Alias, ModuleTypeEnum.ENUM,true,true);
+                enum_module.Instance = Activator.CreateInstance(type);
+                //IFunction function = enum_module.Functions.Create("GetPropertyByName", true);
                 //function.Param = new IVariable[] { new Variable() {Type = VariableTypeEnum.STACKVARIABLE } };
 
-                foreach (IVariable var in new_enum)
-                    enum_module.Variables.Create(var.Name, var);
+                foreach (IVariable var in new_enum.Properties)
+                    enum_module.Variables.Add(var.Name, var);
 
                 _programm.ModuleAdd(enum_module);
             }
@@ -90,13 +89,13 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.ModuleLoader
                     continue;
                 }
 
-                // Класс содержит обьект который добавляется в глобальный модуль.
+                // Класс содержит объект который добавляется в глобальный модуль.
                 if (attribute.AsGlobal && attribute.AsObject)
                 {
                     continue;
                 }
 
-                // Класс содержит обьект который добавляется в список обьектов оператора Новый.
+                // Класс содержит объект который добавляется в список объектов оператора Новый.
                 if (!attribute.AsGlobal && attribute.AsObject)
                 {
                     continue;

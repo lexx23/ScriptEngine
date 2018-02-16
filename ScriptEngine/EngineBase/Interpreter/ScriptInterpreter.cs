@@ -77,8 +77,17 @@ namespace ScriptEngine.EngineBase.Interpreter
 
                 if (module_kv.Value.AsGlobal && module_kv.Value.AsObject)
                 {
-                    IVariable object_var = _programm.GlobalVariables.Get(module_kv.Key);
-                    object_var.Value = CreateObject(module_kv.Key, module_kv.Value);
+                    IValue value = CreateObject(module_kv.Key, module_kv.Value);
+                    IVariable object_var = _programm.GlobalVariables.Get(module_kv.Value.Name);
+                    object_var.Value = value;
+                    if(module_kv.Value.Name != module_kv.Value.Alias && module_kv.Value.Alias != string.Empty)
+                    {
+                        object_var = null;
+                        object_var = _programm.GlobalVariables.Get(module_kv.Value.Alias);
+                        if(object_var != null)
+                            object_var.Value = value;
+                    }
+
                     continue;
                 }
 
@@ -147,7 +156,7 @@ namespace ScriptEngine.EngineBase.Interpreter
         /// </summary>
         /// <param name="function"></param>
         /// <returns></returns>
-        private IVariable FunctionCall(IFunction function, ScriptObjectContext context)
+        private void FunctionCall(IFunction function, ScriptObjectContext context)
         {
             if (function.Scope != null)
             {
@@ -161,13 +170,12 @@ namespace ScriptEngine.EngineBase.Interpreter
                 IValue result = function.Method(InternalFunctionParams(function));
                 _return_value = result;
                 _instruction++;
-                return null;
+                return;
             }
 
             _instruction = function.EntryPoint;
-            _debugger.OnFunctionCall();
 
-            return null;
+            _debugger.OnFunctionCall();
         }
 
 
@@ -384,11 +392,8 @@ namespace ScriptEngine.EngineBase.Interpreter
                         _stack.Enqueue(statement.Variable2.Reference);
                         break;
                     case OP_CODES.OP_POP:
-                        if (_return_value != null)
-                        {
-                            statement.Variable1.Value = _return_value;
-                            _return_value = null;
-                        }
+                        statement.Variable1.Value = _return_value;
+                        _return_value = null;
                         break;
 
                     case OP_CODES.OP_CALL:

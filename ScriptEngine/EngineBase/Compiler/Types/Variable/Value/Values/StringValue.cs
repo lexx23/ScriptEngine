@@ -11,7 +11,6 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
 
         public ValueTypeEnum Type => ValueTypeEnum.STRING;
 
-        public bool ReadOnly => throw new NotImplementedException();
 
         public StringValue(string value)
         {

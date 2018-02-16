@@ -6,7 +6,6 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
     public interface IValue: IEquatable<IValue>, IComparable<IValue>
     {
         ValueTypeEnum Type { get;}
-        bool ReadOnly { get; }
 
         int AsInt();
         bool AsBoolean();

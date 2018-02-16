@@ -56,10 +56,12 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable
     public class LibraryReference : IVariableReference
     {
         private IValue _value;
+        private bool _readonly;
 
-        public LibraryReference(object obj,IValue value)
+        public LibraryReference(object obj,bool read_only, IValue value)
         {
             _value = value;
+            _readonly = read_only;
         }
 
         public IValue Get()
@@ -71,6 +73,10 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable
         {
             if (_value.Type != value.Type)
                 throw new Exception();
+
+            if(_readonly)
+                throw new Exception("Поле объекта недоступно для записи");
+
             _value = value;
         }
 
@@ -84,10 +90,14 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable
         public ScriptScope Scope { get; set; }
 
         public IVariableReference Reference { get; set; }
-        public IValue Value { get => Reference.Get(); set => Reference.Set(value); }
+        public IValue Value
+        {
+            get => Reference.Get();
+            set => Reference.Set(value);
+        }
         public VariableTypeEnum Type { get; set; }
-        public bool Public { get; set; }
 
+        public bool Public { get; set; }
         public int StackNumber { get; set; }
         public int Users { get; set; }
 
@@ -99,10 +109,5 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable
             Reference = new SimpleReference();
         }
 
-
-        public bool HaveValue()
-        {
-            return Value != null;
-        }
     }
 }

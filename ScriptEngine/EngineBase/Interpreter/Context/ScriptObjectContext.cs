@@ -29,8 +29,14 @@ namespace ScriptEngine.EngineBase.Interpreter.Context
             IVariable[] vars = _module.ModuleScope.Vars.ToArray();
             Context = new ContextReferenceHolder[_module.ModuleScope.Vars.Count];
 
-            for (int i = 0; i < _module.ModuleScope.Vars.Count; i++)
-                Context[i] = new ContextReferenceHolder(_module.ModuleScope.Vars[i], new SimpleReference());
+            if (module.Instance == null)
+            {
+                for (int i = 0; i < _module.ModuleScope.Vars.Count; i++)
+                    Context[i] = new ContextReferenceHolder(_module.ModuleScope.Vars[i], new SimpleReference());
+            }
+            else
+                for (int i = 0; i < _module.ModuleScope.Vars.Count; i++)
+                    Context[i] = new ContextReferenceHolder(_module.ModuleScope.Vars[i], _module.ModuleScope.Vars[i].Reference);
         }
 
 
