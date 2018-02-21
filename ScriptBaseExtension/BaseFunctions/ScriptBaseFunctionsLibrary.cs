@@ -6,14 +6,21 @@ using System;
 
 namespace ScriptBaseLibrary
 {
-    [LibraryClassAttribute(AsGlobal = true, AsObject = false)]
+    [LibraryClassAttribute(AsGlobal = true, AsObject = false,Name = "global_library")]
     public class ScriptBaseFunctionsLibrary
     {
-        //[LiПараметрЗапуска
+        private string test = "";
+
+        [LibraryClassProperty(Name = "ПараметрЗапуска", Alias = "LaunchParameter")]
+        public string LaunchParameter
+        {
+            get => test;
+            set => test = value;
+        }
 
 
         [LibraryClassMethodAttribute(Name = "Сообщить", Alias = "Message")]
-        public void Message([FunctionByValueParameter]string text, MessageStatusEnumInner type = MessageStatusEnumInner.WithoutStatus)
+        public void Message(string text, MessageStatusEnumInner type = MessageStatusEnumInner.WithoutStatus)
         {
             //if (type == null)
             //    type.Value = MessageStatusEnum.Instance["Обычное"];

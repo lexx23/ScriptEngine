@@ -1,13 +1,12 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using ScriptEngine.EngineBase.Compiler;
+﻿using ScriptEngine.EngineBase.Compiler.Programm.Parts.Module;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ScriptEngine.EngineBase.Compiler.Programm;
-using ScriptEngine.EngineBase.Compiler.Programm.Parts.Module;
 using ScriptEngine.EngineBase.Interpreter;
-using System;
+using ScriptEngine.EngineBase.Compiler;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Text;
+using System;
 
 namespace UnitTests
 {
@@ -15,7 +14,7 @@ namespace UnitTests
     [TestClass]
     public class SpeedTests
     {
-        // Скорость для OneScript указана без оптимизации.
+        // Скорость для OneScript указана без оптимизации сборки и без отладки.
         
         /// <summary>
         /// OneScript: 2900, 1C: 2066
@@ -64,6 +63,30 @@ namespace UnitTests
             //Assert.AreEqual(1000000, interpreter.Debugger.RegisterGetValue("ф").Number);
         }
 
+
+        /// <summary>
+        /// OneScript: , 1C: 
+        /// </summary>
+        [TestMethod]
+        public void SpeedTest_Array()
+        {
+            IDictionary<string, string> files = new Dictionary<string, string>();
+            files.Add("array_test", "array.scr");
+
+            ScriptProgramm programm = Compile(files);
+            ScriptInterpreter interpreter = new ScriptInterpreter(programm);
+            interpreter.Debugger.AddBreakpoint("array_test", 12);
+
+            System.Diagnostics.Stopwatch sw = new Stopwatch();
+            sw.Start();
+            interpreter.Run();
+            //interpreter.Debug();
+            sw.Stop();
+
+            Assert.AreEqual(3300, sw.ElapsedMilliseconds, 250);
+            //Assert.AreEqual(1000000, interpreter.Debugger.RegisterGetValue("ф").Number);
+        }
+
         /// <summary>
         /// OneScript: 2100, 1C: 1900
         /// </summary>
@@ -88,7 +111,7 @@ namespace UnitTests
         }
 
         [TestMethod]
-        public void Interpreter_OtherSpeedTest_Debug()
+        public void SpeedTest_Precalc_Debug()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
             files.Add("other", "speed_test.scr");

@@ -15,6 +15,9 @@ namespace ScriptEngine.EngineBase.Parser.Token
         [EnumStringAttribute("КонецОбласти { EndRegion }")]
         I_ENDREGION,
 
+        [EnumStringAttribute("Новый { New }")]
+        I_NEW,
+
         [EnumStringAttribute("Перейти { Goto }")]
         I_GOTO,
         [EnumStringAttribute("тильда { ~ }")]
@@ -43,7 +46,7 @@ namespace ScriptEngine.EngineBase.Parser.Token
         I_ENDLOOP,
         [EnumStringAttribute("Продолжить { Continue }")]
         I_CONTINUE,
-        [EnumStringAttribute("Пррервать { Break }")]
+        [EnumStringAttribute("Прервать { Break }")]
         I_BREAK,
 
         [EnumStringAttribute("Функция { Function }")]
@@ -131,7 +134,7 @@ namespace ScriptEngine.EngineBase.Parser.Token
         L_DATE,
         [EnumStringAttribute("строка")]
         L_STRING,
-        [EnumStringAttribute("неопределено ( null )")]
+        [EnumStringAttribute("неопределенно ( null )")]
         N_NULL,
 
         [EnumStringAttribute("")]

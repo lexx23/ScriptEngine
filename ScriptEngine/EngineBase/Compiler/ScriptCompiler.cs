@@ -24,7 +24,7 @@ namespace ScriptEngine.EngineBase.Compiler
         private ScriptScope _scope;
         private ScriptModule _current_module;
         private IDictionary<string, IVariable> _deferred_var;
-        private IList<IFunction> _deferred_function;
+        private IList<(ScriptModule,IFunction)> _deferred_function;
         private IList<IList<int>> _loop;
 
         private IList<(string, int)> _goto_jmp;
@@ -62,7 +62,7 @@ namespace ScriptEngine.EngineBase.Compiler
         {
             _programm = new ScriptProgramm();
             _deferred_var = new Dictionary<string, IVariable>();
-            _deferred_function = new List<IFunction>();
+            _deferred_function = new List<(ScriptModule,IFunction)>();
             _loop = new List<IList<int>>();
             _goto_jmp = new List<(string, int)>();
             _goto_labels = new Dictionary<string, int>();
@@ -83,6 +83,7 @@ namespace ScriptEngine.EngineBase.Compiler
             _expression_op_codes.Add(TokenSubTypeEnum.I_LOGIC_OR, new op_code { code = OP_CODES.OP_OR, type = OP_TYPE.RESULT_OPTIMIZATION, level = 4 });
 
             _op_codes = new Dictionary<OP_CODES, op_code>();
+            _op_codes.Add(OP_CODES.OP_NEW, new op_code { code = OP_CODES.OP_NEW, type = OP_TYPE.RESULT });
             _op_codes.Add(OP_CODES.OP_ADD, new op_code { code = OP_CODES.OP_ADD, type = OP_TYPE.RESULT_OPTIMIZATION });
             _op_codes.Add(OP_CODES.OP_GE, new op_code { code = OP_CODES.OP_GE, type = OP_TYPE.RESULT_OPTIMIZATION });
             _op_codes.Add(OP_CODES.OP_JMP, new op_code { code = OP_CODES.OP_JMP, type = OP_TYPE.WO_RESULT });
@@ -304,6 +305,9 @@ namespace ScriptEngine.EngineBase.Compiler
             // Парсер "короткий" Если.
             var = ParseIfShort();
 
+            if (var == null)
+                var = ParseNew();
+
             // Парсер значений в скобках.
             if (var == null)
             {
@@ -381,6 +385,72 @@ namespace ScriptEngine.EngineBase.Compiler
 
         #endregion
 
+        private IVariable ParseNew()
+        {
+            if (_iterator.CheckToken(TokenTypeEnum.IDENTIFIER, TokenSubTypeEnum.I_NEW))
+            {
+                IVariable result = null;
+
+                // Вариант 2: Новый(<Тип>[, <ПараметрыКонструктора>])
+                if (_iterator.CheckToken(TokenTypeEnum.PUNCTUATION, TokenSubTypeEnum.P_PARENTHESESOPEN))
+                {
+
+                }
+                // Вариант 1: Новый <Идентификатор типа>[(<Парам1>, <Парам2>, …)]
+                else
+                {
+                    _iterator.IsTokenType(TokenTypeEnum.IDENTIFIER);
+
+                    IFunction function;
+                    ScriptModule module;
+
+                    if (!_programm.ModuleExist(_iterator.Current.Content))
+                        throw new CompilerException(_iterator.Current.CodeInformation, $"Тип не определен ({_iterator.Current.Content})");
+                    else
+                        module = _programm[_iterator.Current.Content];
+
+                    IFunction constructor = module.Functions.Get("Constructor");
+                    if (constructor == null)
+                        throw new CompilerException(_iterator.Current.CodeInformation, "Конструктор не найден.");
+
+                    function = new Function()
+                    {
+                        Type = FunctionTypeEnum.FUNCTION,
+                        Name = "Constructor",
+                        CallParameters = new List<IVariable>() { EmitCode(OP_CODES.OP_PUSH, new Variable() { Value = ValueFactory.Create(module, null) }, null) },
+                        Scope = module.ModuleScope,
+                        CodeInformation = _iterator.Current.CodeInformation.Clone()
+                    };
+
+                    if (_iterator.CheckToken(TokenTypeEnum.PUNCTUATION, TokenSubTypeEnum.P_PARENTHESESOPEN))
+                    {
+                        while (_iterator.Current.SubType != TokenSubTypeEnum.P_PARENTHESESCLOSE)
+                            ParseFunctionCallParam(function);
+
+                        _iterator.ExpectToken(TokenTypeEnum.PUNCTUATION, TokenSubTypeEnum.P_PARENTHESESCLOSE);
+
+
+                        // Добавить в код передачу параметров через стек.
+                        foreach (IVariable var in function.CallParameters)
+                            EmitCode(OP_CODES.OP_PUSH, var, null);
+                    }
+                    else
+                        _iterator.MoveNext();
+
+                    function.EntryPoint = _current_module.ProgrammLine;
+                    result = EmitCode(OP_CODES.OP_NEW, null, null);
+
+                    // Добавить в отложенные функции для последующей проверки.
+                    _deferred_function.Add((_current_module,function));
+                }
+
+                return result;
+            }
+
+            return null;
+        }
+
+
         #region Переменные 
 
         /// <summary>
@@ -454,7 +524,7 @@ namespace ScriptEngine.EngineBase.Compiler
                         return var;
             }
 
-            // Проверка что это обращение к обьекту, в зависимости от контекста.
+            // Проверка что это обращение к объекту, в зависимости от контекста.
             if (ParseObjectCall(token, function_type, var, ref var))
             {
                 // Проверить если процедура используется как функция.
@@ -813,7 +883,7 @@ namespace ScriptEngine.EngineBase.Compiler
         /// <param name="function"></param>
         /// <param name="param"></param>
         /// <param name="module"></param>
-        private void CheckFunctionCall(IFunction function)
+        private void CheckFunctionCall(ScriptModule module,IFunction function)
         {
             IFunction work_function;
 
@@ -831,7 +901,7 @@ namespace ScriptEngine.EngineBase.Compiler
             if (work_function.Type == FunctionTypeEnum.PROCEDURE && work_function.Type != function.Type)
                 throw new CompilerException(function.CodeInformation, $"Обращение к процедуре [{function.Name}] как к функции.");
 
-            ScriptStatement statement = function.Scope.Module.StatementGet(function.EntryPoint);
+            ScriptStatement statement = module.StatementGet(function.EntryPoint);
             statement.Function = work_function;
 
             // Патч вызова функции. Указываю правильный модуль.
@@ -907,11 +977,13 @@ namespace ScriptEngine.EngineBase.Compiler
                     CodeInformation = token.CodeInformation.Clone()
                 };
 
-                while (!_iterator.CheckToken(TokenTypeEnum.PUNCTUATION, TokenSubTypeEnum.P_PARENTHESESCLOSE))
+                while (_iterator.Current.SubType != TokenSubTypeEnum.P_PARENTHESESCLOSE)
                     ParseFunctionCallParam(function);
 
+                _iterator.ExpectToken(TokenTypeEnum.PUNCTUATION, TokenSubTypeEnum.P_PARENTHESESCLOSE);
+
                 // Добавить в отложенные функции для последующей проверки.
-                _deferred_function.Add(function);
+                _deferred_function.Add((_current_module,function));
 
                 // Добавить в код передачу параметров через стек.
                 foreach (IVariable var in function.CallParameters)
@@ -934,9 +1006,9 @@ namespace ScriptEngine.EngineBase.Compiler
         /// </summary>
         public void ProcessDifferedFunctions()
         {
-            foreach (Function function in _deferred_function)
+            foreach ((ScriptModule, IFunction) data in _deferred_function)
             {
-                CheckFunctionCall(function);
+                CheckFunctionCall(data.Item1, data.Item2);
             }
 
             _deferred_function.Clear();
@@ -1597,7 +1669,12 @@ namespace ScriptEngine.EngineBase.Compiler
                 ParseModuleBody();
 
                 // Виртуальная функция, код модуля.
-                IFunction entry_point = _current_module.Functions.Create("<<entry_point>>");
+                IFunction entry_point;
+                if(!module.Key.AsObject)
+                    entry_point = _current_module.Functions.Create("<<entry_point>>");
+                else
+                    entry_point = _current_module.Functions.Create("<<constructor>>");
+
                 entry_point.Type = FunctionTypeEnum.PROCEDURE;
                 entry_point.EntryPoint = _module_entry_point;
                 entry_point.Scope = _scope;

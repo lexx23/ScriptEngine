@@ -1,4 +1,5 @@
-﻿using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
+﻿using ScriptEngine.EngineBase.Compiler.Types.Variable.References;
+using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
 using ScriptEngine.EngineBase.Compiler.Types.Variable;
 using ScriptEngine.EngineBase.Library.Attributes;
 using ScriptEngine.EngineBase.Library.BaseTypes;
@@ -6,11 +7,11 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Linq;
 using System;
-
+using ScriptEngine.EngineBase.Interpreter.Context;
 
 namespace ScriptEngine.EngineBase.Library
 {
-    public class BaseEnum : SimpleArray,ILibraryModule
+    public class BaseEnum : SimpleArray, ILibraryModule
     {
         public IList<IVariable> Properties { get; set; }
 
@@ -31,10 +32,10 @@ namespace ScriptEngine.EngineBase.Library
 
                     IValue value = ValueFactory.Create(field.FieldType, field.GetValue(null), ValueFactory.Create(attr.Value));
 
-                    IVariable var = new Variable() { Name = field.Name, Public = true, Reference = new SimpleReference(), Value = value };
+                    IVariable var = new Variable() { Name = field.Name, Public = true, Reference = new ReferenceReadOnly(value) };
                     array.Add(var);
                     Properties.Add(var);
-                    IVariable var_alias = new Variable() { Name = attr.Value, Public = true, Reference = new SimpleReference(), Value = value };
+                    IVariable var_alias = new Variable() { Name = attr.Value, Public = true, Reference = new ReferenceReadOnly(value) };
                     Properties.Add(var_alias);
                 }
 
@@ -43,9 +44,9 @@ namespace ScriptEngine.EngineBase.Library
             }
         }
 
-
-        public void Constructor(params IVariable[] parameters)
+        public ScriptObjectContext Constructor(params IVariable[] parameters)
         {
+
         }
     }
 }

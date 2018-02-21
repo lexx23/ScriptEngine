@@ -53,7 +53,12 @@ namespace ScriptEngine.EngineBase.Compiler.Programm
 
             string object_name, object_alias;
             object_name = module.Name;
-            object_alias = module.Alias;
+            object_alias = "";
+            if (module.Alias == null)
+                module.Alias = string.Empty;
+            else
+                object_alias = module.Alias;
+
 
             if (!module.AsObject)
             {
@@ -64,9 +69,11 @@ namespace ScriptEngine.EngineBase.Compiler.Programm
 
             IValue module_object = ValueFactory.Create();
             GlobalVariables.Create(object_name, module_object);
-            if (object_name != object_alias)
+            if (object_name != object_alias && object_alias != string.Empty)
+            {
                 GlobalVariables.Create(object_alias, module_object);
-
+                _modules.Add(object_alias, module);
+            }
         }
 
         /// <summary>

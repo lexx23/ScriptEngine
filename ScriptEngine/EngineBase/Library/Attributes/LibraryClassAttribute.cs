@@ -10,5 +10,7 @@ namespace ScriptEngine.EngineBase.Library.Attributes
         public bool AsObject { get; set; }
         public string Name { get; set; }
         public string Alias { get; set; }
+
+        public ScriptModule Module { get; set; }
     }
 }

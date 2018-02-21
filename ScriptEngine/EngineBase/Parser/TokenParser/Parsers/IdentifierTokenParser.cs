@@ -87,7 +87,10 @@ namespace ScriptEngine.EngineBase.Parser.TokenParser.Parsers
                 { "Return", TokenSubTypeEnum.I_RETURN },
 
                 { "Перейти", TokenSubTypeEnum.I_GOTO },
-                { "Goto", TokenSubTypeEnum.I_GOTO }
+                { "Goto", TokenSubTypeEnum.I_GOTO },
+
+                { "Новый", TokenSubTypeEnum.I_NEW },
+                { "New", TokenSubTypeEnum.I_NEW }
             };
 
         }

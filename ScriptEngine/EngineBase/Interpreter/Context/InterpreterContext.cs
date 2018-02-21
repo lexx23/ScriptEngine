@@ -1,9 +1,10 @@
-﻿using ScriptEngine.EngineBase.Compiler.Programm;
+﻿using ScriptEngine.EngineBase.Compiler.Types.Variable.References;
 using ScriptEngine.EngineBase.Compiler.Programm.Parts.Module;
 using ScriptEngine.EngineBase.Compiler.Types.Function;
 using ScriptEngine.EngineBase.Compiler.Types.Variable;
+using ScriptEngine.EngineBase.Compiler.Programm;
 using System.Collections.Generic;
-using System.Linq;
+
 
 namespace ScriptEngine.EngineBase.Interpreter.Context
 {
@@ -31,7 +32,7 @@ namespace ScriptEngine.EngineBase.Interpreter.Context
         public ScriptObjectContext CreateObject(ScriptModule type)
         {
             ScriptObjectContext context = new ScriptObjectContext(type);
-            Set(context);
+            context.Set();
             return context;
         }
 
@@ -58,22 +59,13 @@ namespace ScriptEngine.EngineBase.Interpreter.Context
             if (_current != context)
             {
                 _history.Push((position, _current, _function_context, _function));
-                Set(context);
+                context.Set();
+                _current = context;
             }
             else
                 _history.Push((position, null, _function_context, _function));
 
             _function = function;
-        }
-
-        private void Set(ScriptObjectContext context)
-        {
-            _current = context;
-            if (context.Module.Instance == null)
-            {
-                for (int i = 0; i < _current.Context.Length; i++)
-                    _current.Context[i].Set();
-            }
         }
 
 

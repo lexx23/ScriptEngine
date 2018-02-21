@@ -78,5 +78,6 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
                     throw new Exception("Операции сравнения на больше-меньше допустимы только для значений совпадающих примитивных типов (Булево, Число, Строка, Дата)");
             }
         }
+
     }
 }

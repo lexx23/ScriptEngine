@@ -1,17 +1,15 @@
-﻿using ScriptEngine.EngineBase.Compiler.Programm.Parts.Module;
+﻿using ScriptEngine.EngineBase.Compiler.Types.Function.Parameters;
+using ScriptEngine.EngineBase.Compiler.Types.Variable.References;
+using ScriptEngine.EngineBase.Compiler.Programm.Parts.Module;
 using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
 using ScriptEngine.EngineBase.Compiler.Types.Function;
 using ScriptEngine.EngineBase.Compiler.Types.Variable;
 using ScriptEngine.EngineBase.Interpreter.Context;
+using ScriptEngine.EngineBase.Library.Attributes;
 using ScriptEngine.EngineBase.Compiler.Programm;
-using ScriptEngine.EngineBase.Parser.Token;
 using ScriptEngine.EngineBase.Exceptions;
 using System.Collections.Generic;
-using System.Linq;
 using System;
-using System.Threading.Tasks;
-using ScriptEngine.EngineBase.Library.Attributes;
-using ScriptEngine.EngineBase.Compiler.Types.Function.Parameters;
 
 namespace ScriptEngine.EngineBase.Interpreter
 {
@@ -80,11 +78,11 @@ namespace ScriptEngine.EngineBase.Interpreter
                     IValue value = CreateObject(module_kv.Key, module_kv.Value);
                     IVariable object_var = _programm.GlobalVariables.Get(module_kv.Value.Name);
                     object_var.Value = value;
-                    if(module_kv.Value.Name != module_kv.Value.Alias && module_kv.Value.Alias != string.Empty)
+                    if (module_kv.Value.Name != module_kv.Value.Alias && module_kv.Value.Alias != string.Empty)
                     {
                         object_var = null;
                         object_var = _programm.GlobalVariables.Get(module_kv.Value.Alias);
-                        if(object_var != null)
+                        if (object_var != null)
                             object_var.Value = value;
                     }
 
@@ -93,8 +91,8 @@ namespace ScriptEngine.EngineBase.Interpreter
 
                 if (module_kv.Value.AsGlobal && !module_kv.Value.AsObject)
                 {
-                    IVariable object_var = _programm.GlobalVariables.Get("<<" + module_kv.Key + ">>");
-                    object_var.Value = CreateObject(module_kv.Key, module_kv.Value);
+                    IVariable object_var = _programm.GlobalVariables.Get("<<" + module_kv.Value.Name + ">>");
+                    object_var.Value = CreateObject(module_kv.Value.Name, module_kv.Value);
                     continue;
                 }
             }
@@ -115,9 +113,13 @@ namespace ScriptEngine.EngineBase.Interpreter
             IFunction function;
             ScriptObjectContext object_context = _context.CreateObject(type);
 
-            if (type.AsObject)
+            if (type.Type != ModuleTypeEnum.STARTUP)
             {
-                function = type.Functions.Get("<<entry_point>>");
+
+                if (!type.AsObject)
+                    function = type.Functions.Get("<<entry_point>>");
+                else
+                    function = type.Functions.Get("<<constructor>>");
 
                 if (function != null)
                 {
@@ -125,8 +127,8 @@ namespace ScriptEngine.EngineBase.Interpreter
                     Execute();
                     _context.Reset();
                 }
-            }
 
+            }
             IValue value = ValueFactory.Create(object_context);
             return value;
         }
@@ -158,7 +160,7 @@ namespace ScriptEngine.EngineBase.Interpreter
         /// <returns></returns>
         private void FunctionCall(IFunction function, ScriptObjectContext context)
         {
-            if (function.Scope != null)
+            if (function.Method == null)
             {
                 _context.Set(context, function, _instruction);
                 _code = _context.CurrentModule.Code;
@@ -167,7 +169,7 @@ namespace ScriptEngine.EngineBase.Interpreter
             }
             else
             {
-                IValue result = function.Method(InternalFunctionParams(function));
+                IValue result = function.Method.Run(InternalFunctionParams(function));
                 _return_value = result;
                 _instruction++;
                 return;
@@ -333,6 +335,7 @@ namespace ScriptEngine.EngineBase.Interpreter
             if (!work_function.Public)
                 throw new RuntimeException(this, $"Функция [{function.Name}] не имеет оператора Экспорт, и не доступна.");
 
+            object_call.AsScriptObject().Set();
             FunctionCall(work_function, object_call.AsScriptObject());
         }
 
@@ -396,12 +399,17 @@ namespace ScriptEngine.EngineBase.Interpreter
                         _return_value = null;
                         break;
 
+                    case OP_CODES.OP_NEW:
+                        FunctionCall(statement.Function, _context.Current);
+                        statement.Variable1.Value = _return_value;
+                        continue;
+
                     case OP_CODES.OP_CALL:
                         ScriptObjectContext context;
-                        if (statement.Function.Scope != null && _context.CurrentModule != statement.Function.Scope.Module)
+                        if (statement.Variable3 != null)
                         {
                             IVariable var = null;
-                            var = _programm.GlobalVariables.Get("<<" + statement.Function.Scope.Module.Name + ">>");
+                            var = _programm.GlobalVariables.Get("<<" + statement.Variable3.Value.AsString() + ">>");
                             context = var.Value.AsScriptObject();
                         }
                         else

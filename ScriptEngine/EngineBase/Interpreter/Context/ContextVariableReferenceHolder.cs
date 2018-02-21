@@ -1,16 +1,15 @@
 ﻿using ScriptEngine.EngineBase.Compiler.Types.Variable;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using ScriptEngine.EngineBase.Compiler.Types.Variable.References;
+
 
 namespace ScriptEngine.EngineBase.Interpreter.Context
 {
-    public class ContextReferenceHolder
+    public class ContextVariableReferenceHolder
     {
         public IVariable Variable;
         public IVariableReference Reference;
 
-        public ContextReferenceHolder(IVariable variable, IVariableReference reference)
+        public ContextVariableReferenceHolder(IVariable variable, IVariableReference reference)
         {
             Variable = variable;
             Reference = reference;

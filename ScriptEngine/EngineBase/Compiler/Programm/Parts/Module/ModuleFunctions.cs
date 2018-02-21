@@ -1,17 +1,15 @@
-﻿using ScriptEngine.EngineBase.Compiler.Types;
-using ScriptEngine.EngineBase.Compiler.Types.Function;
-using System;
+﻿using ScriptEngine.EngineBase.Compiler.Types.Function;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
 
 namespace ScriptEngine.EngineBase.Compiler.Programm.Parts.Module
 {
     public class ModuleFunctions
     {
         private IDictionary<string,IFunction> _functions;
-
-
         private ScriptModule _module;
+
+        public int Count { get => _functions.Count; }
 
         public ModuleFunctions(ScriptModule module)
         {
@@ -63,5 +61,12 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts.Module
                 return function;
             return null;
         }
+
+
+        public IFunction[] ToArray()
+        {
+            return _functions.Values.ToArray();
+        }
+
     }
 }

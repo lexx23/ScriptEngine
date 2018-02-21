@@ -3,9 +3,9 @@ using System;
 
 namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
 {
-    public interface IValue: IEquatable<IValue>, IComparable<IValue>
+    public interface IValue : IEquatable<IValue>, IComparable<IValue>
     {
-        ValueTypeEnum Type { get;}
+        ValueTypeEnum Type { get; }
 
         int AsInt();
         bool AsBoolean();
@@ -15,4 +15,5 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
         object AsObject();
         ScriptObjectContext AsScriptObject();
     }
+
 }

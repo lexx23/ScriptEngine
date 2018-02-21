@@ -1,89 +1,9 @@
-﻿using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
-using ScriptEngine.EngineBase.Praser.Token;
+﻿using ScriptEngine.EngineBase.Compiler.Types.Variable.References;
+using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ScriptEngine.EngineBase.Compiler.Types.Variable
 {
-    public interface IVariableReference
-    {
-        IValue Get();
-        void Set(IValue value);
-
-    }
-
-    public class SimpleReference : IVariableReference
-    {
-        private IValue _value;
-
-        public IValue Get()
-        {
-            return _value;
-        }
-
-        public void Set(IValue value)
-        {
-            _value = value;
-        }
-
-
-    }
-
-    public class ScriptReference : IVariableReference
-    {
-        private IVariableReference _value;
-
-        public ScriptReference(IVariableReference reference)
-        {
-            _value = reference;
-        }
-
-        public IValue Get()
-        {
-            return _value.Get();
-        }
-        public void Set(IValue value)
-        {
-            _value.Set(value);
-        }
-
-
-    }
-
-
-
-    public class LibraryReference : IVariableReference
-    {
-        private IValue _value;
-        private bool _readonly;
-
-        public LibraryReference(object obj,bool read_only, IValue value)
-        {
-            _value = value;
-            _readonly = read_only;
-        }
-
-        public IValue Get()
-        {
-            return _value;
-        }
-
-        public void Set(IValue value)
-        {
-            if (_value.Type != value.Type)
-                throw new Exception();
-
-            if(_readonly)
-                throw new Exception("Поле объекта недоступно для записи");
-
-            _value = value;
-        }
-
-    }
-
-
-
     public class Variable : IVariable
     {
         public String Name { get; set; }
@@ -107,6 +27,11 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable
             Users = 1;
             StackNumber = -1;
             Reference = new SimpleReference();
+        }
+
+        public static IVariable CreateContextPropertyReference(string name)
+        {
+            return new Variable() { Name = name, Public = true, Reference = new SimpleReference() };
         }
 
     }

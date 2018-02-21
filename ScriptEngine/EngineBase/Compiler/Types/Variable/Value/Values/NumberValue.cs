@@ -16,6 +16,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
             _value = value;
         }
 
+
         public bool AsBoolean()
         {
             if (_value != 0)

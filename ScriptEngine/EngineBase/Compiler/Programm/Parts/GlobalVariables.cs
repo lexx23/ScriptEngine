@@ -21,7 +21,23 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts
         }
 
         /// <summary>
-        /// Добавить глобальную переменную. Если переменная с таким именем существует, то вернуть null.
+        /// Добавить переменную в глобальный контекст.
+        /// </summary>
+        /// <param name="variable"></param>
+        public void Add(IVariable variable)
+        {
+            if (_vars.ContainsKey(variable.Name))
+                return;
+
+            _global_scope.Vars.Add(variable);
+            _global_scope.VarCount++;
+
+            _vars.Add(variable.Name, variable);
+        }
+
+
+        /// <summary>
+        /// Создать глобальную переменную. Если переменная с таким именем существует, то вернуть null.
         /// </summary>
         /// <param name="name"></param>
         /// <param name="value"></param>

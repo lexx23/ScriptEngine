@@ -17,11 +17,13 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
         public static IValue Create() => _null_value;
         public static IValue Create(string value) => new StringValue(value);
         public static IValue Create(decimal value) => new NumberValue(value);
+        public static IValue Create(int value) => new NumberValue(value);
         public static IValue Create(DateTime value) => new DateValue(value);
         public static IValue Create(object value,IValue internal_value) => new ObjectValue(value,internal_value);
         public static IValue Create(ScriptObjectContext value) => new ScriptObjectValue(value);
-
         public static IValue Create(bool value) => value == true ? _bool_value_true : _bool_value_false;
+        public static IValue Create(IValue value) => value;
+
 
         /// <summary>
         /// Конструктор для типов скрипта.

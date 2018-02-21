@@ -1,8 +1,7 @@
-﻿using ScriptEngine.EngineBase.Compiler.Types.Function.Parameters;
+﻿using ScriptEngine.EngineBase.Compiler.Types.Function.ExternalMethods;
+using ScriptEngine.EngineBase.Compiler.Types.Function.Parameters;
 using ScriptEngine.EngineBase.Compiler.Types.Variable;
-using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
 using ScriptEngine.EngineBase.Praser.Token;
-using System;
 using System.Collections.Generic;
 
 namespace ScriptEngine.EngineBase.Compiler.Types.Function
@@ -19,7 +18,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Function
 
         int EntryPoint { get; set; }
 
-        Func<IValue[], IValue> Method { get; set; }
+        IMethodWrapper Method { get; set; }
 
         CodeInformation CodeInformation { get; set; }
 

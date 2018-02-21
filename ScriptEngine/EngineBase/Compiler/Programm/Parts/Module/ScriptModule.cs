@@ -1,6 +1,7 @@
 ﻿using ScriptEngine.EngineBase.Compiler.Types;
 using ScriptEngine.EngineBase.Compiler.Types.Function;
 using ScriptEngine.EngineBase.Compiler.Types.Variable;
+using System;
 using System.Collections.Generic;
 
 namespace ScriptEngine.EngineBase.Compiler.Programm.Parts.Module
@@ -27,12 +28,8 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts.Module
         public IList<ScriptStatement> Code { get => _code; }
         public ScriptScope ModuleScope { get => _module_scope; }
 
-        public object Instance { get; set; }
-
-        public T GetInstance<T>()
-        {
-            return (T)Instance;
-        }
+        public Type InstanceType { get; set; }
+        public object CurrentInstance { get; set; }
 
         /// <summary>
         /// Номер линии программы.
@@ -50,7 +47,7 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts.Module
             AsGlobal = as_global;
             AsObject = as_object;
 
-            Instance = null;
+            InstanceType = null;
 
             if (Alias == string.Empty)
                 Alias = Name;

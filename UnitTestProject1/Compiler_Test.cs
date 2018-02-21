@@ -12,6 +12,19 @@ namespace UnitTests
     [TestClass]
     public class Compiler_Test
     {
+        [TestMethod]
+        public void Compile_NewSimpleCall()
+        {
+            IDictionary<string, string> files = new Dictionary<string, string>();
+            files.Add("new", "New\\simple.scr");
+
+            Compile(files);
+        }
+
+
+
+
+
         #region Extension
 
         [TestMethod]

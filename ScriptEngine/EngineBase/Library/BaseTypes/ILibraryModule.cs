@@ -1,4 +1,5 @@
 ﻿using ScriptEngine.EngineBase.Compiler.Types.Variable;
+using ScriptEngine.EngineBase.Interpreter.Context;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -9,6 +10,6 @@ namespace ScriptEngine.EngineBase.Library.BaseTypes
     {
         IList<IVariable> Properties { get; set; }
 
-        void Constructor(params IVariable[] parameters);
+        //ScriptObjectContext Constructor(params IVariable[] parameters);
     }
 }

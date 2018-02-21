@@ -11,12 +11,10 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
 
         public ValueTypeEnum Type => ValueTypeEnum.STRING;
 
-
         public StringValue(string value)
         {
             _value = value;
         }
-
 
         public bool AsBoolean()
         {
@@ -60,6 +58,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
             return _value;
         }
 
+
         public bool Equals(IValue other)
         {
             if (other is null) return false;
@@ -82,5 +81,6 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
                     throw new Exception("Операции сравнения на больше-меньше допустимы только для значений совпадающих примитивных типов (Булево, Число, Строка, Дата)");
             }
         }
+
     }
 }

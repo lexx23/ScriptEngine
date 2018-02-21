@@ -1,4 +1,5 @@
-﻿using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
+﻿using ScriptEngine.EngineBase.Compiler.Types.Variable.References;
+using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
 using System;
 
 namespace ScriptEngine.EngineBase.Compiler.Types.Variable
