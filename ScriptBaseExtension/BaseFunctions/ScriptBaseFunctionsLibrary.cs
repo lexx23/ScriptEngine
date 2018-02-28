@@ -3,6 +3,7 @@ using ScriptEngine.EngineBase.Library.Attributes;
 using ScriptEngine.EngineBase.Extensions;
 using ScriptBaseFunctionsLibrary.Enums;
 using System;
+using ScriptBaseFunctionsLibrary.BuildInTypes;
 
 namespace ScriptBaseLibrary
 {
@@ -15,7 +16,6 @@ namespace ScriptBaseLibrary
         public string LaunchParameter
         {
             get => test;
-            set => test = value;
         }
 
 

@@ -13,6 +13,20 @@ namespace UnitTests
     public class Compiler_Test
     {
         [TestMethod]
+        public void Compile_ArrayIndexer()
+        {
+            IDictionary<string, string> files = new Dictionary<string, string>();
+            files.Add("new", "Array\\indexer.scr");
+
+            Compile(files);
+        }
+
+
+
+
+
+
+        [TestMethod]
         public void Compile_NewSimpleCall()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
@@ -317,7 +331,7 @@ namespace UnitTests
         {
             IDictionary<ScriptModule, string> modules = new Dictionary<ScriptModule, string>();
             modules.Add(new ScriptModule("global", "global", ModuleTypeEnum.STARTUP), OpenModule("Objects\\Cross object call\\global_module.scr"));
-            modules.Add(new ScriptModule("object", "object", ModuleTypeEnum.OBJECT,false,true), OpenModule("Objects\\Cross object call\\object_module.scr"));
+            modules.Add(new ScriptModule("object", "object", ModuleTypeEnum.OBJECT,true,true), OpenModule("Objects\\Cross object call\\object_module.scr"));
 
             CompileObjects(modules);
         }

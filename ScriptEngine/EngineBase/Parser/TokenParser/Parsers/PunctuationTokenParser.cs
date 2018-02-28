@@ -39,8 +39,8 @@ namespace ScriptEngine.EngineBase.Parser.TokenParser.Parsers
 
                 { "(", TokenSubTypeEnum.P_PARENTHESESOPEN },
                 { ")", TokenSubTypeEnum.P_PARENTHESESCLOSE },
-                { "[", TokenSubTypeEnum.SQBRACKETOPEN },
-                { "]", TokenSubTypeEnum.SQBRACKETCLOSE },
+                { "[", TokenSubTypeEnum.P_SQBRACKETOPEN },
+                { "]", TokenSubTypeEnum.P_SQBRACKETCLOSE },
 
                 { "#", TokenSubTypeEnum.PRECOMP },
                 { "&", TokenSubTypeEnum.COMP },

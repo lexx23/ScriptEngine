@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using ScriptEngine.EngineBase.Interpreter.Context;
 
-namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
+namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value.Values
 {
     class BooleanValue : IValue
     {

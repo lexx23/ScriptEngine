@@ -1,9 +1,8 @@
-﻿using ScriptEngine.EngineBase.Library.Attributes;
-using ScriptEngine.EngineBase.Parser.Token;
+﻿using ScriptEngine.EngineBase.Library;
+using ScriptEngine.EngineBase.Library.Attributes;
 
 namespace ScriptBaseFunctionsLibrary.Enums
 {
-
     [LibraryEnum(Name = "СтатусСообщения", Alias = "MessageStatus")]
     public enum MessageStatusEnumInner
     {

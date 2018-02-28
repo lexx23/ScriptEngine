@@ -63,7 +63,9 @@ namespace ScriptEngine.EngineBase.Interpreter
         // Остаток от деления
         [EnumStringAttribute("остаток от деления { % }")]
         OP_MOD = 23,
-
-        OP_NEW
+        // Новый
+        OP_NEW,
+        // Получить элемент массива.
+        OP_ARRAY_GET
     }
 }

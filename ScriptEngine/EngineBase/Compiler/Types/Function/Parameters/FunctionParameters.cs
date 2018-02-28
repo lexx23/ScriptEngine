@@ -1,9 +1,7 @@
 ﻿using ScriptEngine.EngineBase.Compiler.Types.Variable;
 using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
-using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Text;
+using System.Collections;
 
 namespace ScriptEngine.EngineBase.Compiler.Types.Function.Parameters
 {
@@ -12,6 +10,11 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Function.Parameters
         private IList<FunctionParameter> _vars;
 
         public FunctionParameter this[int index] { get => _vars[index]; set => _vars[index] = value; }
+
+        /// <summary>
+        /// Любое количество параметров. На пример у функции/процедуры из библиотеки Constructor(IValue[] parameters) может быть любое количество параметров.
+        /// </summary>
+        public bool AnyCount { get; set; }
         public int Count { get => _vars.Count; }
 
         public FunctionParameters()

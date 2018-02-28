@@ -1,9 +1,10 @@
 ﻿using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
+using ScriptEngine.EngineBase.Library;
 using System.Linq.Expressions;
 using System.Reflection;
 using System;
 
-namespace ScriptEngine.EngineBase.Compiler.Types.Function.ExternalMethods
+namespace ScriptEngine.EngineBase.Compiler.Types.Function.LibraryMethods
 {
     class ProcedureWrapper<T> : IMethodWrapper
     {
@@ -11,18 +12,32 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Function.ExternalMethods
         private T _instance;
         private Action<T, IValue[]> _procedure;
 
+        /// <summary>
+        /// Конструктор используется при клонировании класса.
+        /// </summary>
+        /// <param name="instance"></param>
+        /// <param name="procedure"></param>
         public ProcedureWrapper(T instance, Action<T, IValue[]> procedure)
         {
             _instance = instance;
             _procedure = procedure;
         }
 
-
+        /// <summary>
+        /// Простой конструктор.
+        /// </summary>
+        /// <param name="method"></param>
         public ProcedureWrapper(MethodInfo method)
         {
             _procedure = Create(method);
         }
 
+
+        /// <summary>
+        /// Создает прототип процедуры.
+        /// </summary>
+        /// <param name="method"></param>
+        /// <returns></returns>
         private Action<T, IValue[]> Create(MethodInfo method)
         {
             ParameterExpression instanceParameter = Expression.Parameter(typeof(T), "target");
@@ -34,45 +49,36 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Function.ExternalMethods
 
         private Expression[] CreateParameterExpressions(MethodInfo method, Expression argumentsParameter)
         {
-            MethodCallExpression call;
             Expression[] list = new Expression[method.GetParameters().Length];
             int i = 0;
 
             foreach (ParameterInfo info in method.GetParameters())
             {
-                switch (info.ParameterType.Name)
-                {
-                    case "IValue[]":
-                        list[i] = argumentsParameter;
-                        break;
-
-                    case "IValue":
-                        list[i] = Expression.ArrayIndex(argumentsParameter, Expression.Constant(i));
-                        break;
-
-                    case "String":
-                        call = Expression.Call(Expression.ArrayIndex(argumentsParameter, Expression.Constant(i)), typeof(IValue).GetMethod("AsString"));
-                        list[i] = call;
-                        break;
-
-                    default:
-                        call = Expression.Call(Expression.ArrayIndex(argumentsParameter, Expression.Constant(i)), typeof(IValue).GetMethod("AsObject"));
-                        list[i] = Expression.Convert(call, info.ParameterType);
-                        break;
-                }
+                if (info.ParameterType == typeof(IValue[]))
+                    list[i] = argumentsParameter;
+                else
+                    list[i] = ConvertExpression.ConvertFromScript(Expression.ArrayIndex(argumentsParameter, Expression.Constant(i)), info.ParameterType);
                 i++;
             }
-
             return list;
         }
 
-
+        /// <summary>
+        /// Выполнить процедуру.
+        /// </summary>
+        /// <param name="param"></param>
+        /// <returns></returns>
         public IValue Run(IValue[] param)
         {
             _procedure(_instance, param);
             return null;
         }
 
+        /// <summary>
+        /// Копия функции с указанием нового объекта.
+        /// </summary>
+        /// <param name="instance"></param>
+        /// <returns></returns>
         public IMethodWrapper Clone(object instance)
         {
             return new ProcedureWrapper<T>((T)instance, _procedure);

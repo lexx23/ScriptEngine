@@ -4,7 +4,7 @@ using System;
 namespace ScriptEngine.EngineBase.Library.Attributes
 {
     [AttributeUsage(AttributeTargets.Class)]
-    public class LibraryClassAttribute : Attribute,IModulePlace,IModuleName
+    public class LibraryClassAttribute : Attribute,IModulePlace,IScriptName
     {
         public bool AsGlobal { get; set; }
         public bool AsObject { get; set; }

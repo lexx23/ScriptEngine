@@ -24,7 +24,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.References
 
         public IVariableReference Clone(object instance)
         {
-            return new ReferenceReadOnly(null);
+            return new ReferenceReadOnly(_value);
         }
     }
 }

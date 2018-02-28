@@ -1,4 +1,4 @@
-﻿using ScriptEngine.EngineBase.Compiler.Types.Function.ExternalMethods;
+﻿using ScriptEngine.EngineBase.Compiler.Types.Function.LibraryMethods;
 using ScriptEngine.EngineBase.Compiler.Types.Variable.References;
 using ScriptEngine.EngineBase.Compiler.Types.Function.Parameters;
 using ScriptEngine.EngineBase.Compiler.Programm.Parts.Module;
@@ -8,11 +8,9 @@ using ScriptEngine.EngineBase.Compiler.Types.Variable;
 using ScriptEngine.EngineBase.Library.Attributes;
 using ScriptEngine.EngineBase.Extensions;
 using ScriptEngine.EngineBase.Library;
-using System.Linq.Expressions;
 using System.Reflection;
 using System.Linq;
 using System;
-using System.ComponentModel;
 
 namespace ScriptEngine.EngineBase.Compiler.Programm.ModuleLoader
 {
@@ -31,6 +29,22 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.ModuleLoader
         {
             IValue default_value = null;
             FunctionParameters parameters = new FunctionParameters();
+
+
+            var array_param = method.GetParameters().Where(x => x.ParameterType == typeof(IValue[]));
+
+            if (array_param.Count() > 0)
+            {
+                parameters.AnyCount = true;
+                if (array_param.Count() > 1)
+                    throw new Exception("Тип параметра IValue[] может быть только один.");
+                if (array_param.First().HasDefaultValue)
+                    throw new Exception("Тип параметра IValue[] не может иметь значение по умолчанию.");
+
+                function.DefinedParameters = parameters;
+                return;
+            }
+
             foreach (ParameterInfo param_info in method.GetParameters())
             {
                 if (param_info.HasDefaultValue)
@@ -51,46 +65,14 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.ModuleLoader
 
                 ScriptModule enum_module = new ScriptModule(attribute.Name, attribute.Alias, ModuleTypeEnum.ENUM, true, true);
                 enum_module.InstanceType = type;
-                //IFunction function = enum_module.Functions.Create("GetPropertyByName", true);
-                //function.Param = new IVariable[] { new Variable() {Type = VariableTypeEnum.STACKVARIABLE } };
 
                 foreach (IVariable var in new_enum.Properties)
                     enum_module.Variables.Add(var.Name, var);
 
-                _programm.ModuleAdd(enum_module);
-                attribute.Module = enum_module;
+                _programm.Modules.Add(enum_module);
+                _programm.GlobalVariables.Add(new Variable() { Name = attribute.Name, Alias = attribute.Alias, Reference = new SimpleReference() });
+
             }
-        }
-
-
-        private IVariableReference CreatePropertyReference(Type target_type, PropertyInfo property)
-        {
-            ParameterExpression target_expr = Expression.Parameter(typeof(Type), "target");
-            ParameterExpression property_expr = Expression.Parameter(typeof(PropertyInfo), "property");
-
-            var instance_type = typeof(LibraryReference<>).MakeGenericType(target_type);
-            var constructor_type = instance_type.GetConstructor(new Type[] { typeof(Type), typeof(PropertyInfo) });
-            var constructor = Expression.New(constructor_type, target_expr, property_expr);
-
-            Func<Type, PropertyInfo, IVariableReference> result = Expression.Lambda<Func<Type, PropertyInfo, IVariableReference>>(constructor, target_expr, property_expr).Compile();
-            return result(target_type, property);
-        }
-
-        private IMethodWrapper CreateMethod(Type target, MethodInfo method)
-        {
-            ParameterExpression target_expr = Expression.Parameter(typeof(Type), "target");
-            ParameterExpression method_expr = Expression.Parameter(typeof(MethodInfo), "method");
-
-            Type instance_type;
-            if (method.ReturnType != typeof(void))
-                instance_type = typeof(FunctionWrapper<>).MakeGenericType(target);
-            else
-                instance_type = typeof(ProcedureWrapper<>).MakeGenericType(target);
-            var constructor_type = instance_type.GetConstructor(new Type[] { typeof(MethodInfo) });
-            var constructor = Expression.New(constructor_type, method_expr);
-
-            Func<Type, MethodInfo, IMethodWrapper> result = Expression.Lambda<Func<Type, MethodInfo, IMethodWrapper>>(constructor, target_expr, method_expr).Compile();
-            return result(target, method);
         }
 
 
@@ -98,8 +80,6 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.ModuleLoader
         {
             foreach (Type type in assembly.ExportedTypes.Where(m => m.GetCustomAttributes(typeof(LibraryClassAttribute), false).Length > 0))
             {
-                Object extension = Activator.CreateInstance(type);
-
                 LibraryClassAttribute attribute = (LibraryClassAttribute)Attribute.GetCustomAttribute(type, typeof(LibraryClassAttribute), false);
 
                 // Класс содержит только глобальные функции и процедуры.
@@ -112,15 +92,12 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.ModuleLoader
                     {
                         LibraryClassPropertyAttribute property_attr = property.GetCustomAttribute<LibraryClassPropertyAttribute>(false);
 
-                        IVariableReference reference = CreatePropertyReference(type, property);
-                        //Action<string> setter = CreateSetter<string>(extension, property.GetSetMethod());
-                        //IValue value = new StringValue(getter, setter);
-
-
+                        IVariableReference reference = ReferenceFactory.Create(type, property);
                         IVariable var = new Variable() { Name = property_attr.Name, Public = true, Reference = reference };
-                        //_programm.GlobalVariables.Create(property_attr.Name,value);
+                        global_module.Variables.Add(property_attr.Name, var);
+                        global_module.Variables.Add(property_attr.Alias, var);
 
-                        //_programm.GlobalVariables.Create(property_attr.Alias, value);
+                        _programm.GlobalVariables.Add(var);
                     }
 
 
@@ -129,15 +106,15 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.ModuleLoader
                         LibraryClassMethodAttribute method_attr = method.GetCustomAttribute<LibraryClassMethodAttribute>(false);
 
                         IFunction function = _programm.GlobalFunctions.Create(method_attr.Name);
-                        function.Name = method_attr.Name;
+                        function.Alias = method_attr.Alias;
                         function.Type = method.ReturnType == typeof(void) ? FunctionTypeEnum.PROCEDURE : FunctionTypeEnum.FUNCTION;
                         GetFunctionParameters(function, method);
-                        function.Method = CreateMethod(type, method).Clone(extension);
-                        _programm.GlobalFunctions.Add(method_attr.Alias, function);
-
+                        function.Method = LibraryMethodFactory.Create(type, method);
+                        global_module.Functions.Add(function);
                     }
 
-                    _programm.ModuleAdd(global_module);
+                    _programm.Modules.Add(global_module);
+                    _programm.GlobalVariables.Add(new Variable() { Name = attribute.Name, Alias = attribute.Alias, Reference = new SimpleReference() });
                     continue;
                 }
 
@@ -147,7 +124,7 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.ModuleLoader
                     continue;
                 }
 
-                // Класс содержит объект который добавляется в список объектов оператора Новый.
+                // Класс содержит объект который возможно создать оператором Новый.
                 if (!attribute.AsGlobal && attribute.AsObject)
                 {
                     ScriptModule module = new ScriptModule(attribute.Name, attribute.Alias, ModuleTypeEnum.OBJECT, false, true);
@@ -158,15 +135,13 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.ModuleLoader
                         LibraryClassMethodAttribute method_attr = method.GetCustomAttribute<LibraryClassMethodAttribute>(false);
 
                         IFunction function = module.Functions.Create(method_attr.Name, true);
-                        function.Name = method_attr.Name;
+                        function.Alias = method_attr.Alias;
                         function.Type = method.ReturnType == typeof(void) ? FunctionTypeEnum.PROCEDURE : FunctionTypeEnum.FUNCTION;
                         GetFunctionParameters(function, method);
-                        function.Method = CreateMethod(type, method);
-                        module.Functions.Add(method_attr.Alias, function);
-
+                        function.Method = LibraryMethodFactory.Create(type, method);
                     }
 
-                    _programm.ModuleAdd(module);
+                    _programm.Modules.Add(module);
                 }
             }
         }

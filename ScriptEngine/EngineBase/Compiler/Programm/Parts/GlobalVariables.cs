@@ -10,14 +10,14 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts
     public class GlobalVariables
     {
         private ScriptScope _global_scope;
-        private IDictionary<string, IVariable> _vars;
+        private IList<IVariable> _vars;
 
 
         public GlobalVariables(ScriptScope scope)
         {
             _global_scope = scope;
 
-            _vars = new Dictionary<string, IVariable>();
+            _vars = new List<IVariable>();
         }
 
         /// <summary>
@@ -26,13 +26,13 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts
         /// <param name="variable"></param>
         public void Add(IVariable variable)
         {
-            if (_vars.ContainsKey(variable.Name))
+            if (Get(variable.Name) != null)
                 return;
 
             _global_scope.Vars.Add(variable);
             _global_scope.VarCount++;
 
-            _vars.Add(variable.Name, variable);
+            _vars.Add(variable);
         }
 
 
@@ -47,7 +47,7 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts
             if (name == string.Empty)
                 name = "<<var_" + _vars.Count.ToString() + ">>";
 
-            if (_vars.ContainsKey(name))
+            if (Get(name) != null)
                 return null;
 
             IVariable var = new Variable()
@@ -63,7 +63,7 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts
             _global_scope.Vars.Add(var);
             _global_scope.VarCount++;
 
-            _vars.Add(name, var);
+            _vars.Add(var);
             return var;
         }
 
@@ -75,8 +75,12 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts
         /// <returns></returns>
         public IVariable Get(string name)
         {
-            if (_vars.ContainsKey(name))
-                return _vars[name];
+            for (int i = 0; i < _vars.Count; i++)
+            {
+                if (_vars[i].Name == name || _vars[i].Alias == name)
+                    return _vars[i];
+            }
+
             return null;
         }
     }

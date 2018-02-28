@@ -126,8 +126,10 @@ namespace ScriptEngine.EngineBase.Parser.Token
         P_PARENTHESESOPEN,
         [EnumStringAttribute("закрывающая скобка { ) }")]
         P_PARENTHESESCLOSE,
-        SQBRACKETOPEN,
-        SQBRACKETCLOSE,
+        [EnumStringAttribute("открывающая квадратная скобка { [ }")]
+        P_SQBRACKETOPEN,
+        [EnumStringAttribute("закрывающая квадратная скобка { ] }")]
+        P_SQBRACKETCLOSE,
 
 
         [EnumStringAttribute("дата")]

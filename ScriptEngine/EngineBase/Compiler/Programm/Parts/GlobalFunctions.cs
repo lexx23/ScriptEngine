@@ -7,11 +7,11 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts
 {
     public class GlobalFunctions
     {
-        private IDictionary<string,IFunction> _global_functions;
+        private IList<IFunction> _global_functions;
 
         public GlobalFunctions()
         {
-            _global_functions = new Dictionary<string, IFunction>();
+            _global_functions = new List<IFunction>();
         }
 
         /// <summary>
@@ -25,10 +25,10 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts
         {
             IFunction function;
 
-            if (!_global_functions.ContainsKey(name))
+            if (Get(name) == null)
             {
                 function = new Function() { Name = name };
-                _global_functions.Add(name,function);
+                _global_functions.Add(function);
                 return function;
             }
 
@@ -40,12 +40,12 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts
         /// </summary>
         /// <param name="name"></param>
         /// <param name="function"></param>
-        public void Add(string name,IFunction function)
+        public void Add(IFunction function)
         {
-            if (!_global_functions.ContainsKey(name))
-                _global_functions.Add(name, function);
+            if (Get(function.Name) == null)
+                _global_functions.Add(function);
             else
-                throw new Exception($"Функция с именем {name} уже существует.");
+                throw new Exception($"Функция с именем {function.Name} уже существует.");
         }
 
         /// <summary>
@@ -55,9 +55,12 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts
         /// <returns></returns>
         public IFunction Get(string name)
         {
-            IFunction function;
-            if (_global_functions.TryGetValue(name,out function))
-                return function;
+            for(int i=0;i<_global_functions.Count;i++)
+            {
+                if (_global_functions[i].Name == name || _global_functions[i].Alias == name)
+                    return _global_functions[i];
+            }
+
             return null;
         }
 

@@ -5,11 +5,15 @@ using ScriptEngine.EngineBase.Interpreter.Context;
 
 namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value.Values
 {
-    class ScriptObjectValue : IValue
+    public class ScriptObjectValue : IValue
     {
-        private ScriptObjectContext _value;
+        protected ScriptObjectContext _value;
 
         public ValueTypeEnum Type => ValueTypeEnum.SCRIPT_OBJECT;
+
+        public ScriptObjectValue()
+        {
+        }
 
 
         public ScriptObjectValue(ScriptObjectContext value)
@@ -50,7 +54,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value.Values
 
         public object AsObject()
         {
-            return _value;
+            return _value.Instance;
         }
 
 
@@ -60,7 +64,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value.Values
             if (ReferenceEquals(this, other)) return true;
 
             if (other.Type == ValueTypeEnum.SCRIPT_OBJECT)
-                return _value.ModuleName == other.AsScriptObject().ModuleName && _value.Context == other.AsScriptObject().Context;
+                return _value.ModuleName == other.AsScriptObject().ModuleName && _value.Instance == other.AsScriptObject().Instance;
 
             return false;
         }

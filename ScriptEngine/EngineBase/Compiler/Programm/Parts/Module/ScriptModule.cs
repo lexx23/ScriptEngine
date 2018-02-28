@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace ScriptEngine.EngineBase.Compiler.Programm.Parts.Module
 {
-    public class ScriptModule:IModuleName,IModulePlace
+    public class ScriptModule:IScriptName,IModulePlace
     {
         private ModuleVariables _vars;
         private ModuleFunctions _functions;

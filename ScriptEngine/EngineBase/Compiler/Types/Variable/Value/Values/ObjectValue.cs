@@ -7,47 +7,45 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value.Values
 {
     class ObjectValue : IValue
     {
-        private IValue _internal_value;
         private object _value;
 
         public ValueTypeEnum Type => ValueTypeEnum.OBJECT;
 
 
-        public ObjectValue(object value,IValue internal_value)
+        public ObjectValue(object value)
         {
             _value = value;
-            _internal_value = internal_value;
         }
 
 
         public bool AsBoolean()
         {
-            return _internal_value.AsBoolean();
+            throw new NotImplementedException();
         }
 
         public DateTime AsDate()
         {
-            return _internal_value.AsDate();
+            throw new NotImplementedException();
         }
 
         public int AsInt()
         {
-            return _internal_value.AsInt();
+            throw new NotImplementedException();
         }
 
         public decimal AsNumber()
         {
-            return _internal_value.AsNumber();
+            throw new NotImplementedException();
         }
 
         public ScriptObjectContext AsScriptObject()
         {
-            return _internal_value.AsScriptObject();
+            throw new NotImplementedException();
         }
 
         public string AsString()
         {
-            return _internal_value.AsString();
+            return _value.ToString();
         }
 
         public object AsObject()

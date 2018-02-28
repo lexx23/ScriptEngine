@@ -15,7 +15,6 @@ namespace ScriptEngine.EngineBase.Interpreter.Context
             Reference = reference;
         }
 
-
         public void Set()
         {
             Variable.Reference = Reference;

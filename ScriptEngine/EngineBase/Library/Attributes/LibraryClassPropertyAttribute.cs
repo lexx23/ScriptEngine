@@ -9,7 +9,7 @@ using System.Text;
 namespace ScriptEngine.EngineBase.Extensions
 {
     [AttributeUsage(AttributeTargets.Property)]
-    public class LibraryClassPropertyAttribute : Attribute, IModuleName
+    public class LibraryClassPropertyAttribute : Attribute, IScriptName
     {
         public string Name { get; set; }
         public string Alias { get; set; }

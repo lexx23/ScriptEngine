@@ -6,7 +6,9 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable
 {
     public class Variable : IVariable
     {
-        public String Name { get; set; }
+        public string Name { get; set; }
+        public string Alias { get; set; }
+
         public ScriptScope Scope { get; set; }
 
         public IVariableReference Reference { get; set; }
@@ -28,11 +30,5 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable
             StackNumber = -1;
             Reference = new SimpleReference();
         }
-
-        public static IVariable CreateContextPropertyReference(string name)
-        {
-            return new Variable() { Name = name, Public = true, Reference = new SimpleReference() };
-        }
-
     }
 }

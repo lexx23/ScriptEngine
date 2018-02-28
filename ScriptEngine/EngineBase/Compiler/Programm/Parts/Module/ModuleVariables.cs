@@ -9,36 +9,16 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts.Module
 {
     public class ModuleVariables
     {
-        private IDictionary<string, IVariable> _vars;
+        private IList<IVariable> _vars;
         private ScriptModule _module;
 
         public ModuleVariables(ScriptModule module)
         {
             _module = module;
-            _vars = new Dictionary<string, IVariable>();
+            _vars = new List<IVariable>();
         }
 
-        /// <summary>
-        /// Удалить переменную из модуля.
-        /// </summary>
-        /// <param name="variable"></param>
-        /// <param name="scope"></param>
-        public void Delete(IVariable variable, ScriptScope scope = null)
-        {
-            if (scope == null)
-                scope = _module.ModuleScope;
 
-            if (_vars.ContainsKey(variable.Name + "-" + scope.Name))
-            {
-                _vars.Remove(variable.Name + "-" + scope.Name);
-                return;
-            }
-
-            if (_vars.ContainsKey(variable.Name + "-public-" + scope.Name))
-                _vars.Remove(variable.Name + "-public-" + scope.Name);
-        }
-
-        // TODO Перенести в глобальный модуль.
         /// <summary>
         /// Попытка переиспользовать переменную.
         /// </summary>
@@ -46,30 +26,30 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts.Module
         /// <returns></returns>
         private IVariable ReUse(ScriptScope scope)
         {
-            foreach (KeyValuePair<string, IVariable> var in _vars)
+            foreach (IVariable var in _vars)
             {
-                if (var.Key[0] == '<' && var.Key[1] == '<')
+                if (var.Name[0] == '<' && var.Name[1] == '<')
                 {
-                    if (var.Value.Users <= 1)
+                    if (var.Users <= 1)
                         continue;
 
-                    if (var.Value.Scope != scope)
+                    if (var.Scope != scope)
                         continue;
 
-                    var.Value.Users = 1;
-                    if (var.Value.Type == VariableTypeEnum.REFERENCE)
+                    var.Users = 1;
+                    if (var.Type == VariableTypeEnum.REFERENCE)
                     {
                         ScriptStatement statement = _module.StatementAdd();
                         statement.OP_CODE = Interpreter.OP_CODES.OP_VAR_CLR;
-                        statement.Variable2 = var.Value;
+                        statement.Variable2 = var;
                     }
 
-                    if (!scope.Vars.Contains(var.Value))
+                    if (!scope.Vars.Contains(var))
                     {
-                        scope.Vars.Add(var.Value);
+                        scope.Vars.Add(var);
                         scope.VarCount++;
                     }
-                    return var.Value;
+                    return var;
                 }
             }
 
@@ -98,7 +78,7 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts.Module
                     return var;
             }
             else
-                if (_vars.ContainsKey(name + "-" + scope.Name))
+                if (Get(name,scope) != null)
                 return null;
 
 
@@ -116,7 +96,7 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts.Module
             scope.Vars.Add(var);
             scope.VarCount++;
 
-            _vars.Add(name + "-" + scope.Name, var);
+            _vars.Add(var);
             return var;
         }
 
@@ -132,10 +112,10 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts.Module
             if (variable.Scope == null)
                 variable.Scope = _module.ModuleScope;
 
-            if (_vars.ContainsKey(name + "-" + variable.Scope.Name))
+            if (Get(name,variable.Scope) != null)
                 return false;
 
-            _vars.Add(name + "-" + variable.Scope.Name, variable);
+            _vars.Add(variable);
             _module.ModuleScope.Vars.Add(variable);
             _module.ModuleScope.VarCount++;
             return true;
@@ -152,27 +132,15 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts.Module
             if (scope == null)
                 scope = _module.ModuleScope;
 
-            if (_vars.ContainsKey(name + "-" + scope.Name))
-                return _vars[name + "-" + scope.Name];
-
-            if (_vars.ContainsKey(name + "-public-" + _module.ModuleScope.Name))
-                return _vars[name + "-public-" + _module.ModuleScope.Name];
-
-            return null;
-        }
-
-        public IVariable Get(string name, string scope_name)
-        {
-            if (scope_name == null)
-                scope_name = _module.ModuleScope.Name;
-
-            if (_vars.ContainsKey(name + "-" + scope_name))
-                return _vars[name + "-" + scope_name];
-
-            if (_vars.ContainsKey(name + "-public-" + _module.ModuleScope.Name))
-                return _vars[name + "-public-" + _module.ModuleScope.Name];
+            for (int i = 0; i < _vars.Count; i++)
+            {
+                if (_vars[i].Name == name || _vars[i].Alias == name)
+                    if (_vars[i].Scope == scope)
+                        return _vars[i];
+            }
 
             return null;
         }
+
     }
 }

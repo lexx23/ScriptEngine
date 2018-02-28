@@ -1,4 +1,5 @@
-﻿using ScriptEngine.EngineBase.Compiler.Types.Function.ExternalMethods;
+﻿using ScriptEngine.EngineBase.Compiler.Programm.Parts.Module;
+using ScriptEngine.EngineBase.Compiler.Types.Function.LibraryMethods;
 using ScriptEngine.EngineBase.Compiler.Types.Function.Parameters;
 using ScriptEngine.EngineBase.Compiler.Types.Variable;
 using ScriptEngine.EngineBase.Praser.Token;
@@ -6,9 +7,8 @@ using System.Collections.Generic;
 
 namespace ScriptEngine.EngineBase.Compiler.Types.Function
 {
-    public interface IFunction
+    public interface IFunction: IScriptName
     {
-        string Name { get; set; }
         FunctionTypeEnum Type { get; set; }
         bool Public { get; set; }
         ScriptScope Scope { get; set; }

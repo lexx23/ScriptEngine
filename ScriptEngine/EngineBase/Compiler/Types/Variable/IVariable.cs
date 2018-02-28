@@ -1,12 +1,12 @@
-﻿using ScriptEngine.EngineBase.Compiler.Types.Variable.References;
+﻿using ScriptEngine.EngineBase.Compiler.Programm.Parts.Module;
+using ScriptEngine.EngineBase.Compiler.Types.Variable.References;
 using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
-using System;
+
 
 namespace ScriptEngine.EngineBase.Compiler.Types.Variable
 {
-    public interface IVariable
+    public interface IVariable: IScriptName
     {
-        String Name { get; set; }
         ScriptScope Scope { get; set; }
 
         VariableTypeEnum Type { get; set; }

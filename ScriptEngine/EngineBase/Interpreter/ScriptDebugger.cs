@@ -45,7 +45,7 @@ namespace ScriptEngine.EngineBase.Interpreter
         /// <param name="line"></param>
         public void AddBreakpoint(string module_name, int line)
         {
-            if (!_interpreter.Programm.ModuleExist(module_name))
+            if (!_interpreter.Programm.Modules.Exist(module_name))
                 throw new Exception($"В программе нет модуля с именем [{module_name}].");
 
             if (!_break_points.ContainsKey(module_name))
@@ -162,7 +162,7 @@ namespace ScriptEngine.EngineBase.Interpreter
 
             object_value = RegisterGetValue(object_name);
 
-            if (object_value != null && object_value.AsScriptObject() != null && object_value.AsScriptObject().Context != null)
+            if (object_value != null && object_value.AsScriptObject() != null)// && object_value.AsScriptObject().Context != null)
                 return object_value.AsScriptObject().GetReference(var_name).Get();
 
             return null;

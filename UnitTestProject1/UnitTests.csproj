@@ -16,16 +16,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="Scripts\Preprocessor\regions.scr" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="Scripts\Preprocessor\regions.scr">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.5.0" />
     <PackageReference Include="MSTest.TestAdapter" Version="1.2.0" />
     <PackageReference Include="MSTest.TestFramework" Version="1.2.0" />
@@ -38,6 +28,9 @@
 
   <ItemGroup>
     <None Update="LanguageExtensions\ScriptBaseFunctionsLibrary.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Scripts\Compiler\Array\indexer.scr">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Scripts\Compiler\Extension\function call.scr">
@@ -133,6 +126,24 @@
     <None Update="Scripts\Compiler\While\while_error2.scr">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Scripts\Interpreter\Array\indexer.scr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Scripts\Interpreter\Other\readonly_property_error.scr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Scripts\Library\message_status.scr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Scripts\Preprocessor\not_closed_if.scr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Scripts\Preprocessor\not_closed_region.scr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Scripts\Preprocessor\regions.scr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Scripts\SpeedTest\array.scr">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -151,10 +162,10 @@
     <None Update="Scripts\Interpreter\If\short_if.scr">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Scripts\Interpreter\Objects\Not public method call\global_module.scr">
+    <None Update="Scripts\Interpreter\Objects\Not public property call\global_module.scr">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Scripts\Interpreter\Objects\Not public method call\object_module.scr">
+    <None Update="Scripts\Interpreter\Objects\Not public property call\object_module.scr">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Scripts\Compiler\Procedure\procedure_as_function_error5.scr">
@@ -296,7 +307,7 @@
 
   <ItemGroup>
     <Folder Include="LanguageExtensions\" />
-    <Folder Include="Scripts\Interpreter\Objects\Not public method call\" />
+    <Folder Include="Scripts\Interpreter\Objects\Not public property call\" />
     <Folder Include="Scripts\Interpreter\Objects\Object not public call error\" />
   </ItemGroup>
 

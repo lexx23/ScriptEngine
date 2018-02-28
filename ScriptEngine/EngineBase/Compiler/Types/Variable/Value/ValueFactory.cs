@@ -1,4 +1,6 @@
-﻿using ScriptEngine.EngineBase.Compiler.Types.Variable.Value.Values;
+﻿using ScriptEngine.EngineBase.Compiler.Programm.Parts.Module;
+using ScriptEngine.EngineBase.Compiler.Types.Variable.Value.Values;
+using ScriptEngine.EngineBase.Interpreter;
 using ScriptEngine.EngineBase.Interpreter.Context;
 using ScriptEngine.EngineBase.Library.Attributes;
 using System;
@@ -19,7 +21,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
         public static IValue Create(decimal value) => new NumberValue(value);
         public static IValue Create(int value) => new NumberValue(value);
         public static IValue Create(DateTime value) => new DateValue(value);
-        public static IValue Create(object value,IValue internal_value) => new ObjectValue(value,internal_value);
+        public static IValue Create(object value) => new ObjectValue(value);
         public static IValue Create(ScriptObjectContext value) => new ScriptObjectValue(value);
         public static IValue Create(bool value) => value == true ? _bool_value_true : _bool_value_false;
         public static IValue Create(IValue value) => value;
@@ -69,7 +71,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
         /// <param name="type"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public static IValue Create(Type type, object value,IValue internal_value = null)
+        public static IValue Create(Type type, object value)
         {
             if (type == typeof(int))
                 return Create((decimal)value);
@@ -83,8 +85,11 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
             if (type == typeof(bool))
                 return Create((bool)value);
 
+            if (type == typeof(void) || type == typeof(IValue[]))
+                return Create();
+
             if (type.IsEnum)
-                return Create(value,internal_value);
+                return Create(value);
 
             throw new Exception($"Тип {type.ToString()} не поддерживается.");
         }

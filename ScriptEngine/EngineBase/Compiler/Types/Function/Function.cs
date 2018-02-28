@@ -1,4 +1,4 @@
-﻿using ScriptEngine.EngineBase.Compiler.Types.Function.ExternalMethods;
+﻿using ScriptEngine.EngineBase.Compiler.Types.Function.LibraryMethods;
 using ScriptEngine.EngineBase.Compiler.Types.Function.Parameters;
 using ScriptEngine.EngineBase.Compiler.Types.Variable;
 using ScriptEngine.EngineBase.Praser.Token;
@@ -9,6 +9,8 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Function
     public class Function: IFunction
     {
         public string Name { get; set; }
+        public string Alias { get; set; }
+
         public FunctionTypeEnum Type { get; set; }
         public bool Public { get; set; }
         public ScriptScope Scope { get; set; }

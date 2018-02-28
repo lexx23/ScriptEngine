@@ -6,7 +6,7 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts.Module
 {
     public class ModuleFunctions
     {
-        private IDictionary<string,IFunction> _functions;
+        private IList<IFunction> _functions;
         private ScriptModule _module;
 
         public int Count { get => _functions.Count; }
@@ -14,7 +14,7 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts.Module
         public ModuleFunctions(ScriptModule module)
         {
             _module = module;
-            _functions = new Dictionary<string, IFunction>();
+            _functions = new List<IFunction>();
         }
 
         /// <summary>
@@ -28,10 +28,10 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts.Module
         {
             Function function;
 
-            if (!_functions.ContainsKey(name))
+            if (Get(name) == null)
             {
                 function = new Function() { Name = name, Scope = _module.ModuleScope, Type = FunctionTypeEnum.PROCEDURE, Public = as_public };
-                _functions.Add(name,function);
+                _functions.Add(function);
                 return function;
             }
 
@@ -43,10 +43,10 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts.Module
         /// </summary>
         /// <param name="function"></param>
         /// <param name="as_public"></param>
-        public void Add(string name,IFunction function)
+        public void Add(IFunction function)
         {
-            if (!_functions.ContainsKey(name))
-                _functions.Add(name,function);
+            if (Get(function.Name) == null)
+                _functions.Add(function);
         }
 
         /// <summary>
@@ -57,15 +57,19 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts.Module
         /// <returns></returns>
         public IFunction Get(string name)
         {
-            if (_functions.TryGetValue(name, out IFunction function))
-                return function;
+            for (int i = 0; i < _functions.Count; i++)
+            {
+                if (_functions[i].Name == name || _functions[i].Alias == name)
+                    return _functions[i];
+            }
+
             return null;
         }
 
 
         public IFunction[] ToArray()
         {
-            return _functions.Values.ToArray();
+            return _functions.ToArray();
         }
 
     }

@@ -15,6 +15,32 @@ namespace UnitTests
     [TestClass]
     public class Interpreter_Test
     {
+
+        [TestMethod]
+        public void Interpreter_ArrayIndexer()
+        {
+            IDictionary<ScriptModule, string> modules = new Dictionary<ScriptModule, string>();
+            modules.Add(new ScriptModule("global", "global", ModuleTypeEnum.STARTUP, true, false), OpenModule("Array\\indexer.scr"));
+
+
+            ScriptProgramm programm = CompileObjects(modules);
+            ScriptInterpreter interpreter = new ScriptInterpreter(programm);
+            interpreter.Debugger.AddBreakpoint("global", 7);
+            interpreter.Debugger.AddBreakpoint("global", 9);
+
+            interpreter.Debug();
+
+            Assert.AreEqual(7, interpreter.CurrentLine);
+            Assert.AreEqual(123, interpreter.Debugger.RegisterGetValue("значение").AsNumber());
+            interpreter.Debugger.Continue();
+
+            Assert.AreEqual(9, interpreter.CurrentLine);
+            Assert.AreEqual(124, interpreter.Debugger.RegisterGetValue("значение").AsNumber());
+            interpreter.Debugger.Continue();
+        }
+
+
+
         #region Extension
 
         [TestMethod]
@@ -56,6 +82,18 @@ namespace UnitTests
             interpreter.Run();
         }
 
+
+        [TestMethod]
+        [ExpectedException(typeof(RuntimeException))]
+        public void Interpreter_OtherReadOnlyPropertyError()
+        {
+            IDictionary<string, string> files = new Dictionary<string, string>();
+            files.Add("other", "Other\\readonly_property_error.scr");
+
+            ScriptProgramm programm = Compile(files);
+            ScriptInterpreter interpreter = new ScriptInterpreter(programm);
+            interpreter.Run();
+        }
 
         #endregion
 
@@ -410,11 +448,11 @@ namespace UnitTests
 
         [TestMethod]
         [ExpectedException(typeof(RuntimeException))]
-        public void Interpreter_Objects_NotPublicMethodCall_Error()
+        public void Interpreter_Objects_NotPublicPropertyCall_Error()
         {
             IDictionary<ScriptModule, string> modules = new Dictionary<ScriptModule, string>();
-            modules.Add(new ScriptModule("global", "global", ModuleTypeEnum.STARTUP,true), OpenModule("Objects\\Not public method call\\global_module.scr"));
-            modules.Add(new ScriptModule("object", "object", ModuleTypeEnum.OBJECT, true,true), OpenModule("Objects\\Not public method call\\object_module.scr"));
+            modules.Add(new ScriptModule("global", "global", ModuleTypeEnum.STARTUP,true), OpenModule("Objects\\Not public property call\\global_module.scr"));
+            modules.Add(new ScriptModule("object", "object", ModuleTypeEnum.OBJECT, true,true), OpenModule("Objects\\Not public property call\\object_module.scr"));
 
             ScriptProgramm programm = CompileObjects(modules);
             ScriptInterpreter interpreter = new ScriptInterpreter(programm);

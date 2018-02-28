@@ -1,5 +1,5 @@
 ﻿using ScriptEngine.EngineBase.Compiler.Types.Function;
-using ScriptEngine.EngineBase.Compiler.Types.Function.ExternalMethods;
+using ScriptEngine.EngineBase.Compiler.Types.Function.LibraryMethods;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -11,10 +11,13 @@ namespace ScriptEngine.EngineBase.Interpreter.Context
         private IFunction _function;
         private IMethodWrapper _wrapper;
 
-        public ContextMethodReferenceHolder(IFunction function)
+        public IFunction Function { get => _function; }
+        public IMethodWrapper Wrapper { get => _wrapper; }
+
+        public ContextMethodReferenceHolder(IFunction function, IMethodWrapper wrapper)
         {
             _function = function;
-            _wrapper = _function.Method;
+            _wrapper = wrapper;
         }
 
         public void Set()

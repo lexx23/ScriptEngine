@@ -7,7 +7,6 @@ namespace ScriptEngine.TokenParsers
 
     //    public IdentifierTokenParser()
     //    {
-    //        Add("for", "для", "for");
     //        Add("each", "каждого", "each");
 
     //        Add("try", "попытка", "try");
@@ -15,7 +14,6 @@ namespace ScriptEngine.TokenParsers
     //        Add("execute", "выполнить", "execute");
     //        Add("raise", "вызватьисключение", "raise");
     //        Add("endtry", "конецпопытки", "endtry");
-    //        Add("new", "новый", "new");
     
     //    }
 

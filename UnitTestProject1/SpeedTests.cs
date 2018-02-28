@@ -28,16 +28,13 @@ namespace UnitTests
 
             ScriptProgramm programm = CompileObjects(modules);
             ScriptInterpreter interpreter = new ScriptInterpreter(programm);
-            interpreter.Debugger.AddBreakpoint("global", 12);
 
             System.Diagnostics.Stopwatch sw = new Stopwatch();
             sw.Start();
             interpreter.Run();
-            //interpreter.Debug();
             sw.Stop();
 
-            Assert.AreEqual(1800, sw.ElapsedMilliseconds, 200);
-            //Assert.AreEqual(1000000, interpreter.Debugger.RegisterGetValue("ф").AsNumber());
+            Assert.AreEqual(1800, sw.ElapsedMilliseconds, 250);
         }
 
         /// <summary>
@@ -51,21 +48,18 @@ namespace UnitTests
 
             ScriptProgramm programm = Compile(files);
             ScriptInterpreter interpreter = new ScriptInterpreter(programm);
-            interpreter.Debugger.AddBreakpoint("function", 12);
 
             System.Diagnostics.Stopwatch sw = new Stopwatch();
             sw.Start();
             interpreter.Run();
-            //interpreter.Debug();
             sw.Stop();
 
-            Assert.AreEqual(3300, sw.ElapsedMilliseconds, 250);
-            //Assert.AreEqual(1000000, interpreter.Debugger.RegisterGetValue("ф").Number);
+            Assert.AreEqual(3100, sw.ElapsedMilliseconds, 350);
         }
 
 
         /// <summary>
-        /// OneScript: , 1C: 
+        /// OneScript: 8500-9500, 1C: 4500
         /// </summary>
         [TestMethod]
         public void SpeedTest_Array()
@@ -75,17 +69,29 @@ namespace UnitTests
 
             ScriptProgramm programm = Compile(files);
             ScriptInterpreter interpreter = new ScriptInterpreter(programm);
-            interpreter.Debugger.AddBreakpoint("array_test", 12);
 
             System.Diagnostics.Stopwatch sw = new Stopwatch();
             sw.Start();
             interpreter.Run();
-            //interpreter.Debug();
             sw.Stop();
 
-            Assert.AreEqual(3300, sw.ElapsedMilliseconds, 250);
-            //Assert.AreEqual(1000000, interpreter.Debugger.RegisterGetValue("ф").Number);
+            Assert.AreEqual(4800, sw.ElapsedMilliseconds, 500);
         }
+
+        [TestMethod]
+        public void SpeedTest_ArrayDebug()
+        {
+            IDictionary<string, string> files = new Dictionary<string, string>();
+            files.Add("array_test", "array.scr");
+
+            ScriptProgramm programm = Compile(files);
+            ScriptInterpreter interpreter = new ScriptInterpreter(programm);
+            interpreter.Debugger.AddBreakpoint("array_test", 28);
+
+            interpreter.Debug();
+            Assert.AreEqual(499999500000, interpreter.Debugger.RegisterGetValue("result").AsNumber());
+        }
+
 
         /// <summary>
         /// OneScript: 2100, 1C: 1900

@@ -3,7 +3,7 @@ using System;
 
 namespace ScriptEngine.EngineBase.Library.Attributes
 {
-    public class LibraryClassMethodAttribute : Attribute, IModuleName
+    public class LibraryClassMethodAttribute : Attribute, IScriptName
     {
         public string Name { get; set; }
         public string Alias { get; set; }
