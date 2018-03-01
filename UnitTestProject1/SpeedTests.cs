@@ -20,6 +20,7 @@ namespace UnitTests
         /// OneScript: 2900, 1C: 2066
         /// </summary>
         [TestMethod]
+        [TestCategory("Speed")]
         public void SpeedTest_LibraryFunctionCall()
         {
             IDictionary<ScriptModule, string> modules = new Dictionary<ScriptModule, string>();
@@ -41,6 +42,7 @@ namespace UnitTests
         /// OneScript: 4700, 1C: 6000
         /// </summary>
         [TestMethod]
+        [TestCategory("Speed")]
         public void SpeedTest_FunctionCall()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
@@ -62,6 +64,7 @@ namespace UnitTests
         /// OneScript: 8500-9500, 1C: 4500
         /// </summary>
         [TestMethod]
+        [TestCategory("Speed")]
         public void SpeedTest_Array()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
@@ -79,6 +82,7 @@ namespace UnitTests
         }
 
         [TestMethod]
+        [TestCategory("Speed")]
         public void SpeedTest_ArrayDebug()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
@@ -97,6 +101,7 @@ namespace UnitTests
         /// OneScript: 2100, 1C: 1900
         /// </summary>
         [TestMethod]
+        [TestCategory("Speed")]
         public void SpeedTest_Precalc()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
@@ -117,6 +122,7 @@ namespace UnitTests
         }
 
         [TestMethod]
+        [TestCategory("Speed")]
         public void SpeedTest_Precalc_Debug()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
