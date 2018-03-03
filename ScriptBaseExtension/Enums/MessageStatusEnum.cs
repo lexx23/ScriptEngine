@@ -1,5 +1,6 @@
 ﻿using ScriptEngine.EngineBase.Library;
 using ScriptEngine.EngineBase.Library.Attributes;
+using ScriptEngine.EngineBase.Library.BaseTypes;
 
 namespace ScriptBaseFunctionsLibrary.Enums
 {
@@ -24,4 +25,5 @@ namespace ScriptBaseFunctionsLibrary.Enums
         [EnumStringAttribute("Обычное")]
         Ordinary
     }
+
 }

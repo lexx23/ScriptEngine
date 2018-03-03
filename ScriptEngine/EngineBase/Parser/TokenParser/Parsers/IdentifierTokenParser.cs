@@ -42,6 +42,10 @@ namespace ScriptEngine.EngineBase.Parser.TokenParser.Parsers
 
                 { "Для", TokenSubTypeEnum.I_FOR },
                 { "For", TokenSubTypeEnum.I_FOR },
+                { "Каждого", TokenSubTypeEnum.I_EACH },
+                { "Each", TokenSubTypeEnum.I_EACH },
+                { "Из", TokenSubTypeEnum.I_IN },
+                { "In", TokenSubTypeEnum.I_IN },
                 { "По", TokenSubTypeEnum.I_TO },
                 { "To", TokenSubTypeEnum.I_TO },
                 { "Пока", TokenSubTypeEnum.I_WHILE },
@@ -52,7 +56,7 @@ namespace ScriptEngine.EngineBase.Parser.TokenParser.Parsers
                 { "EndDo", TokenSubTypeEnum.I_ENDLOOP },
 
                 { "Продолжить", TokenSubTypeEnum.I_CONTINUE },
-                { "Сontınue", TokenSubTypeEnum.I_CONTINUE },
+                { "Continue", TokenSubTypeEnum.I_CONTINUE },
                 { "Прервать", TokenSubTypeEnum.I_BREAK },
                 { "Break", TokenSubTypeEnum.I_BREAK },
 

@@ -66,6 +66,10 @@ namespace ScriptEngine.EngineBase.Interpreter
         // Новый
         OP_NEW,
         // Получить элемент массива.
-        OP_ARRAY_GET
+        OP_ARRAY_GET,
+        // Получить итератор.
+        OP_GET_ITERATOR,
+        // Следующий шаг итератора.
+        OP_ITERATOR_NEXT
     }
 }

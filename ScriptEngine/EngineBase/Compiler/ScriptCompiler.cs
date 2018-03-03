@@ -86,6 +86,8 @@ namespace ScriptEngine.EngineBase.Compiler
 
             _op_codes = new Dictionary<OP_CODES, op_code>
             {
+                { OP_CODES.OP_GET_ITERATOR, new op_code { code = OP_CODES.OP_GET_ITERATOR, type = OP_TYPE.RESULT } },
+                { OP_CODES.OP_ITERATOR_NEXT, new op_code { code = OP_CODES.OP_ITERATOR_NEXT, type = OP_TYPE.WO_RESULT } },
                 { OP_CODES.OP_ARRAY_GET, new op_code { code = OP_CODES.OP_ARRAY_GET, type = OP_TYPE.RESULT } },
                 { OP_CODES.OP_NEW, new op_code { code = OP_CODES.OP_NEW, type = OP_TYPE.RESULT } },
                 { OP_CODES.OP_ADD, new op_code { code = OP_CODES.OP_ADD, type = OP_TYPE.RESULT_OPTIMIZATION } },
@@ -466,6 +468,33 @@ namespace ScriptEngine.EngineBase.Compiler
             return var;
         }
 
+        /// <summary>
+        /// Получить переменную из контекста.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        private IVariable GetVariableFromContext(string name)
+        {
+            IVariable var;
+
+            // Проверка что это переменная в контексте функции.
+            var = _current_module.Variables.Get(name, _scope);
+            if (var != null)
+                return var;
+
+            // Проверка что это переменная в контексте модуля.
+            var = _current_module.Variables.Get(name);
+            if (var != null)
+                return var;
+
+            // Проверка что это глобальная переменная.
+            var = _programm.GlobalVariables.Get(name);
+            if (var != null)
+                return var;
+
+            return null;
+        }
+
 
         /// <summary>
         /// Получить переменную из программы.
@@ -477,22 +506,10 @@ namespace ScriptEngine.EngineBase.Compiler
         {
             IVariable var;
 
-            // Проверка что это переменная в контексте функции.
-            var = _current_module.Variables.Get(token.Content, _scope);
+            // Переменная есть в контексте.
+            var = GetVariableFromContext(token.Content);
             if (var != null)
                 return ParseArrayAndObject(token,function_type,var, null);
-
-            // Проверка что это переменная в контексте модуля.
-            var = _current_module.Variables.Get(token.Content);
-            if (var != null)
-                return ParseArrayAndObject(token, function_type, var, null);
-
-
-            // Проверка что это глобальная переменная.
-            var = _programm.GlobalVariables.Get(token.Content);
-            if (var != null)
-                return ParseArrayAndObject(token, function_type, var, null);
-
 
             // Проверка что это вызов функции или процедуры, в зависимости от контекста.
             IFunction function = null;
@@ -1200,6 +1217,97 @@ namespace ScriptEngine.EngineBase.Compiler
             return false;
         }
 
+
+        /// <summary>
+        /// Парсинг оператора Для каждого ( For each ).
+        /// </summary>
+        private void ParseForEach()
+        {
+            int continue_line,exit_jmp;
+            ScriptStatement statement;
+
+            // Установить точку входа модуля.
+            SetModuleEntryPoint();
+
+            IToken token = _iterator.Current;
+
+            if (_iterator.CheckToken(TokenTypeEnum.IDENTIFIER, TokenSubTypeEnum.I_IN))
+                throw new CompilerException(token.CodeInformation, "Ожидается имя переменной.");
+
+            _iterator.ExpectToken(TokenTypeEnum.IDENTIFIER);
+
+            // Забираем имя переменной "каждого". Если нет в контексте то создаем.
+            IVariable each_var = GetVariableFromContext(token.Content);
+            if(each_var == null)
+                each_var = _current_module.Variables.Create(token.Content, false, _scope);
+
+            _iterator.ExpectToken(TokenTypeEnum.IDENTIFIER, TokenSubTypeEnum.I_IN);
+
+            token = _iterator.Current;
+            if (_iterator.CheckToken(TokenTypeEnum.IDENTIFIER, TokenSubTypeEnum.I_LOOP))
+                throw new CompilerException(token.CodeInformation, "Ожидается имя переменной.");
+
+            _iterator.ExpectToken(TokenTypeEnum.IDENTIFIER);
+
+            // Забираем переменную Из
+            IVariable in_var = GetVariable(token, FunctionTypeEnum.FUNCTION);
+
+            // Начало цикла. Оператор Цикл.
+            _iterator.ExpectToken(TokenTypeEnum.IDENTIFIER, TokenSubTypeEnum.I_LOOP);
+
+            IVariable iterator_var = EmitCode(OP_CODES.OP_GET_ITERATOR , in_var,null);
+
+            // Сохранить начало выполнения условия.
+            continue_line = _current_module.ProgrammLine;
+            IVariable has_next = EmitCode(OP_CODES.OP_ITERATOR_NEXT, each_var, iterator_var);
+            // Запрет повторного использования переменной до конца выполнения цикла.
+            iterator_var.Users = 1;
+
+            // Переход в конец блока.
+            exit_jmp = _current_module.ProgrammLine;
+            EmitCode(OP_CODES.OP_JMP,null,null);
+
+            // Новый массив для добавления позиций Продолжить, Прервать.
+            _loop.Add(new List<int>());
+
+
+            // Парсинг тела цикла.
+            ParseModuleBody(TokenSubTypeEnum.I_ENDLOOP);
+
+
+            // Переход в начало цикла.
+            EmitCode(OP_CODES.OP_JMP, _programm.StaticVariables.Create(ValueFactory.Create(continue_line)), null);
+
+            // Обработка операторов Продолжить, Прервать.
+            foreach (int patch_line in _loop[_loop.Count - 1])
+            {
+                if (patch_line < 0)
+                {
+                    // Продолжить.
+                    statement = _current_module.StatementGet(patch_line * -1);
+                    statement.Variable2 = _programm.StaticVariables.Create(ValueFactory.Create(continue_line));
+                }
+                else
+                {
+                    // Прервать.
+                    statement = _current_module.StatementGet(patch_line);
+                    statement.Variable2 = _programm.StaticVariables.Create(ValueFactory.Create(_current_module.ProgrammLine));
+                }
+            }
+
+            // Удалить массив.
+            _loop.RemoveAt(_loop.Count - 1);
+
+            // Патч выхода из цикла.
+            statement = _current_module.StatementGet(exit_jmp);
+            statement.Variable2 = _programm.StaticVariables.Create(ValueFactory.Create(_current_module.ProgrammLine));
+
+            _iterator.ExpectToken(TokenTypeEnum.IDENTIFIER, TokenSubTypeEnum.I_ENDLOOP);
+            _iterator.IsTokenType(TokenTypeEnum.PUNCTUATION, TokenSubTypeEnum.P_SEMICOLON);
+            // Снять запрет.
+            iterator_var.Users = 2;
+        }
+
         /// <summary>
         /// Парсинг оператора Для ( For ).
         /// </summary>
@@ -1208,6 +1316,13 @@ namespace ScriptEngine.EngineBase.Compiler
         {
             if (_iterator.CheckToken(TokenTypeEnum.IDENTIFIER, TokenSubTypeEnum.I_FOR))
             {
+
+                if (_iterator.CheckToken(TokenTypeEnum.IDENTIFIER, TokenSubTypeEnum.I_EACH))
+                {
+                    ParseForEach();
+                    return true;
+                }
+
                 ScriptStatement statement;
                 IVariable expression, result = null;
                 IList<int> break_list = new List<int>();
@@ -1252,7 +1367,7 @@ namespace ScriptEngine.EngineBase.Compiler
                 // Начало цикла. Оператор Цикл.
                 _iterator.ExpectToken(TokenTypeEnum.IDENTIFIER, TokenSubTypeEnum.I_LOOP);
 
-                // Добавить новый массив для добавления позиций Продолжить, Прервать.
+                // Новый массив для добавления позиций Продолжить, Прервать.
                 _loop.Add(new List<int>());
 
                 // Парсинг тела цикла.

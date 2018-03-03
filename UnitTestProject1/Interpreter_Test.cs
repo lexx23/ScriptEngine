@@ -125,6 +125,37 @@ namespace UnitTests
         #region For
 
         [TestMethod]
+        public void Interpreter_ForEach()
+        {
+            IDictionary<string, string> files = new Dictionary<string, string>();
+            files.Add("foreach", "For\\foreach.scr");
+
+            ScriptProgramm programm = Compile(files);
+            ScriptInterpreter interpreter = new ScriptInterpreter(programm);
+            interpreter.Debugger.AddBreakpoint("foreach", 29);
+            interpreter.Debugger.AddBreakpoint("foreach", 45);
+            interpreter.Debugger.AddBreakpoint("foreach", 66);
+            interpreter.Debug();
+
+            Assert.AreEqual(29, interpreter.CurrentLine);
+            Assert.AreEqual(4, interpreter.Debugger.RegisterGetValue("ф").AsNumber());
+            Assert.AreEqual(6, interpreter.Debugger.RegisterGetValue("результат").AsNumber());
+            interpreter.Debugger.Continue();
+
+            Assert.AreEqual(45, interpreter.CurrentLine);
+            Assert.AreEqual(4, interpreter.Debugger.RegisterGetValue("ф").AsNumber());
+            Assert.AreEqual(7, interpreter.Debugger.RegisterGetValue("результат").AsNumber());
+            interpreter.Debugger.Continue();
+
+            Assert.AreEqual(66, interpreter.CurrentLine);
+            Assert.AreEqual(8, interpreter.Debugger.RegisterGetValue("ф").AsNumber());
+            Assert.AreEqual(7, interpreter.Debugger.RegisterGetValue("результат").AsNumber());
+            interpreter.Debugger.Continue();
+
+        }
+
+
+        [TestMethod]
         public void Interpreter_For()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
@@ -136,6 +167,7 @@ namespace UnitTests
             interpreter.Debugger.AddBreakpoint("for", 14);
             interpreter.Debugger.AddBreakpoint("for", 25);
             interpreter.Debugger.AddBreakpoint("for", 36);
+            interpreter.Debugger.AddBreakpoint("for", 49);
             interpreter.Debug();
 
             Assert.AreEqual(7, interpreter.CurrentLine);
@@ -157,6 +189,11 @@ namespace UnitTests
             Assert.AreEqual(36, interpreter.CurrentLine);
             Assert.AreEqual(51, interpreter.Debugger.RegisterGetValue("ф").AsNumber());
             Assert.AreEqual(50, interpreter.Debugger.RegisterGetValue("б").AsNumber());
+            interpreter.Debugger.Continue();
+
+            Assert.AreEqual(49, interpreter.CurrentLine);
+            Assert.AreEqual(36, interpreter.Debugger.RegisterGetValue("в").AsNumber());
+            Assert.AreEqual(6, interpreter.Debugger.RegisterGetValue("б").AsNumber());
             interpreter.Debugger.Continue();
 
         }

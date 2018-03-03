@@ -1,13 +1,14 @@
 ﻿using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
 using ScriptEngine.EngineBase.Library.Attributes;
 using ScriptEngine.EngineBase.Library.BaseTypes;
+using System.Collections;
 using System.Collections.Generic;
 
 
 namespace ScriptBaseFunctionsLibrary.BuildInTypes
 {
     [LibraryClassAttribute(Name = "array", Alias = "Массив", AsGlobal = false, AsObject = true)]
-    public class ScriptArray:LibraryModule<ScriptArray> 
+    public class ScriptArray : LibraryModule<ScriptArray>, IEnumerable<IValue>
     {
         private readonly List<IValue> _values;
 
@@ -124,6 +125,22 @@ namespace ScriptBaseFunctionsLibrary.BuildInTypes
                     clone._values.Add(item);
             }
             return clone;
+        }
+
+
+        public IEnumerator<IValue> GetEnumerator()
+        {
+            int i = 0;
+            while (i < _values.Count)
+            {
+                yield return _values[i++];
+            }
+            yield break;
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
     }
 }

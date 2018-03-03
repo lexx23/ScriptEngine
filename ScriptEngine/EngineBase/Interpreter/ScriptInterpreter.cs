@@ -431,16 +431,40 @@ namespace ScriptEngine.EngineBase.Interpreter
                                 _context.Update(statement.Variable1, var_ref);
                             }
 
-                            if(statement.Variable3.Value.Type == ValueTypeEnum.STRING)
+                            if (statement.Variable3.Value.Type == ValueTypeEnum.STRING)
                             {
                                 IVariableReference var_ref = script_object.GetPublicReference(statement.Variable3.Value.AsString());
                                 if (var_ref == null)
-                                    throw new RuntimeException(this,$"Поле объекта не обнаружено [{statement.Variable3.Value.AsString()}]");
+                                    throw new RuntimeException(this, $"Поле объекта не обнаружено [{statement.Variable3.Value.AsString()}]");
 
                                 _context.Update(statement.Variable1, var_ref);
                             }
                         }
                         break;
+
+                    case OP_CODES.OP_GET_ITERATOR:
+                        IValue foreach_object = statement.Variable2.Value;
+                        if (foreach_object == null || foreach_object.Type != ValueTypeEnum.SCRIPT_OBJECT)
+                            throw new RuntimeException(this, $"Значение не является значением объектного типа [{statement.Variable2.Name}]");
+                        else
+                        {
+                            ScriptObjectContext script_object = foreach_object.AsScriptObject();
+                            if (!typeof(IEnumerable<IValue>).IsAssignableFrom(script_object.Instance.GetType()))
+                                throw new RuntimeException(this, $"Итератор для значения не определен [{statement.Variable2.Name}]");
+
+                            statement.Variable1.Value = ValueFactory.Create((script_object.Instance as IEnumerable<IValue>).GetEnumerator());
+                        }
+
+                        break;
+                    case OP_CODES.OP_ITERATOR_NEXT:
+                        IEnumerator<IValue> iterator = statement.Variable3.Value.AsObject() as IEnumerator<IValue>;
+                        if (iterator.MoveNext())
+                        {
+                            statement.Variable2.Value = iterator.Current;
+                            _instruction++;
+                        }
+                        break;
+
 
                     case OP_CODES.OP_IFNOT:
                         if (!statement.Variable2.Value.AsBoolean())

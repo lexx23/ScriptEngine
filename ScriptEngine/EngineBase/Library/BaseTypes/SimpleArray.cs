@@ -1,31 +1,40 @@
 ﻿using ScriptEngine.EngineBase.Compiler.Types.Variable;
 using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 
 namespace ScriptEngine.EngineBase.Library.BaseTypes
 {
-    public class SimpleArray: ISimpleArray
+
+    public class ScriptIterator : IEnumerable<IValue>
     {
-        public IVariable[] Array { get; set; }
+        public IList<IValue> _array;
+        private int i;
 
-        public int Count { get => Array.Length; }
-        
-        public IValue GetByName(string name)
+        public ScriptIterator(IList<IValue> collection)
         {
-            for (int i = 0; i < Array.Length; i++)
+            _array = collection;
+            i = 0;
+        }
+
+        public IEnumerator<IValue> GetEnumerator()
+        {
+            while (i < _array.Count)
             {
-                if (Array[i].Name == name)
-                    return Array[i].Value;
+                yield return _array[i++];
             }
-
-            return null;
+            yield break;
         }
 
-        public IValue GetByIndex(int index)
+        IEnumerator IEnumerable.GetEnumerator()
         {
-            return Array[index].Value;
+            return GetEnumerator();
         }
+
     }
+
+
+    
 }

@@ -11,6 +11,8 @@ using ScriptEngine.EngineBase.Library;
 using System.Reflection;
 using System.Linq;
 using System;
+using ScriptEngine.EngineBase.Library.BaseTypes;
+using System.Collections.Generic;
 
 namespace ScriptEngine.EngineBase.Compiler.Programm.ModuleLoader
 {
@@ -151,6 +153,17 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.ModuleLoader
         {
             LoadEnums(assembly);
             LoadClasses(assembly);
+
+            IList<IValue> list = new List<IValue>();
+            list.Add(ValueFactory.Create(123));
+
+
+            ScriptIterator iterator = new ScriptIterator(list);
+            var enumer = iterator.GetEnumerator();
+
+            list.Add(ValueFactory.Create(123));
+            bool result = enumer.MoveNext();
+            
         }
 
 

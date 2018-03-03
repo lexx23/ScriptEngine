@@ -36,6 +36,10 @@ namespace ScriptEngine.EngineBase.Parser.Token
 
         [EnumStringAttribute("Для { For }")]
         I_FOR,
+        [EnumStringAttribute("Из { In }")]
+        I_IN,
+        [EnumStringAttribute("Каждого { Each }")]
+        I_EACH,
         [EnumStringAttribute("По { To }")]
         I_TO,
         [EnumStringAttribute("Пока { While }")]

@@ -110,6 +110,55 @@ namespace UnitTests
         #region For
 
         [TestMethod]
+        public void Compile_ForEach()
+        {
+            IDictionary<string, string> files = new Dictionary<string, string>();
+            files.Add("foreach", "For\\foreach.scr");
+
+            Compile(files);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(CompilerException))]
+        public void Compile_ForEachError()
+        {
+            IDictionary<string, string> files = new Dictionary<string, string>();
+            files.Add("foreach", "For\\foreach_error.scr");
+
+            Compile(files);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(CompilerException))]
+        public void Compile_ForEachError2()
+        {
+            IDictionary<string, string> files = new Dictionary<string, string>();
+            files.Add("foreach", "For\\foreach_error2.scr");
+
+            Compile(files);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(CompilerException))]
+        public void Compile_ForEachError3()
+        {
+            IDictionary<string, string> files = new Dictionary<string, string>();
+            files.Add("foreach", "For\\foreach_error3.scr");
+
+            Compile(files);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(CompilerException))]
+        public void Compile_ForEachError4()
+        {
+            IDictionary<string, string> files = new Dictionary<string, string>();
+            files.Add("foreach", "For\\foreach_error4.scr");
+
+            Compile(files);
+        }
+
+        [TestMethod]
         public void Compile_For()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
