@@ -27,6 +27,11 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.ModuleLoader
             _programm = programm;
         }
 
+        /// <summary>
+        /// Добавить параметры функции.
+        /// </summary>
+        /// <param name="function"></param>
+        /// <param name="method"></param>
         private void GetFunctionParameters(IFunction function, MethodInfo method)
         {
             IValue default_value = null;
@@ -58,27 +63,37 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.ModuleLoader
             function.DefinedParameters = parameters;
         }
 
-        private void LoadEnums(Assembly assembly)
+
+        /// <summary>
+        /// Загрузка перечисления.
+        /// </summary>
+        /// <param name="type"></param>
+        private void LoadEnum(Type type)
         {
-            foreach (Type type in assembly.ExportedTypes.Where(m => m.GetCustomAttributes(typeof(LibraryEnumAttribute), false).Length > 0))
+            LibraryClassAttribute attribute = (LibraryClassAttribute)Attribute.GetCustomAttribute(type, typeof(LibraryClassAttribute), false);
+
+            ScriptModule enum_module = new ScriptModule(attribute.Name, attribute.Alias, ModuleTypeEnum.ENUM, true, true);
+            enum_module.InstanceType = type;
+
+            var generic_type = type.BaseType.GetGenericArguments()[0];
+
+            foreach (FieldInfo field in generic_type.GetFields().Where(x => x.GetCustomAttributes(typeof(EnumStringAttribute), false).Length > 0))
             {
-                LibraryEnumAttribute attribute = (LibraryEnumAttribute)Attribute.GetCustomAttribute(type, typeof(LibraryEnumAttribute), false);
-                BaseEnum new_enum = new BaseEnum(type);
-
-                ScriptModule enum_module = new ScriptModule(attribute.Name, attribute.Alias, ModuleTypeEnum.ENUM, true, true);
-                enum_module.InstanceType = type;
-
-                foreach (IVariable var in new_enum.Properties)
-                    enum_module.Variables.Add(var.Name, var);
-
-                _programm.Modules.Add(enum_module);
-                _programm.GlobalVariables.Add(new Variable() { Name = attribute.Name, Alias = attribute.Alias, Reference = new SimpleReference() });
-
+                EnumStringAttribute attr = field.GetCustomAttributes<EnumStringAttribute>().First();
+                IValue value = ValueFactory.Create(attr.Value);
+                IVariable var = new Variable() { Name = field.Name, Alias = attr.Value, Public = true, Reference = new ReferenceReadOnly(value) };
+                enum_module.Variables.Add(var.Name, var);
             }
+
+            _programm.Modules.Add(enum_module);
+            _programm.GlobalVariables.Add(new Variable() { Name = attribute.Name, Alias = attribute.Alias, Reference = new SimpleReference() });
         }
 
-
-        private void LoadClasses(Assembly assembly)
+        /// <summary>
+        /// Загрузка данных из сборки c#.
+        /// </summary>
+        /// <param name="assembly"></param>
+        private void LoadAssembly(Assembly assembly)
         {
             foreach (Type type in assembly.ExportedTypes.Where(m => m.GetCustomAttributes(typeof(LibraryClassAttribute), false).Length > 0))
             {
@@ -95,10 +110,8 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.ModuleLoader
                         LibraryClassPropertyAttribute property_attr = property.GetCustomAttribute<LibraryClassPropertyAttribute>(false);
 
                         IVariableReference reference = ReferenceFactory.Create(type, property);
-                        IVariable var = new Variable() { Name = property_attr.Name, Public = true, Reference = reference };
+                        IVariable var = new Variable() { Name = property_attr.Name, Alias = property_attr.Alias, Public = true, Reference = reference };
                         global_module.Variables.Add(property_attr.Name, var);
-                        global_module.Variables.Add(property_attr.Alias, var);
-
                         _programm.GlobalVariables.Add(var);
                     }
 
@@ -123,6 +136,8 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.ModuleLoader
                 // Класс содержит объект который добавляется в глобальный модуль.
                 if (attribute.AsGlobal && attribute.AsObject)
                 {
+                    if (type.BaseType.Name == "BaseEnum`1")
+                        LoadEnum(type);
                     continue;
                 }
 
@@ -151,19 +166,7 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.ModuleLoader
 
         public void LoadFromAssembly(Assembly assembly)
         {
-            LoadEnums(assembly);
-            LoadClasses(assembly);
-
-            IList<IValue> list = new List<IValue>();
-            list.Add(ValueFactory.Create(123));
-
-
-            ScriptIterator iterator = new ScriptIterator(list);
-            var enumer = iterator.GetEnumerator();
-
-            list.Add(ValueFactory.Create(123));
-            bool result = enumer.MoveNext();
-            
+            LoadAssembly(assembly);
         }
 
 

@@ -1,10 +1,12 @@
-﻿using ScriptEngine.EngineBase.Library;
+﻿using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
+using ScriptEngine.EngineBase.Library;
 using ScriptEngine.EngineBase.Library.Attributes;
 using ScriptEngine.EngineBase.Library.BaseTypes;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace ScriptBaseFunctionsLibrary.Enums
 {
-    [LibraryEnum(Name = "СтатусСообщения", Alias = "MessageStatus")]
     public enum MessageStatusEnumInner
     {
         [EnumStringAttribute("БезСтатуса")]
@@ -26,4 +28,10 @@ namespace ScriptBaseFunctionsLibrary.Enums
         Ordinary
     }
 
+
+    [LibraryClassAttribute(Name = "СтатусСообщения", Alias = "MessageStatus", AsGlobal = true, AsObject = true)]
+    public class MessageStatusEnumClass : BaseEnum<MessageStatusEnumInner>
+    {
+
+    }
 }

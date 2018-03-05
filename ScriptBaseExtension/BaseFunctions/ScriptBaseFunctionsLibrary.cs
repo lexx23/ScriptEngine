@@ -22,9 +22,7 @@ namespace ScriptBaseLibrary
         [LibraryClassMethodAttribute(Name = "Сообщить", Alias = "Message")]
         public void Message(string text, MessageStatusEnumInner type = MessageStatusEnumInner.WithoutStatus)
         {
-            //if (type == null)
-            //    type.Value = MessageStatusEnum.Instance["Обычное"];
-            Console.Write(text);
+            Console.WriteLine(text);
         }
 
         [LibraryClassMethodAttribute(Name = "ТекущаяУниверсальнаяДатаВМиллисекундах", Alias = "CurrentUniversalDateInMilliseconds")]
