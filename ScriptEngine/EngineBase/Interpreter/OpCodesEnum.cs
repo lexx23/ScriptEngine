@@ -70,6 +70,8 @@ namespace ScriptEngine.EngineBase.Interpreter
         // Получить итератор.
         OP_GET_ITERATOR,
         // Следующий шаг итератора.
-        OP_ITERATOR_NEXT
+        OP_ITERATOR_NEXT,
+        // Остановка итератора.
+        OP_ITERATOR_STOP
     }
 }

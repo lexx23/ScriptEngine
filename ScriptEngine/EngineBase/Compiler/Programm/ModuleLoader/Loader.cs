@@ -168,7 +168,5 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.ModuleLoader
         {
             LoadAssembly(assembly);
         }
-
-
     }
 }

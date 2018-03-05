@@ -86,6 +86,7 @@ namespace ScriptEngine.EngineBase.Compiler
 
             _op_codes = new Dictionary<OP_CODES, op_code>
             {
+                { OP_CODES.OP_ITERATOR_STOP, new op_code { code = OP_CODES.OP_ITERATOR_STOP, type = OP_TYPE.WO_RESULT } },
                 { OP_CODES.OP_GET_ITERATOR, new op_code { code = OP_CODES.OP_GET_ITERATOR, type = OP_TYPE.RESULT } },
                 { OP_CODES.OP_ITERATOR_NEXT, new op_code { code = OP_CODES.OP_ITERATOR_NEXT, type = OP_TYPE.WO_RESULT } },
                 { OP_CODES.OP_ARRAY_GET, new op_code { code = OP_CODES.OP_ARRAY_GET, type = OP_TYPE.RESULT } },
@@ -1260,6 +1261,7 @@ namespace ScriptEngine.EngineBase.Compiler
             // Сохранить начало выполнения условия.
             continue_line = _current_module.ProgrammLine;
             IVariable has_next = EmitCode(OP_CODES.OP_ITERATOR_NEXT, each_var, iterator_var);
+            EmitCode(OP_CODES.OP_ITERATOR_STOP, iterator_var, null);
             // Запрет повторного использования переменной до конца выполнения цикла.
             iterator_var.Users = 1;
 

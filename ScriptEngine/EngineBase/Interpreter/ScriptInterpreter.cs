@@ -461,8 +461,14 @@ namespace ScriptEngine.EngineBase.Interpreter
                         if (iterator.MoveNext())
                         {
                             statement.Variable2.Value = iterator.Current;
-                            _instruction++;
+                            _instruction+=2;
                         }
+                        break;
+
+                    case OP_CODES.OP_ITERATOR_STOP:
+                        IEnumerator<IValue> iterator_stop = statement.Variable2.Value.AsObject() as IEnumerator<IValue>;
+                        iterator_stop.Dispose();
+                        statement.Variable2.Value = ValueFactory.Create();
                         break;
 
 
