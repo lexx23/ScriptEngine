@@ -39,7 +39,7 @@ namespace ScriptEngine.EngineBase.Compiler.Programm
 
         public void LoadDefaultLibraries()
         {
-            string path = Directory.GetCurrentDirectory() + "\\LanguageExtensions\\";
+            string path = Directory.GetCurrentDirectory() + Path.DirectorySeparatorChar +  "LanguageExtensions" + Path.DirectorySeparatorChar;
             Loader loader = new Loader(this);
 
             // Обьект описывающий исключение.
