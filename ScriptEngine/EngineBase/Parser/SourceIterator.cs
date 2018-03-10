@@ -1,5 +1,5 @@
-﻿using ScriptEngine.EngineBase.Exceptions;
-using ScriptEngine.EngineBase.Praser.Token;
+﻿using ScriptEngine.EngineBase.Praser.Token;
+using ScriptEngine.EngineBase.Exceptions;
 using System.Collections.Generic;
 using System.Collections;
 using System;
@@ -96,7 +96,6 @@ namespace ScriptEngine.EngineBase
         {
             if (_current_symbol == '\n')
             {
-                Console.WriteLine(_source[_cursor-1] == '\r' ? "next r" : _source[_cursor - 1].ToString());
                 CodeInformation.LineNumber++;
                 CodeInformation.ColumnNumber = 0;
             }
@@ -121,6 +120,9 @@ namespace ScriptEngine.EngineBase
                 MoveNext();
         }
 
+        /// <summary>
+        /// Пропуск строк комментариев, строки которые начинаются с //
+        /// </summary>
         private void SkipComment()
         {
             SkipChars();
@@ -215,9 +217,7 @@ namespace ScriptEngine.EngineBase
 
             _current_symbol = _source[_cursor];
             CheckNewLine();
-
             return true;
-
         }
 
 
@@ -247,12 +247,12 @@ namespace ScriptEngine.EngineBase
         public string GetString()
         {
             int counter = 0;
-            string str = string.Empty;
+            string buffer = string.Empty;
 
             CodeInformation inforamtion = CodeInformation.Clone();
             do
             {
-                str += _current_symbol;
+                AddToBuffer(_current_symbol, ref buffer);
                 if (_current_symbol == '"')
                 {
                     counter++;
@@ -266,13 +266,13 @@ namespace ScriptEngine.EngineBase
             }
             while (MoveNext());
 
-            if (str[str.Length - 1] != '"')
+            if (buffer[buffer.Length - 1] != '"')
                 throw new CompilerException(CodeInformation, "Ожидается символ \"");
 
-            str = str.Remove(0, 1);
-            str = str.Remove(str.Length - 1, 1);
+            buffer = buffer.Remove(0, 1);
+            buffer = buffer.Remove(buffer.Length - 1, 1);
 
-            return str.Replace("\"\"","\"");
+            return buffer.Replace("\"\"","\"");
         }
 
 

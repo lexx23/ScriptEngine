@@ -50,10 +50,7 @@ namespace ScriptEngine.EngineBase.Parser.TokenParser
             foreach (KeyValuePair<TokenTypeEnum, ITokenParser> current_lexem_parser in _tokens)
             {
                 if (current_lexem_parser.Value.Parse(iterator, out token))
-                {
-                    token.CodeInformation = iterator.CodeInformation;
                     return true;
-                }
             }
 
             if (iterator.Current != '\0')

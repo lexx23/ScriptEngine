@@ -19,6 +19,7 @@ namespace ScriptEngine.EngineBase.Parser.TokenParser.Parsers
                 token = new TokenClass()
                 {
                     Content = content,
+                    CodeInformation = iterator.CodeInformation.Clone(),
                     Type = TokenTypeEnum.NUMBER
                 };
                 return true;

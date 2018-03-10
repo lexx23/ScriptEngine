@@ -119,12 +119,13 @@ namespace ScriptEngine.EngineBase.Parser.TokenParser.Parsers
             {
                 content = iterator.GetLettersAndDigits();
 
-                if(!_table.TryGetValue(content, out subtype))
+                if (!_table.TryGetValue(content, out subtype))
                     subtype = TokenSubTypeEnum.NA;
 
                 token = new TokenClass()
                 {
                     Content = content,
+                    CodeInformation = iterator.CodeInformation.Clone(),
                     Type = TokenTypeEnum.IDENTIFIER,
                     SubType = subtype
                 };

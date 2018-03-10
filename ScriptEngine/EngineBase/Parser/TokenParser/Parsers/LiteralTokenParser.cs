@@ -97,11 +97,14 @@ namespace ScriptEngine.EngineBase.Parser.TokenParser.Parsers
             token = null;
             string content = string.Empty;
 
+            CodeInformation information = iterator.CodeInformation.Clone();
+
             if (ParseDate(iterator, out content))
             {
                 token = new TokenClass()
                 {
                     Content = content,
+                    CodeInformation = information,
                     Type = TokenTypeEnum.LITERAL,
                     SubType = TokenSubTypeEnum.L_DATE
                 };
@@ -113,6 +116,7 @@ namespace ScriptEngine.EngineBase.Parser.TokenParser.Parsers
                 token = new TokenClass()
                 {
                     Content = content,
+                    CodeInformation = information,
                     Type = TokenTypeEnum.LITERAL,
                     SubType = TokenSubTypeEnum.L_STRING
                 };
