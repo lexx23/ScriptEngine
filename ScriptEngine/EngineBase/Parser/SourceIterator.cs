@@ -96,6 +96,7 @@ namespace ScriptEngine.EngineBase
         {
             if (_current_symbol == '\n')
             {
+                Console.WriteLine(_source[_cursor-1] == '\r' ? "next r" : _source[_cursor - 1].ToString());
                 CodeInformation.LineNumber++;
                 CodeInformation.ColumnNumber = 0;
             }

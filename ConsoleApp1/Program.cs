@@ -68,7 +68,7 @@ namespace ConsoleApp1
             Helper _helper = new Helper("Interpreter");
 
             IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("goto", "Goto\\goto.scr");
+            files.Add("goto", "Exception\\try.scr");
 
             ScriptProgramm programm = _helper.Compile(files);
             ScriptInterpreter interpreter = new ScriptInterpreter(programm);
@@ -80,6 +80,8 @@ namespace ConsoleApp1
             int data = interpreter.Debugger.RegisterGetValue("ф").AsInt();
             interpreter.Debugger.Continue();
 
+            line = interpreter.CurrentLine;
+            interpreter.Debugger.Continue();
 
         }
     }
