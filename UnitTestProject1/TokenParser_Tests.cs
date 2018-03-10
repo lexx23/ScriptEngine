@@ -17,6 +17,7 @@ namespace UnitTests
             string source = string.Empty;
 
             string path = Directory.GetCurrentDirectory() + "\\Scripts\\TokenParser\\" + name;
+            path = path.Replace('\\', Path.DirectorySeparatorChar);
             if (File.Exists(path))
             {
                 source = File.ReadAllText(path);

@@ -22,7 +22,8 @@ namespace ScriptBaseLibrary
         [LibraryClassMethodAttribute(Alias = "Сообщить", Name = "Message")]
         public void Message(string text, MessageStatusEnumInner type = MessageStatusEnumInner.WithoutStatus)
         {
-            Console.WriteLine(text);
+            System.Diagnostics.Trace.WriteLine(text);
+            //Console.WriteLine(text);
         }
 
         [LibraryClassMethodAttribute(Alias = "ТекущаяУниверсальнаяДатаВМиллисекундах", Name = "CurrentUniversalDateInMilliseconds")]

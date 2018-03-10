@@ -734,6 +734,7 @@ namespace UnitTests
             interpreter.Debugger.AddBreakpoint("function", 12);
             interpreter.Debug();
 
+            Assert.AreEqual(12, interpreter.CurrentLine);
             Assert.AreEqual(10, interpreter.Debugger.RegisterGetValue("а").AsNumber());
         }
         #endregion
