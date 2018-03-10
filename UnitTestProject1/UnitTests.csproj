@@ -177,6 +177,9 @@
     <None Update="Scripts\Interpreter\For\foreach.scr">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Scripts\Interpreter\If\if.scr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Scripts\Interpreter\Other\readonly_property_error.scr">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
