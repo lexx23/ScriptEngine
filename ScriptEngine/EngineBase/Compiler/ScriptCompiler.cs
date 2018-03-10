@@ -1900,6 +1900,7 @@ namespace ScriptEngine.EngineBase.Compiler
             {
 
                 parser = new ParserClass(module.Key.Name, module.Value);
+                Console.WriteLine(module.Value);
                 PrecompilerClass precompiler = new PrecompilerClass(parser.GetEnumerator(), defines);
                 _iterator = precompiler.GetEnumerator();
 
