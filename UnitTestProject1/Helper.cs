@@ -19,7 +19,7 @@ namespace UnitTests
 
         private string CheckPath(string path)
         {
-            return path.Replace('\\','/');
+            return path.Replace('\\',Path.DirectorySeparatorChar);
         }
 
         public ScriptProgramm Compile(IDictionary<string, string> file_names)
@@ -30,7 +30,7 @@ namespace UnitTests
             foreach (KeyValuePair<string, string> file in file_names)
             {
                 string full_name = CheckPath(path + file.Value);
-                if (File.Exists(path + file.Value))
+                if (File.Exists(full_name))
                     files.Add(new ScriptModule(file.Key, file.Key, ModuleTypeEnum.STARTUP) { FileName = file.Value }, File.ReadAllText(full_name));
                 else
                     throw new Exception($"Файл {path} не найден.");
