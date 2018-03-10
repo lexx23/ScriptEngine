@@ -300,9 +300,6 @@
     <None Update="Scripts\Interpreter\Global\Function call\object_module.scr">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Scripts\Interpreter\If\if.scr">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Update="Scripts\Interpreter\Objects\Cross object call\global_module.scr">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
