@@ -332,14 +332,13 @@ namespace ScriptEngine.EngineBase.Compiler
                 SetModuleEntryPoint();
 
                 // Парсинг тела блока попытка.
-                try_index = _current_module.ProgrammLine;
                 EmitCode(OP_CODES.OP_TRY, null, null);
+                try_index = _current_module.ProgrammLine-1;
                 ParseModuleBody(TokenSubTypeEnum.I_EXCEPT);
                 _iterator.ExpectToken(TokenTypeEnum.IDENTIFIER, TokenSubTypeEnum.I_EXCEPT);
 
-
-                exit_try = _current_module.ProgrammLine;
                 EmitCode(OP_CODES.OP_JMP, null, null);
+                exit_try = _current_module.ProgrammLine-1;
                 // Патч перехода в случае исключения.
                 statement = _current_module.StatementGet(try_index);
                 statement.Variable2 = _programm.StaticVariables.Create(ValueFactory.Create(_current_module.ProgrammLine));
@@ -917,7 +916,7 @@ namespace ScriptEngine.EngineBase.Compiler
                 function.EntryPoint = _current_module.ProgrammLine;
                 function.DefinedParameters = param_list;
                 function.Type = type.SubType == TokenSubTypeEnum.I_PROCEDURE ? FunctionTypeEnum.PROCEDURE : FunctionTypeEnum.FUNCTION;
-                function.CodeInformation = function_name.CodeInformation;
+                function.CodeInformation = function_name.CodeInformation.Clone();
                 function.Scope = _scope;
 
                 // Парсим все содержимое функции/процедуры, до оператора КонецФункции/Процедуры.
@@ -1900,7 +1899,6 @@ namespace ScriptEngine.EngineBase.Compiler
             {
 
                 parser = new ParserClass(module.Key.Name, module.Value);
-                Console.WriteLine(module.Value);
                 PrecompilerClass precompiler = new PrecompilerClass(parser.GetEnumerator(), defines);
                 _iterator = precompiler.GetEnumerator();
 

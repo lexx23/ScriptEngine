@@ -40,7 +40,7 @@ namespace ScriptEngine.EngineBase.Parser
 
 
         /// <summary>
-        /// Получить следующующий токен.
+        /// Получить следующий токен.
         /// </summary>
         /// <returns></returns>
         internal bool NextToken(out IToken token)
@@ -51,9 +51,9 @@ namespace ScriptEngine.EngineBase.Parser
 
 
         /// <summary>
-        /// Список найденых токенов.
+        /// Список найденных токенов.
         /// </summary>
-        /// <returns>Список найденых лексем и их токенов</returns>
+        /// <returns>Список найденных лексем и их токенов</returns>
         public IList<IToken> GetAllTokens()
         {
             IToken token = null;

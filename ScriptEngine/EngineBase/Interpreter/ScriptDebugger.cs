@@ -91,7 +91,7 @@ namespace ScriptEngine.EngineBase.Interpreter
         }
 
         /// <summary>
-        /// Определить следующий шаг интерпритатора. Используется в stepover
+        /// Определить следующий шаг интерпретатора. Используется в stepover
         /// </summary>
         private void GetNextStep()
         {

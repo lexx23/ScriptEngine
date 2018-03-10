@@ -12,55 +12,75 @@ namespace ConsoleApp1
     class Program
     {
 
-        static void Main(string[] args)
+        class Helper
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("function", "Extension\\function call.scr");
+            private string _path;
 
-            ScriptProgramm programm = Compile(files);
-            ScriptInterpreter interpreter = new ScriptInterpreter(programm);
-            interpreter.Debugger.AddBreakpoint("function", 12);
-
-            System.Diagnostics.Stopwatch sw = new Stopwatch();
-            sw.Start();
-            interpreter.Run();// Debug();
-            sw.Stop();
-
-            Console.Write(sw.ElapsedMilliseconds);
-        }
-
-        private static ScriptProgramm Compile(IDictionary<string, string> file_names)
-        {
-            IDictionary<ScriptModule, string> files = new Dictionary<ScriptModule, string>();
-            string path = Directory.GetCurrentDirectory() + "\\Scripts\\Interpreter\\";
-
-            foreach (KeyValuePair<string, string> file in file_names)
+            public Helper(string path)
             {
-                if (File.Exists(path + file.Value))
-                    files.Add(new ScriptModule(file.Key, file.Key, ModuleTypeEnum.STARTUP) { FileName = file.Value }, File.ReadAllText(path + file.Value));
-                else
-                    throw new Exception($"Файл {path} не найден.");
+                _path = path;
             }
 
-            ScriptCompiler compiler = new ScriptCompiler();
-            return compiler.Compile(files);
+            private string CheckPath(string path)
+            {
+                return path.Replace('\\', Path.DirectorySeparatorChar);
+            }
+
+            public ScriptProgramm Compile(IDictionary<string, string> file_names)
+            {
+                IDictionary<ScriptModule, string> files = new Dictionary<ScriptModule, string>();
+                string path = Directory.GetCurrentDirectory() + "\\Scripts\\" + _path + "\\";
+
+                foreach (KeyValuePair<string, string> file in file_names)
+                {
+                    string full_name = CheckPath(path + file.Value);
+                    if (File.Exists(full_name))
+                        files.Add(new ScriptModule(file.Key, file.Key, ModuleTypeEnum.STARTUP) { FileName = file.Value }, File.ReadAllText(full_name));
+                    else
+                        throw new Exception($"Файл {full_name} не найден.");
+                }
+
+                ScriptCompiler compiler = new ScriptCompiler();
+                return compiler.Compile(files);
+            }
+
+            public string OpenModule(string file_name)
+            {
+                string path = Directory.GetCurrentDirectory() + "\\Scripts\\" + _path + "\\";
+                string full_name = CheckPath(path + file_name);
+
+                if (File.Exists(full_name))
+                    return File.ReadAllText(full_name);
+                else
+                    throw new Exception($"Файл {full_name} не найден.");
+
+            }
+
+            public ScriptProgramm CompileModules(IDictionary<ScriptModule, string> modules)
+            {
+                ScriptCompiler compiler = new ScriptCompiler();
+                return compiler.Compile(modules);
+            }
         }
 
-        private string OpenModule(string file_name)
+        static void Main(string[] args)
         {
-            string path = Directory.GetCurrentDirectory() + "\\Scripts\\Interpreter\\";
+            Helper _helper = new Helper("Interpreter");
 
-            if (File.Exists(path + file_name))
-                return File.ReadAllText(path + file_name);
-            else
-                throw new Exception($"Файл {path + file_name} не найден.");
+            IDictionary<string, string> files = new Dictionary<string, string>();
+            files.Add("goto", "Goto\\goto.scr");
 
-        }
+            ScriptProgramm programm = _helper.Compile(files);
+            ScriptInterpreter interpreter = new ScriptInterpreter(programm);
+            interpreter.Debugger.AddBreakpoint("goto", 14);
+            interpreter.Debugger.AddBreakpoint("goto", 28);
+            interpreter.Debug();
 
-        private ScriptProgramm CompileObjects(IDictionary<ScriptModule, string> modules)
-        {
-            ScriptCompiler compiler = new ScriptCompiler();
-            return compiler.Compile(modules);
+            int line = interpreter.CurrentLine;
+            int data = interpreter.Debugger.RegisterGetValue("ф").AsInt();
+            interpreter.Debugger.Continue();
+
+
         }
     }
 }

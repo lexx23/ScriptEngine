@@ -46,7 +46,7 @@ namespace UnitTests
             string full_name = CheckPath(path + file_name);
 
             if (File.Exists(full_name))
-                return File.ReadAllText(full_name);
+                return File.ReadAllText(full_name,Encoding.UTF8);
             else
                 throw new Exception($"Файл {full_name} не найден.");
 

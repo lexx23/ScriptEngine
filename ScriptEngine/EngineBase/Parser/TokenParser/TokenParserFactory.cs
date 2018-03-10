@@ -45,7 +45,7 @@ namespace ScriptEngine.EngineBase.Parser.TokenParser
         {
             token = null;
             if (_tokens.Count == 0)
-                throw new Exception("Фабрика не содерждит парсеров.");
+                throw new Exception("Фабрика не содержит парсеров.");
 
             foreach (KeyValuePair<TokenTypeEnum, ITokenParser> current_lexem_parser in _tokens)
             {

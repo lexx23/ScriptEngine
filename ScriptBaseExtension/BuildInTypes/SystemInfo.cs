@@ -145,22 +145,40 @@ namespace ScriptBaseFunctionsLibrary.BuildInTypes
 
         private static string LinuxCpu()
         {
-            return "";
+            try
+            {
+                string[] memory_data = File.ReadAllLines(@"/proc/cpuinfo");
+                for (int i = 0; i < memory_data.Length; i++)
+                {
+                    Match match = new Regex(@"^model name\s+:(.*)", RegexOptions.Compiled).Match(memory_data[i]);
+                    if (match.Groups[1].Success)
+                    {
+                        string value = match.Groups[1].Value;
+                        return value;
+                    }
+                }
+                return "";
+            }
+            catch { return ""; }
         }
 
         private static int LinuxMemory()
         {
-            string[] memory_data = File.ReadAllLines(@"/proc/meminfo");
-            for (int i = 0; i < memory_data.Length; i++)
+            try
             {
-                Match match = new Regex(@"^MemTotal:\s+(\d+)", RegexOptions.Compiled).Match(memory_data[i]);
-                if (match.Groups[1].Success)
+                string[] memory_data = File.ReadAllLines(@"/proc/meminfo");
+                for (int i = 0; i < memory_data.Length; i++)
                 {
-                    string value = match.Groups[1].Value;
-                    return (int)(Convert.ToInt64(value) / 1024);
+                    Match match = new Regex(@"^MemTotal:\s+(\d+)", RegexOptions.Compiled).Match(memory_data[i]);
+                    if (match.Groups[1].Success)
+                    {
+                        string value = match.Groups[1].Value;
+                        return (int)(Convert.ToInt64(value) / 1024);
+                    }
                 }
+                return 0;
             }
-            return 0;
+            catch { return 0; }
         }
     }
 }
