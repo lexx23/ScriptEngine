@@ -19,7 +19,7 @@ namespace UnitTests
 
         private string CheckPath(string path)
         {
-            return path.Replace('\\',Path.DirectorySeparatorChar);
+            return path.Replace('\\','/');
         }
 
         public ScriptProgramm Compile(IDictionary<string, string> file_names)
