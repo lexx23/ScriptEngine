@@ -5,7 +5,7 @@ using System;
 namespace ScriptEngine.EngineBase.Parser.TokenParser.Parsers
 {
     /// <summary>
-    /// Парсел лексем чисел.
+    /// Парсер лексем чисел.
     /// </summary>
     public class NumberTokenParser : ITokenParser
     {
@@ -13,13 +13,15 @@ namespace ScriptEngine.EngineBase.Parser.TokenParser.Parsers
         {
             token = null;
             string content = string.Empty;
+            CodeInformation information = iterator.CodeInformation.Clone();
+
             if (Char.IsNumber(iterator.Current))
             {
                 content = iterator.GetDigits();
                 token = new TokenClass()
                 {
                     Content = content,
-                    CodeInformation = iterator.CodeInformation.Clone(),
+                    CodeInformation = information,
                     Type = TokenTypeEnum.NUMBER
                 };
                 return true;

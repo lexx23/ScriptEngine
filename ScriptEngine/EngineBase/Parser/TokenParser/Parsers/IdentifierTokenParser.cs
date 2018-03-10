@@ -115,6 +115,7 @@ namespace ScriptEngine.EngineBase.Parser.TokenParser.Parsers
             string content = string.Empty;
             TokenSubTypeEnum subtype;
 
+            CodeInformation information = iterator.CodeInformation.Clone();
             if (Char.IsLetter(iterator.Current) || iterator.Current == '_')
             {
                 content = iterator.GetLettersAndDigits();
@@ -125,7 +126,7 @@ namespace ScriptEngine.EngineBase.Parser.TokenParser.Parsers
                 token = new TokenClass()
                 {
                     Content = content,
-                    CodeInformation = iterator.CodeInformation.Clone(),
+                    CodeInformation = information,
                     Type = TokenTypeEnum.IDENTIFIER,
                     SubType = subtype
                 };
