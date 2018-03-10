@@ -57,7 +57,7 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts
         {
             for(int i=0;i<_global_functions.Count;i++)
             {
-                if (_global_functions[i].Name == name || _global_functions[i].Alias == name)
+                if (String.Equals(_global_functions[i].Name,name,StringComparison.OrdinalIgnoreCase) || String.Equals(_global_functions[i].Alias,name,StringComparison.OrdinalIgnoreCase))
                     return _global_functions[i];
             }
 

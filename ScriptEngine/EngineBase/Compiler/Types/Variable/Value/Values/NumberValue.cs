@@ -47,7 +47,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value.Values
 
         public string AsString()
         {
-            return _value.ToString("n3");
+            return _value.ToString(System.Globalization.NumberFormatInfo.InvariantInfo);
         }
 
         public object AsObject()

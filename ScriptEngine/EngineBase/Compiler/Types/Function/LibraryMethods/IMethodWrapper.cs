@@ -1,4 +1,5 @@
-﻿using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
+﻿using ScriptEngine.EngineBase.Compiler.Types.Variable;
+using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
 
 
 namespace ScriptEngine.EngineBase.Compiler.Types.Function.LibraryMethods
@@ -14,7 +15,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Function.LibraryMethods
         /// </summary>
         /// <param name="param"></param>
         /// <returns></returns>
-        IValue Run(IValue[] param);
+        IValue Run(IVariable[] param);
 
         /// <summary>
         /// Копия функции с указанием нового объекта.

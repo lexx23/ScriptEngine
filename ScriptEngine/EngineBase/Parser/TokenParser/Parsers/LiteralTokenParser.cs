@@ -6,7 +6,7 @@ using System;
 namespace ScriptEngine.EngineBase.Parser.TokenParser.Parsers
 {
     /// <summary>
-    /// Парсер строковых токенов ""
+    /// Парсер строковых токенов "" и даты.
     /// </summary>
     public class LiteralTokenParser : ITokenParser
     {
@@ -27,7 +27,12 @@ namespace ScriptEngine.EngineBase.Parser.TokenParser.Parsers
             }
         }
 
-
+        /// <summary>
+        /// Парсинг даты.
+        /// </summary>
+        /// <param name="iterator"></param>
+        /// <param name="date"></param>
+        /// <returns></returns>
         private bool ParseDate(SourceIterator iterator, out string date)
         {
             CodeInformation inforamtion;
@@ -50,7 +55,7 @@ namespace ScriptEngine.EngineBase.Parser.TokenParser.Parsers
 
 
                 if (date[date.Length - 1] != '\'')
-                    throw new CompilerException(iterator.CodeInformation, "Ожидется символ \'.");
+                    throw new CompilerException(iterator.CodeInformation, "Ожидается символ \'.");
 
                 date = date.Remove(0, 1);
                 date = date.Remove(date.Length - 1, 1);
@@ -62,47 +67,31 @@ namespace ScriptEngine.EngineBase.Parser.TokenParser.Parsers
             return false;
         }
 
-
+        /// <summary>
+        /// Парсинг текстовой строки в кавычках ""
+        /// </summary>
+        /// <param name="iterator"></param>
+        /// <param name="str"></param>
+        /// <returns></returns>
         private bool ParseString(SourceIterator iterator, out string str)
         {
-            int counter = 0;
             str = string.Empty;
-
-            CodeInformation inforamtion;
 
             if (iterator.Current == '"')
             {
-                inforamtion = iterator.CodeInformation.Clone();
-                do
-                {
-                    str += iterator.Current;
-                    if (iterator.Current == '"')
-                    {
-                        counter++;
-                        if (counter % 2 == 0 && iterator.GetForwardSymbol() != '"')
-                        {
-                            iterator.MoveNext();
-                            break;
-                        }
-                    }
-
-                }
-                while (iterator.MoveNext());
-
-                if (str[str.Length - 1] != '"')
-                    throw new CompilerException(iterator.CodeInformation, "Ожидется символ \"");
-
-                str = str.Remove(0, 1);
-                str = str.Remove(str.Length - 1, 1);
-
+                str = iterator.GetString();
                 return true;
-
             }
             return false;
         }
 
 
-
+        /// <summary>
+        /// Парсер даты и строк.
+        /// </summary>
+        /// <param name="iterator"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
         public bool Parse(SourceIterator iterator, out IToken token)
         {
             token = null;

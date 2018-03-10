@@ -48,7 +48,7 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts
         {
             for (int i = 0; i < _modules.Count; i++)
             {
-                if (_modules[i].Name == name || _modules[i].Alias == name)
+                if (String.Equals(_modules[i].Name,name,StringComparison.OrdinalIgnoreCase) || String.Equals(_modules[i].Alias,name,StringComparison.OrdinalIgnoreCase))
                     return _modules[i];
             }
 

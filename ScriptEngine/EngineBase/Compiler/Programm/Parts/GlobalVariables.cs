@@ -77,7 +77,7 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts
         {
             for (int i = 0; i < _vars.Count; i++)
             {
-                if (_vars[i].Name == name || _vars[i].Alias == name)
+                if (String.Equals(_vars[i].Name,name,StringComparison.OrdinalIgnoreCase) || String.Equals(_vars[i].Alias,name, StringComparison.OrdinalIgnoreCase))
                     return _vars[i];
             }
 

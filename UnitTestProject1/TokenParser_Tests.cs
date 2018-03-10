@@ -63,7 +63,7 @@ namespace UnitTests
             Assert.AreEqual(3, tokens.Count);
 
             Assert.AreEqual("", tokens[0].Content);
-            Assert.AreEqual("\"\"Test\"\"", tokens[1].Content); 
+            Assert.AreEqual("  \"Test\"  ", tokens[1].Content); 
         }
     }
 }

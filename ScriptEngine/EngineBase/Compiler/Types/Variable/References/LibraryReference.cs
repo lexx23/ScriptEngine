@@ -67,7 +67,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.References
             if (setter == null)
                 call = Expression.Throw(Expression.Constant(new Exception("Поле объекта недоступно для записи")));
             else
-                call = Expression.Call(instance_parameter, setter, ConvertExpression.ConvertFromScript(argument_parameter, property_info.PropertyType));
+                call = Expression.Call(instance_parameter, setter, ConvertExpression.ConvertFromScript(argument_parameter, property_info.PropertyType,0));
 
             return Expression.Lambda<Action<T, IValue>>(call, instance_parameter, argument_parameter).Compile();
         }

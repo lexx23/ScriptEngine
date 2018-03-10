@@ -69,7 +69,7 @@ namespace ScriptEngine.EngineBase.Parser.Token
         /// <returns></returns>
         public bool CheckToken(string content)
         {
-            if (Current.Content.ToLower() != content.ToLower())
+            if (!String.Equals(Current.Content,content,StringComparison.OrdinalIgnoreCase))
                 return false;
 
             MoveNext();
@@ -106,7 +106,7 @@ namespace ScriptEngine.EngineBase.Parser.Token
         /// <param name="content"></param>
         public void ExpectToken(string content)
         {
-            if (Current.Content.ToLower() != content.ToLower())
+            if (!String.Equals(Current.Content,content,StringComparison.OrdinalIgnoreCase))
                 throw new CompilerException($"Ожидается токен {content} , а получен {Current.Content}");
 
             MoveNext();

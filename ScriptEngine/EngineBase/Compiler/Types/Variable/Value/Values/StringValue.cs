@@ -13,14 +13,16 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value.Values
 
         public StringValue(string value)
         {
+            if (value == null)
+                value = "";
             _value = value;
         }
 
         public bool AsBoolean()
         {
-            if (_value.ToLower() == "ложь" || _value.ToLower() == "false")
+            if (String.Equals(_value,"ложь",StringComparison.OrdinalIgnoreCase) || String.Equals(_value,"false", StringComparison.OrdinalIgnoreCase))
                 return false;
-            if (_value.ToLower() == "истина" || _value.ToLower() == "true")
+            if (String.Equals(_value,"истина", StringComparison.OrdinalIgnoreCase) || String.Equals(_value,"true", StringComparison.OrdinalIgnoreCase))
                 return true;
 
             return false;
@@ -40,7 +42,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value.Values
         {
             if (decimal.TryParse(_value, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out decimal result))
                 return result;
-            return 0;
+            throw new Exception($"Невозможно преобразовать [{_value}] в число.");
         }
 
         public ScriptObjectContext AsScriptObject()

@@ -94,7 +94,16 @@ namespace ScriptEngine.EngineBase.Parser.TokenParser.Parsers
                 { "Goto", TokenSubTypeEnum.I_GOTO },
 
                 { "Новый", TokenSubTypeEnum.I_NEW },
-                { "New", TokenSubTypeEnum.I_NEW }
+                { "New", TokenSubTypeEnum.I_NEW },
+
+                { "Попытка", TokenSubTypeEnum.I_TRY},
+                { "Try", TokenSubTypeEnum.I_TRY},
+                { "КонецПопытки", TokenSubTypeEnum.I_ENDTRY},
+                { "EndTry", TokenSubTypeEnum.I_TRY},
+                { "Исключение", TokenSubTypeEnum.I_EXCEPT},
+                { "Except", TokenSubTypeEnum.I_EXCEPT},
+                { "ВызватьИсключение", TokenSubTypeEnum.I_RAISE},
+                { "Raise", TokenSubTypeEnum.I_RAISE}
             };
 
         }

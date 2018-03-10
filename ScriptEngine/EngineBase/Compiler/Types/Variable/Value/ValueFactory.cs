@@ -24,7 +24,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
         public static IValue Create(object value) => new ObjectValue(value);
         public static IValue Create(ScriptObjectContext value) => new ScriptObjectValue(value);
         public static IValue Create(bool value) => value == true ? _bool_value_true : _bool_value_false;
-        public static IValue Create(IValue value) => value;
+        public static IValue Create(IValue value) => value ?? Create();
 
 
         /// <summary>
@@ -47,9 +47,9 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
                     return Create(value);
 
                 case ValueTypeEnum.BOOLEAN:
-                    if (value.ToLower() == "ложь" || value.ToLower() == "false")
+                    if (String.Equals(value,"ложь",StringComparison.OrdinalIgnoreCase) || String.Equals(value,"false",StringComparison.OrdinalIgnoreCase))
                         return Create(false);
-                    if (value.ToLower() == "истина" || value.ToLower() == "true")
+                    if (String.Equals(value,"истина",StringComparison.OrdinalIgnoreCase) || String.Equals(value,"true",StringComparison.OrdinalIgnoreCase))
                         return Create(true);
 
                     throw new Exception($"Ошибка преобразования в логический тип, значения [{value}]");
@@ -85,7 +85,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
             if (type == typeof(bool))
                 return Create((bool)value);
 
-            if (type == typeof(void) || type == typeof(IValue[]))
+            if (type == typeof(void) || value == null)
                 return Create();
 
             if (type.IsEnum)
@@ -174,16 +174,13 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
         /// <returns></returns>
         public static IValue ADD(IValue left, IValue right)
         {
-            switch (right.Type)
-            {
-                case ValueTypeEnum.STRING:
-                    return Create(left.AsString() + right.AsString());
+            if(left.Type ==  ValueTypeEnum.STRING || left.Type == ValueTypeEnum.NULL)
+                 return Create(left.AsString() + right.AsString());
+            if(left.Type == ValueTypeEnum.DATE && right.Type == ValueTypeEnum.NUMBER)
+                return Create(left.AsDate().AddSeconds((double)right.AsNumber()));
 
-                case ValueTypeEnum.NUMBER:
-                    return Create(left.AsNumber() + right.AsNumber());
-            }
-
-            throw new Exception($"Невозможно вычислить сумму [{left.AsString()}] и [{right.AsString()}].");
+            return Create(left.AsNumber() + right.AsNumber());
+            //throw new Exception($"Невозможно вычислить сумму [{left.AsString()}] и [{right.AsString()}].");
         }
 
 
@@ -195,13 +192,19 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
         /// <returns></returns>
         public static IValue SUB(IValue left, IValue right)
         {
-            switch (right.Type)
+            if (left.Type == ValueTypeEnum.NUMBER)
+                return Create(left.AsNumber() - right.AsNumber());
+
+            if (left.Type == ValueTypeEnum.DATE && right.Type == ValueTypeEnum.NUMBER)
+                return Create(left.AsDate().AddSeconds(-(double)right.AsNumber()));
+
+            if (left.Type == ValueTypeEnum.DATE && right.Type == ValueTypeEnum.DATE)
             {
-                case ValueTypeEnum.NUMBER:
-                    return Create(left.AsNumber() - right.AsNumber());
+                TimeSpan result = right.AsDate() - left.AsDate();
+                return Create((decimal)result.TotalSeconds);
             }
 
-            throw new Exception($"Невозможно вычислить разницу [{left.AsString()}] и [{right.AsString()}].");
+            return Create(right.AsNumber() - left.AsNumber());
         }
 
         /// <summary>

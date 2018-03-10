@@ -82,6 +82,15 @@ namespace ScriptEngine.EngineBase.Parser.Token
         [EnumStringAttribute("Экспорт { Export }")]
         I_EXPORT,
 
+        [EnumStringAttribute("Попытка { Try }")]
+        I_TRY,
+        [EnumStringAttribute("КонецПопытки { EndTry }")]
+        I_ENDTRY,
+        [EnumStringAttribute("Исключение { Except }")]
+        I_EXCEPT,
+        [EnumStringAttribute("ВызватьИсключение { Raise }")]
+        I_RAISE,
+
         [EnumStringAttribute("Истина { True }")]
         I_LOGIC_TRUE,
         [EnumStringAttribute("Ложь { False }")]

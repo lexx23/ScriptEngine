@@ -7,6 +7,7 @@ using System;
 using ScriptEngine.EngineBase.Compiler.Types.Function.LibraryMethods;
 using ScriptEngine.EngineBase.Exceptions;
 using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
+using ScriptEngine.EngineBase.Library.BaseTypes;
 
 namespace ScriptEngine.EngineBase.Interpreter.Context
 {
@@ -18,18 +19,6 @@ namespace ScriptEngine.EngineBase.Interpreter.Context
         public ScriptModule Module { get => _module; }
         public object Instance { get; set; }
         private ContextVariableReferenceHolder[] Context { get; set; }
-
-        public string ModuleName
-        {
-            get
-            {
-                if (_module != null)
-                    return _module.Name;
-                else
-                    return "";
-            }
-
-        }
 
         public ScriptObjectContext(ScriptModule module, object instance = null)
         {
@@ -46,7 +35,6 @@ namespace ScriptEngine.EngineBase.Interpreter.Context
             else
                 Instance = instance;
 
-            module.CurrentInstance = Instance;
 
             for (int i = 0; i < _module.ModuleScope.Vars.Count; i++)
             {
@@ -57,13 +45,15 @@ namespace ScriptEngine.EngineBase.Interpreter.Context
             _functions = new ContextMethodReferenceHolder[_module.Functions.Count];
             IFunction[] functions_array = _module.Functions.ToArray();
             for (int i = 0; i < _module.Functions.Count; i++)
+            {
+                IMethodWrapper wrapper = null;
                 if (functions_array[i].Method != null)
                 {
-                    IMethodWrapper wrapper = functions_array[i].Method.Clone(Instance);
-                    //if (instance == null)
-                        functions_array[i].Method = wrapper;
-                    _functions[i] = new ContextMethodReferenceHolder(functions_array[i], wrapper);
+                    wrapper = functions_array[i].Method.Clone(Instance);
+                    functions_array[i].Method = wrapper;
                 }
+                _functions[i] = new ContextMethodReferenceHolder(functions_array[i], wrapper);
+            }
 
         }
 
@@ -72,10 +62,8 @@ namespace ScriptEngine.EngineBase.Interpreter.Context
         /// </summary>
         public void Set()
         {
-            if (!_module.AsGlobal && Module.CurrentInstance != Instance)
+            if (!_module.AsGlobal && Instance == null)
             {
-                Module.CurrentInstance = Instance;
-
                 for (int i = 0; i < _functions.Length; i++)
                     _functions[i].Set();
 
@@ -92,10 +80,12 @@ namespace ScriptEngine.EngineBase.Interpreter.Context
         {
             IFunction work_function;
 
-            work_function = Module.Functions.Get(function.Name);
+            ContextMethodReferenceHolder context_function = GetContextFunction(function.Name);
 
-            if (work_function == null)
+            if (context_function == null)
                 throw new Exception($"Процедура или функция с именем [{function.Name}] не определена, у объекта [{Module.Name}].");
+
+            work_function = GetContextFunction(function.Name).Function;
 
             if (!work_function.Public)
                 throw new Exception($"Функция [{function.Name}] не имеет оператора Экспорт, и не доступна.");
@@ -104,8 +94,7 @@ namespace ScriptEngine.EngineBase.Interpreter.Context
             if (work_function.Type == FunctionTypeEnum.PROCEDURE && work_function.Type != function.Type)
                 throw new Exception($"Обращение к процедуре [{function.Name}] как к функции.");
 
-            function.EntryPoint = work_function.EntryPoint;
-
+            context_function.Set();
             Set();
 
             if (function.CallParameters.Count == work_function.DefinedParameters.Count || work_function.DefinedParameters.AnyCount)
@@ -131,57 +120,66 @@ namespace ScriptEngine.EngineBase.Interpreter.Context
             return work_function;
         }
 
-        public IMethodWrapper GetFunctionMethod(string name)
+        /// <summary>
+        /// Получить функцию из контекста обьекта.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public ContextMethodReferenceHolder GetContextFunction(string name)
         {
             for (int i = 0; i < _functions.Length; i++)
             {
-                if (_functions[i].Function.Name == name || _functions[i].Function.Alias == name)
-                    return _functions[i].Wrapper;
+                if (String.Equals(_functions[i].Function.Name,name,StringComparison.OrdinalIgnoreCase) || String.Equals(_functions[i].Function.Alias,name,StringComparison.OrdinalIgnoreCase))
+                    return _functions[i];
             }
             return null;
         }
 
         /// <summary>
-        /// Получить значение свойства объекта.
+        /// Получить значение публичного свойства объекта.
         /// </summary>
-        public IVariableReference GetPublicReference(string name)
+        public IVariableReference GetPublicVariable(string name)
         {
-            IVariable context_var = GetVariable(name);
-            if (context_var == null)
-                throw new Exception($"У объекта [{Module.Name}] нет свойства [{name}].");
-            if (!context_var.Public)
-                throw new Exception($"Свойство [{name}] не имеет оператора Экспорт, и не доступно.");
-
-            return context_var.Reference;
+            IVariableReference context_variable = GetContextVariable(name,true);
+            return context_variable;
         }
 
         /// <summary>
-        /// Получить значение свойства объекта.
+        /// Получить значение, любого в том числе и приватного, свойства объекта. 
         /// </summary>
-        public IVariableReference GetReference(string name)
+        public IVariableReference GetAnyVaribale(string name)
         {
+            IVariableReference context_variable = GetContextVariable(name, false);
+            return context_variable;
+        }
+
+
+        /// <summary>
+        /// Получить свойство из контекста объекта, по его имени.
+        /// </summary>
+        private IVariableReference GetContextVariable(string name,bool only_public)
+        {
+            // Поиск в статических свойствах обьекта.
             for (int i = 0; i < Context.Length; i++)
             {
-                if (Context[i].Variable.Name == name || Context[i].Variable.Alias == name)
-                    return Context[i].Reference;
+                ContextVariableReferenceHolder context_variable = Context[i];
+                if (String.Equals(context_variable.Variable.Name,name,StringComparison.OrdinalIgnoreCase) || String.Equals(context_variable.Variable.Alias,name,StringComparison.OrdinalIgnoreCase))
+                {
+                    if (!context_variable.Variable.Public && only_public)
+                        throw new Exception($"Свойство [{name}] не имеет оператора Экспорт, и не доступно.");
+
+                    return context_variable.Reference;
+                }
             }
 
-            return null;
-        }
-
-
-        /// <summary>
-        /// Получить значение свойства объекта по его имени.
-        /// </summary>
-        private IVariable GetVariable(string name)
-        {
-            for (int i = 0; i < Context.Length; i++)
+            // Поиск в динамических свойствах обьекта.
+            if (typeof(IScriptDynamicProperties).IsAssignableFrom(Instance.GetType()))
             {
-                if (Context[i].Variable.Name == name || Context[i].Variable.Alias == name)
-                    return Context[i].Variable;
+                if((Instance as IScriptDynamicProperties).Exist(name))
+                    return new DynamicPropertiesReference(name, Instance as IScriptDynamicProperties);
             }
 
-            return null;
+           throw new Exception($"У объекта [{Module.Name}] нет свойства [{name}].");
         }
     }
 }

@@ -149,7 +149,7 @@ namespace UnitTests
         {
             string source = string.Empty;
 
-            string path = Directory.GetCurrentDirectory() + "\\Scripts\\Preprocessor\\" + name;
+            string path = Directory.GetCurrentDirectory() + Path.DirectorySeparatorChar + "Scripts" + Path.DirectorySeparatorChar + "Preprocessor" + Path.DirectorySeparatorChar + name;
             if (File.Exists(path))
             {
                 source = File.ReadAllText(path);

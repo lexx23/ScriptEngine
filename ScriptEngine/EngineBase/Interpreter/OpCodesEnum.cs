@@ -17,9 +17,9 @@ namespace ScriptEngine.EngineBase.Interpreter
         // Выход из функции
         OP_RETURN = 3,
         // Вызов метода обьекта
-        OP_OBJECT_CALL = 4,
+        OP_OBJ_CALL = 4,
         // Вызов свойства обьекта
-        OP_OBJECT_RESOLVE_VAR = 5,
+        OP_OBJ_GET_VAR = 5,
         // Переход если ложь
         OP_IFNOT = 6,
         // Переход без условий
@@ -49,29 +49,30 @@ namespace ScriptEngine.EngineBase.Interpreter
         OP_STORE = 18,
 
         // Сложение
-        [EnumStringAttribute("сумма { + }")]
         OP_ADD = 19,
         // Разница
-        [EnumStringAttribute("произведение { - }")]
         OP_SUB = 20,
         // Умножение
-        [EnumStringAttribute("произведение { * }")]
         OP_MUL = 21,
         // Деление
-        [EnumStringAttribute("деление { / }")]
         OP_DIV = 22,
         // Остаток от деления
-        [EnumStringAttribute("остаток от деления { % }")]
         OP_MOD = 23,
         // Новый
         OP_NEW,
         // Получить элемент массива.
         OP_ARRAY_GET,
         // Получить итератор.
-        OP_GET_ITERATOR,
+        OP_ITR_GET,
         // Следующий шаг итератора.
-        OP_ITERATOR_NEXT,
+        OP_ITR_NEXT,
         // Остановка итератора.
-        OP_ITERATOR_STOP
+        OP_ITR_STOP,
+        // Исключение.
+        OP_TRY,
+        // Завершение блока исключения.
+        OP_ENDTRY,
+        // Вызвать исключение.
+        OP_RAISE
     }
 }

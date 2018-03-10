@@ -29,7 +29,6 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts.Module
         public ScriptScope ModuleScope { get => _module_scope; }
 
         public Type InstanceType { get; set; }
-        public object CurrentInstance { get; set; }
 
         /// <summary>
         /// Номер линии программы.
@@ -102,7 +101,7 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts.Module
         }
 
         /// <summary>
-        /// Получть инструкцию.
+        /// Получить инструкцию.
         /// </summary>
         public ScriptStatement StatementGet(int index)
         {

@@ -1,9 +1,8 @@
 ﻿using ScriptEngine.EngineBase.Exceptions;
 using ScriptEngine.EngineBase.Praser.Token;
-using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Text;
+using System.Collections;
+using System;
 
 namespace ScriptEngine.EngineBase
 {
@@ -16,7 +15,6 @@ namespace ScriptEngine.EngineBase
         private int _cursor;
         private char _current_symbol;
         private static string _skip_chars = " \n\r\t";
-
 
         /// <summary>
         /// Текущее положение курсора.
@@ -31,14 +29,13 @@ namespace ScriptEngine.EngineBase
 
 
         /// <summary>
-        /// Текущий символ итератора. Если симыол запрещен к выдаче, то итератор делает шаг впред, пропускает символы.
+        /// Текущий символ итератора. Если символ запрещен к выдаче, то итератор делает шаг вперед, пропускает символы.
         /// </summary>
         public char Current
         {
             get
             {
                 SkipComment();
-
                 return _current_symbol;
             }
         }
@@ -82,7 +79,7 @@ namespace ScriptEngine.EngineBase
         #region HelpFunctions
 
         /// <summary>
-        /// Добавить символ в буффер. Игнорирует запрещенные символы.
+        /// Добавить символ в буфер. Игнорирует запрещенные символы.
         /// </summary>
         /// <param name="symbol"></param>
         /// <param name="buffer"></param>
@@ -240,6 +237,41 @@ namespace ScriptEngine.EngineBase
             }
             while (_current_symbol != symbol);
             return true;
+        }
+
+        /// <summary>
+        /// Получить строку заключенную в кавычки "".
+        /// </summary>
+        /// <returns></returns>
+        public string GetString()
+        {
+            int counter = 0;
+            string str = string.Empty;
+
+            CodeInformation inforamtion = CodeInformation.Clone();
+            do
+            {
+                str += _current_symbol;
+                if (_current_symbol == '"')
+                {
+                    counter++;
+                    if (counter % 2 == 0 && GetForwardSymbol() != '"')
+                    {
+                        MoveNext();
+                        break;
+                    }
+                }
+
+            }
+            while (MoveNext());
+
+            if (str[str.Length - 1] != '"')
+                throw new CompilerException(CodeInformation, "Ожидается символ \"");
+
+            str = str.Remove(0, 1);
+            str = str.Remove(str.Length - 1, 1);
+
+            return str.Replace("\"\"","\"");
         }
 
 

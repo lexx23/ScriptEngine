@@ -1,11 +1,11 @@
 ﻿using ScriptEngine.EngineBase.Compiler.Programm.ModuleLoader;
 using ScriptEngine.EngineBase.Compiler.Programm.Parts;
-using ScriptEngine.EngineBase.Compiler.Programm.Parts.Module;
+using ScriptBaseFunctionsLibrary.BuildInTypes;
 using ScriptEngine.EngineBase.Compiler.Types;
-using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
-using System.Collections.Generic;
-using System.IO;
 using System.Reflection;
+using System.IO;
+using ScriptEngine.EngineBase.Library.Attributes;
+using System;
 
 namespace ScriptEngine.EngineBase.Compiler.Programm
 {
@@ -37,15 +37,18 @@ namespace ScriptEngine.EngineBase.Compiler.Programm
             _static_variables = new StaticVariables();
         }
 
-        public void LoadLibraries()
+        public void LoadDefaultLibraries()
         {
             string path = Directory.GetCurrentDirectory() + "\\LanguageExtensions\\";
             Loader loader = new Loader(this);
 
+            // Обьект описывающий исключение.
+            loader.AddObjectOfType(typeof(ErrorInfo));
+
             foreach (string file in Directory.GetFiles(path, "*.dll", SearchOption.AllDirectories))
             {
                 Assembly assembly = Assembly.LoadFile(file);
-                loader.LoadFromAssembly(assembly);
+                loader.LoadAssembly(assembly);
             }
         }
     }

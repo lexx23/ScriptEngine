@@ -3,6 +3,7 @@ using ScriptEngine.EngineBase.Library;
 using System.Linq.Expressions;
 using System.Reflection;
 using System;
+using ScriptEngine.EngineBase.Compiler.Types.Variable;
 
 namespace ScriptEngine.EngineBase.Compiler.Types.Function.LibraryMethods
 {
@@ -10,14 +11,14 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Function.LibraryMethods
     {
 
         private T _instance;
-        private Action<T, IValue[]> _procedure;
+        private Action<T, IVariable[]> _procedure;
 
         /// <summary>
         /// Конструктор используется при клонировании класса.
         /// </summary>
         /// <param name="instance"></param>
         /// <param name="procedure"></param>
-        public ProcedureWrapper(T instance, Action<T, IValue[]> procedure)
+        public ProcedureWrapper(T instance, Action<T, IVariable[]> procedure)
         {
             _instance = instance;
             _procedure = procedure;
@@ -38,13 +39,13 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Function.LibraryMethods
         /// </summary>
         /// <param name="method"></param>
         /// <returns></returns>
-        private Action<T, IValue[]> Create(MethodInfo method)
+        private Action<T, IVariable[]> Create(MethodInfo method)
         {
             ParameterExpression instanceParameter = Expression.Parameter(typeof(T), "target");
-            ParameterExpression argumentsParameter = Expression.Parameter(typeof(IValue[]), "arguments");
+            ParameterExpression argumentsParameter = Expression.Parameter(typeof(IVariable[]), "arguments");
             Expression call = Expression.Call(instanceParameter, method, CreateParameterExpressions(method, argumentsParameter));
 
-            return Expression.Lambda<Action<T, IValue[]>>(call, instanceParameter, argumentsParameter).Compile();
+            return Expression.Lambda<Action<T, IVariable[]>>(call, instanceParameter, argumentsParameter).Compile();
         }
 
         private Expression[] CreateParameterExpressions(MethodInfo method, Expression argumentsParameter)
@@ -54,10 +55,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Function.LibraryMethods
 
             foreach (ParameterInfo info in method.GetParameters())
             {
-                if (info.ParameterType == typeof(IValue[]))
-                    list[i] = argumentsParameter;
-                else
-                    list[i] = ConvertExpression.ConvertFromScript(Expression.ArrayIndex(argumentsParameter, Expression.Constant(i)), info.ParameterType);
+                list[i] = ConvertExpression.ConvertFromScript(argumentsParameter, info.ParameterType,i);
                 i++;
             }
             return list;
@@ -68,7 +66,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Function.LibraryMethods
         /// </summary>
         /// <param name="param"></param>
         /// <returns></returns>
-        public IValue Run(IValue[] param)
+        public IValue Run(IVariable[] param)
         {
             _procedure(_instance, param);
             return null;

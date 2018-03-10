@@ -1,9 +1,5 @@
-﻿using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
-using ScriptEngine.EngineBase.Library;
+﻿using ScriptEngine.EngineBase.Library;
 using ScriptEngine.EngineBase.Library.Attributes;
-using ScriptEngine.EngineBase.Library.BaseTypes;
-using System.Collections;
-using System.Collections.Generic;
 
 namespace ScriptBaseFunctionsLibrary.Enums
 {

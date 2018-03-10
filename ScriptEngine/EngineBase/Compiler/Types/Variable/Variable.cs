@@ -30,5 +30,26 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable
             StackNumber = -1;
             Reference = new SimpleReference();
         }
+
+        public Variable(string name,IValue value):this()
+        {
+            Name = name;
+            Value = value;
+        }
+
+        public Variable(IValue value) : this()
+        {
+            Value = value;
+        }
+
+        public Variable(IVariableReference reference)
+        {
+            Reference = reference;
+        }
+
+        public static IVariable Create() => new Variable();
+        public static IVariable Create(string name, IValue value) => new Variable(name,value);
+        public static IVariable Create(IValue value) => new Variable(value);
+        public static IVariable Create(IVariableReference reference) => new Variable(reference);
     }
 }

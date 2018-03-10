@@ -49,7 +49,10 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value.Values
 
         public string AsString()
         {
-            return _value.ModuleName;
+            if (_value != null)
+                return _value.Module?.Alias;
+            else
+                return "Неопределено";
         }
 
         public object AsObject()
@@ -64,7 +67,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value.Values
             if (ReferenceEquals(this, other)) return true;
 
             if (other.Type == ValueTypeEnum.SCRIPT_OBJECT)
-                return _value.ModuleName == other.AsScriptObject().ModuleName && _value.Instance == other.AsScriptObject().Instance;
+                return _value.Module?.Name == other.AsScriptObject().Module?.Name && _value.Instance == other.AsScriptObject().Instance;
 
             return false;
         }

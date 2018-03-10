@@ -1,12 +1,10 @@
 ﻿using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
+using ScriptEngine.EngineBase.Compiler.Types.Variable;
+using ScriptEngine.EngineBase.Library.Attributes;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Linq;
 using System;
-using ScriptEngine.EngineBase.Library.Attributes;
-using ScriptEngine.EngineBase.Compiler.Programm.Parts.Module;
-using ScriptEngine.EngineBase.Interpreter;
-using ScriptEngine.EngineBase.Interpreter.Context;
 
 namespace ScriptEngine.EngineBase.Library
 {
@@ -18,8 +16,13 @@ namespace ScriptEngine.EngineBase.Library
         /// <param name="value"></param>
         /// <param name="to_type"></param>
         /// <returns></returns>
-        public static Expression ConvertFromScript(Expression value, Type to_type)
+        public static Expression ConvertFromScript(Expression variable, Type to_type, int index)
         {
+
+            Expression value = null;
+            if (!to_type.IsArray)
+                value = Expression.Call(Expression.ArrayIndex(variable, Expression.Constant(index)), typeof(IVariable).GetProperty("Value").GetGetMethod());
+
             if (to_type.IsEnum)
             {
                 MethodInfo enum_converter = typeof(ConvertExpression).GetMethod("ConvertEnum").MakeGenericMethod(to_type);
@@ -30,6 +33,9 @@ namespace ScriptEngine.EngineBase.Library
             {
                 case "IValue":
                     return value;
+
+                case "IValue[]":
+                    return Expression.Call(typeof(ConvertExpression).GetMethod("CreateValueArray"), variable);
 
                 case "Decimal":
                     return Expression.Call(value, typeof(IValue).GetMethod("AsDecimal"));
@@ -43,11 +49,19 @@ namespace ScriptEngine.EngineBase.Library
                 case "String":
                     return Expression.Call(value, typeof(IValue).GetMethod("AsString"));
 
+                case "IVariable":
+                    return Expression.ArrayIndex(variable, Expression.Constant(index));
+
                 default:
                     Expression call = Expression.Call(value, typeof(IValue).GetMethod("AsObject"));
                     return Expression.Convert(call, to_type);
 
             }
+        }
+
+        public static IValue[] CreateValueArray(IVariable[] array)
+        {
+            return array.Select(x => x.Value).ToArray();
         }
 
         /// <summary>
@@ -76,7 +90,7 @@ namespace ScriptEngine.EngineBase.Library
         /// <param name="type"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public static Expression ConvertToScript(Type type,Expression value)
+        public static Expression ConvertToScript(Type type, Expression value)
         {
             MethodInfo method;
 
@@ -87,9 +101,9 @@ namespace ScriptEngine.EngineBase.Library
                 type = typeof(object);
 
             if (type == typeof(object))
-                value = Expression.Convert(value,typeof(object));
+                value = Expression.Convert(value, typeof(object));
 
-            method =  typeof(ValueFactory).GetMethod("Create", new Type[] { type });
+            method = typeof(ValueFactory).GetMethod("Create", new Type[] { type });
 
             if (method == null)
             {

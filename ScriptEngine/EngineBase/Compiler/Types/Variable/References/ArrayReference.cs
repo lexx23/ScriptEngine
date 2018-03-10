@@ -1,30 +1,24 @@
 ﻿using ScriptEngine.EngineBase.Compiler.Types.Function.LibraryMethods;
 using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
+using ScriptEngine.EngineBase.Library.BaseTypes;
 using System;
-using System.Collections.Generic;
-using System.Linq.Expressions;
-using System.Reflection;
-using System.Text;
+
 
 namespace ScriptEngine.EngineBase.Compiler.Types.Variable.References
 {
     public class ArrayReference : IVariableReference
     {
         private int _index;
-        private IMethodWrapper _getter;
-        private IMethodWrapper _setter;
+        private IScriptArray _array;
 
 
         /// <summary>
         /// Простой конструктор.
         /// </summary>
-        /// <param name="instance_type"></param>
-        /// <param name="property"></param>
-        public ArrayReference(IMethodWrapper getter, IMethodWrapper setter,int index)
+        public ArrayReference(IScriptArray array,int index)
         {
             _index = index;
-            _getter = getter;
-            _setter = setter;
+            _array = array;
         }
 
         /// <summary>
@@ -33,7 +27,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.References
         /// <returns></returns>
         public IValue Get()
         {
-            return _getter.Run(new IValue[] { ValueFactory.Create(_index) } );
+            return _array.Get(_index);
         }
 
         /// <summary>
@@ -42,10 +36,9 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.References
         /// <param name="value"></param>
         public void Set(IValue value)
         {
-            if (_setter == null)
-                new Exception("Поле объекта недоступно для записи");
-            _setter.Run(new IValue[] { ValueFactory.Create(_index), value });
-        }
+            //if (_array.Set == null)
+            //  new Exception("Поле объекта недоступно для записи");
+            _array.Set(_index, value);        }
 
         /// <summary>
         /// Клонировать класс с новым объектом.

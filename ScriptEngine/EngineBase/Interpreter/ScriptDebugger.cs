@@ -147,6 +147,10 @@ namespace ScriptEngine.EngineBase.Interpreter
             if (var == null)
                 var = _interpreter.Programm.GlobalVariables.Get(name);
 
+            if (var == null)
+                throw new Exception($"Невозможно найти переменную с именем [{name}].");
+            if (var.Value == null)
+                throw new Exception($"Переменной [{name}] не присвоено значение.");
 
             return var.Value;
         }
@@ -162,8 +166,8 @@ namespace ScriptEngine.EngineBase.Interpreter
 
             object_value = RegisterGetValue(object_name);
 
-            if (object_value != null && object_value.AsScriptObject() != null)// && object_value.AsScriptObject().Context != null)
-                return object_value.AsScriptObject().GetReference(var_name).Get();
+            if (object_value != null && object_value.AsScriptObject() != null)
+                return object_value.AsScriptObject().GetAnyVaribale(var_name).Get();
 
             return null;
         }

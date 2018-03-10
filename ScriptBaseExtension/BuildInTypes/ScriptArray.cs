@@ -8,7 +8,7 @@ using System.Collections.Generic;
 namespace ScriptBaseFunctionsLibrary.BuildInTypes
 {
     [LibraryClassAttribute(Name = "array", Alias = "Массив", AsGlobal = false, AsObject = true)]
-    public class ScriptArray : LibraryModule<ScriptArray>, IEnumerable<IValue>
+    public class ScriptArray : LibraryModule<ScriptArray>, IEnumerable<IValue>,IScriptArray
     {
         private readonly List<IValue> _values;
 
@@ -64,13 +64,11 @@ namespace ScriptBaseFunctionsLibrary.BuildInTypes
             return _values.Count - 1;
         }
 
-        [LibraryClassMethod(Alias = "Получить", Name = "Get")]
         public IValue Get(int index)
         {
             return _values[index];
         }
 
-        [LibraryClassMethod(Alias = "Установить", Name = "Set")]
         public void Set(int index, IValue value)
         {
             _values[index] = value;

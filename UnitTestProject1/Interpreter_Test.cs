@@ -1,29 +1,32 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using ScriptEngine.EngineBase.Compiler;
+﻿using ScriptEngine.EngineBase.Compiler.Programm.Parts.Module;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ScriptEngine.EngineBase.Compiler.Programm;
-using ScriptEngine.EngineBase.Compiler.Programm.Parts.Module;
-using ScriptEngine.EngineBase.Exceptions;
 using ScriptEngine.EngineBase.Interpreter;
-using ScriptEngine.EngineBase.Interpreter.Context;
-using System;
+using ScriptEngine.EngineBase.Exceptions;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 
 namespace UnitTests
 {
     [TestClass]
     public class Interpreter_Test
     {
+        private Helper _helper;
+        public Interpreter_Test()
+        {
+            _helper = new Helper("Interpreter");
+        }
+
 
         [TestMethod]
+        [Description("Проверка работы доступа к массиву через []")]
         public void Interpreter_ArrayIndexer()
         {
             IDictionary<ScriptModule, string> modules = new Dictionary<ScriptModule, string>();
-            modules.Add(new ScriptModule("global", "global", ModuleTypeEnum.STARTUP, true, false), OpenModule("Array\\indexer.scr"));
+            modules.Add(new ScriptModule("global", "global", ModuleTypeEnum.STARTUP, true, false), _helper.OpenModule("Array\\indexer.scr"));
 
 
-            ScriptProgramm programm = CompileObjects(modules);
+            ScriptProgramm programm = _helper.CompileModules(modules);
             ScriptInterpreter interpreter = new ScriptInterpreter(programm);
             interpreter.Debugger.AddBreakpoint("global", 7);
             interpreter.Debugger.AddBreakpoint("global", 9);
@@ -39,7 +42,131 @@ namespace UnitTests
             interpreter.Debugger.Continue();
         }
 
+        #region Exception
+        [TestMethod]
+        [Description("Проверка работы вызватьисключение(raise)")]
+        [ExpectedException(typeof(RuntimeException))]
+        public void Interpreter_Raise()
+        {
+            IDictionary<ScriptModule, string> modules = new Dictionary<ScriptModule, string>();
+            modules.Add(new ScriptModule("raise", "raise", ModuleTypeEnum.STARTUP, true, false), _helper.OpenModule("Exception\\raise.scr"));
 
+
+            ScriptProgramm programm = _helper.CompileModules(modules);
+            ScriptInterpreter interpreter = new ScriptInterpreter(programm);
+            interpreter.Run();
+        }
+
+
+        [TestMethod]
+        [Description("Проверка функции ИнформацияОбОшибке(), без ошибки класс должен быть пустой.")]
+        public void Interpreter_ErrorInfo()
+        {
+            IDictionary<ScriptModule, string> modules = new Dictionary<ScriptModule, string>();
+            modules.Add(new ScriptModule("try", "try", ModuleTypeEnum.STARTUP, true, false), _helper.OpenModule("Exception\\error_info.scr"));
+
+
+            ScriptProgramm programm = _helper.CompileModules(modules);
+            ScriptInterpreter interpreter = new ScriptInterpreter(programm);
+            interpreter.Debugger.AddBreakpoint("try", 6);
+
+            interpreter.Debug();
+
+            Assert.AreEqual(6, interpreter.CurrentLine);
+            Assert.AreEqual("", interpreter.Debugger.ObjectGetValue("инфо", "Описание").AsString());
+            Assert.AreEqual("", interpreter.Debugger.ObjectGetValue("Инфо", "имяМодуля").AsString());
+            Assert.AreEqual("0", interpreter.Debugger.ObjectGetValue("Инфо", "НомерСтроки").AsString());
+            Assert.AreEqual("", interpreter.Debugger.ObjectGetValue("Инфо", "ИсходнаяСтрока").AsString());
+            Assert.AreEqual("", interpreter.Debugger.ObjectGetValue("Инфо", "Причина").AsString());
+            interpreter.Debugger.Continue();
+        }
+
+        [TestMethod]
+        [Description("Проверка работы Попытка(Try) блока и функции ИнформацияОбОшибке()")]
+        public void Interpreter_Try()
+        {
+            IDictionary<ScriptModule, string> modules = new Dictionary<ScriptModule, string>();
+            modules.Add(new ScriptModule("try", "try", ModuleTypeEnum.STARTUP, true, false), _helper.OpenModule("Exception\\try.scr"));
+
+
+            ScriptProgramm programm = _helper.CompileModules(modules);
+            ScriptInterpreter interpreter = new ScriptInterpreter(programm);
+            interpreter.Debugger.AddBreakpoint("try", 13);
+
+            interpreter.Debug();
+
+            Assert.AreEqual(13, interpreter.CurrentLine);
+            Assert.AreEqual("Деление на 0.", interpreter.Debugger.ObjectGetValue("инфо", "Описание").AsString());
+            Assert.AreEqual("try", interpreter.Debugger.ObjectGetValue("Инфо", "имяМодуля").AsString());
+            Assert.AreEqual("4", interpreter.Debugger.ObjectGetValue("Инфо", "НомерСтроки").AsString());
+            Assert.AreEqual("", interpreter.Debugger.ObjectGetValue("Инфо", "ИсходнаяСтрока").AsString());
+            Assert.AreEqual("", interpreter.Debugger.ObjectGetValue("Инфо", "Причина").AsString());
+            interpreter.Debugger.Continue();
+        }
+
+        [TestMethod]
+        [Description("Проверка работы Попытка(Try) внутри объекта.")]
+        public void Interpreter_TryInObject()
+        {
+            IDictionary<ScriptModule, string> modules = new Dictionary<ScriptModule, string>();
+            modules.Add(new ScriptModule("global", "global", ModuleTypeEnum.STARTUP, true), _helper.OpenModule("Exception\\In object\\global.scr"));
+            modules.Add(new ScriptModule("object", "object", ModuleTypeEnum.OBJECT, true, true), _helper.OpenModule("Exception\\In object\\object.scr"));
+
+            ScriptProgramm programm = _helper.CompileModules(modules);
+            ScriptInterpreter interpreter = new ScriptInterpreter(programm);
+            interpreter.Debugger.AddBreakpoint("global", 5);
+            interpreter.Debug();
+
+            Assert.AreEqual(5, interpreter.CurrentLine);
+            Assert.AreEqual(1, interpreter.Debugger.RegisterGetValue("ТестЗначение").AsInt());
+            interpreter.Debugger.Continue();
+        }
+
+        [TestMethod]
+        [Description("Проверка работы Попытка(Try) вне объекта.")]
+        public void Interpreter_InObjectException()
+        {
+            IDictionary<ScriptModule, string> modules = new Dictionary<ScriptModule, string>();
+            modules.Add(new ScriptModule("global", "global", ModuleTypeEnum.STARTUP, true), _helper.OpenModule("Exception\\In object exception\\global.scr"));
+            modules.Add(new ScriptModule("object", "object", ModuleTypeEnum.OBJECT, true, true), _helper.OpenModule("Exception\\In object exception\\object.scr"));
+
+            ScriptProgramm programm = _helper.CompileModules(modules);
+            ScriptInterpreter interpreter = new ScriptInterpreter(programm);
+            interpreter.Debugger.AddBreakpoint("global", 10);
+            interpreter.Debugger.AddBreakpoint("global", 19);
+            interpreter.Debug();
+
+            Assert.AreEqual(10, interpreter.CurrentLine);
+            Assert.AreEqual(0, interpreter.Debugger.RegisterGetValue("ТестЗначение").AsInt());
+            interpreter.Debugger.Continue();
+
+            Assert.AreEqual(19, interpreter.CurrentLine);
+            Assert.AreEqual(4, interpreter.Debugger.RegisterGetValue("ТестЗначение").AsInt());
+            interpreter.Debugger.Continue();
+        }
+
+
+        [TestMethod]
+        [Description("Проверка работы Попытка(Try) блока вложенного друг в друга.")]
+        public void Interpreter_TryNasted()
+        {
+            IDictionary<ScriptModule, string> modules = new Dictionary<ScriptModule, string>();
+            modules.Add(new ScriptModule("try", "try", ModuleTypeEnum.STARTUP, true, false), _helper.OpenModule("Exception\\try_nasted.scr"));
+
+
+            ScriptProgramm programm = _helper.CompileModules(modules);
+            ScriptInterpreter interpreter = new ScriptInterpreter(programm);
+            interpreter.Debugger.AddBreakpoint("try", 23);
+
+            interpreter.Debug();
+
+            Assert.AreEqual(23, interpreter.CurrentLine);
+            Assert.AreEqual(2, interpreter.Debugger.RegisterGetValue("f").AsNumber());
+            interpreter.Debugger.Continue();
+
+        }
+
+        #endregion
 
         #region Extension
 
@@ -47,10 +174,10 @@ namespace UnitTests
         public void Interpreter_ExtensionFunctionCall()
         {
             IDictionary<ScriptModule, string> modules = new Dictionary<ScriptModule, string>();
-            modules.Add(new ScriptModule("global", "global", ModuleTypeEnum.STARTUP,true,false), OpenModule("Extension\\function call.scr"));
+            modules.Add(new ScriptModule("global", "global", ModuleTypeEnum.STARTUP,true,false), _helper.OpenModule("Extension\\function call.scr"));
 
 
-            ScriptProgramm programm = CompileObjects(modules);
+            ScriptProgramm programm = _helper.CompileModules(modules);
             ScriptInterpreter interpreter = new ScriptInterpreter(programm);
             interpreter.Debugger.AddBreakpoint("global", 12);
 
@@ -66,31 +193,31 @@ namespace UnitTests
 
         #endregion
 
-
-
         #region Other
 
         [TestMethod]
+        [Description("Проверка преобразования ошибки из CompilerError в RuntimeError")]
         [ExpectedException(typeof(RuntimeException))]
         public void Interpreter_OtherThrowError()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
             files.Add("other", "Other\\throw_error_runtime.scr");
 
-            ScriptProgramm programm = Compile(files);
+            ScriptProgramm programm = _helper.Compile(files);
             ScriptInterpreter interpreter = new ScriptInterpreter(programm);
             interpreter.Run();
         }
 
 
         [TestMethod]
+        [Description("Ошибка при доступе к свойству только для чтения.")]
         [ExpectedException(typeof(RuntimeException))]
         public void Interpreter_OtherReadOnlyPropertyError()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
             files.Add("other", "Other\\readonly_property_error.scr");
 
-            ScriptProgramm programm = Compile(files);
+            ScriptProgramm programm = _helper.Compile(files);
             ScriptInterpreter interpreter = new ScriptInterpreter(programm);
             interpreter.Run();
         }
@@ -100,12 +227,13 @@ namespace UnitTests
         #region Goto
 
         [TestMethod]
+        [Description("Проверка переходов.")]
         public void Interpreter_Goto()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
             files.Add("goto", "Goto\\goto.scr");
 
-            ScriptProgramm programm = Compile(files);
+            ScriptProgramm programm = _helper.Compile(files);
             ScriptInterpreter interpreter = new ScriptInterpreter(programm);
             interpreter.Debugger.AddBreakpoint("goto", 14);
             interpreter.Debugger.AddBreakpoint("goto", 28);
@@ -121,16 +249,16 @@ namespace UnitTests
         }
         #endregion
 
-
         #region For
 
         [TestMethod]
+        [Description("Проверка оператора для каждого.")]
         public void Interpreter_ForEach()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
             files.Add("foreach", "For\\foreach.scr");
 
-            ScriptProgramm programm = Compile(files);
+            ScriptProgramm programm = _helper.Compile(files);
             ScriptInterpreter interpreter = new ScriptInterpreter(programm);
             interpreter.Debugger.AddBreakpoint("foreach", 29);
             interpreter.Debugger.AddBreakpoint("foreach", 45);
@@ -156,12 +284,13 @@ namespace UnitTests
 
 
         [TestMethod]
+        [Description("Проверка работы оператора Для.")]
         public void Interpreter_For()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
             files.Add("for", "For\\for.scr");
 
-            ScriptProgramm programm = Compile(files);
+            ScriptProgramm programm = _helper.Compile(files);
             ScriptInterpreter interpreter = new ScriptInterpreter(programm);
             interpreter.Debugger.AddBreakpoint("for", 7);
             interpreter.Debugger.AddBreakpoint("for", 14);
@@ -199,17 +328,16 @@ namespace UnitTests
         }
         #endregion
 
-
-
         #region While
 
         [TestMethod]
+        [Description("Проверка работы оператора Пока.")]
         public void Interpreter_While()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
             files.Add("while", "While\\while.scr");
 
-            ScriptProgramm programm = Compile(files);
+            ScriptProgramm programm = _helper.Compile(files);
             ScriptInterpreter interpreter = new ScriptInterpreter(programm);
             interpreter.Debugger.AddBreakpoint("while", 4);
             interpreter.Debugger.AddBreakpoint("while", 9);
@@ -244,16 +372,16 @@ namespace UnitTests
         }
         #endregion
 
-
         #region If
 
         [TestMethod]
+        [Description("Проверка работы оператора 'короткий' Если.")]
         public void Interpreter_IfShort()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
             files.Add("if", "If\\short_if.scr");
 
-            ScriptProgramm programm = Compile(files);
+            ScriptProgramm programm = _helper.Compile(files);
             ScriptInterpreter interpreter = new ScriptInterpreter(programm);
             interpreter.Debugger.AddBreakpoint("if", 6);
             interpreter.Debugger.AddBreakpoint("if", 10);
@@ -291,12 +419,13 @@ namespace UnitTests
         }
 
         [TestMethod]
+        [Description("Проверка работы оператора Если.")]
         public void Interpreter_If()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
             files.Add("if", "If\\if.scr");
 
-            ScriptProgramm programm = Compile(files);
+            ScriptProgramm programm = _helper.Compile(files);
             ScriptInterpreter interpreter = new ScriptInterpreter(programm);
             interpreter.Debugger.AddBreakpoint("if", 12);
             interpreter.Debugger.AddBreakpoint("if", 22);
@@ -339,12 +468,13 @@ namespace UnitTests
 
 
         [TestMethod]
+        [Description("Проверка работы оператора Если, вложенный друг в друга.")]
         public void Interpreter_IfNasted()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
             files.Add("if", "If\\if_nasted.scr");
 
-            ScriptProgramm programm = Compile(files);
+            ScriptProgramm programm = _helper.Compile(files);
             ScriptInterpreter interpreter = new ScriptInterpreter(programm);
             interpreter.Debugger.AddBreakpoint("if", 11);
             interpreter.Debugger.AddBreakpoint("if", 25);
@@ -374,13 +504,14 @@ namespace UnitTests
         #region Object
 
         [TestMethod]
+        [Description("Проверка вызова методов и свойств обьекта.")]
         public void Interpreter_Objects_CrossObjectCall()
         {
             IDictionary<ScriptModule, string> modules = new Dictionary<ScriptModule, string>();
-            modules.Add(new ScriptModule("global", "global", ModuleTypeEnum.STARTUP,true), OpenModule("Objects\\Cross object call\\global_module.scr"));
-            modules.Add(new ScriptModule("object", "object", ModuleTypeEnum.OBJECT, true,true), OpenModule("Objects\\Cross object call\\object_module.scr"));
+            modules.Add(new ScriptModule("global", "global", ModuleTypeEnum.STARTUP,true), _helper.OpenModule("Objects\\Cross object call\\global_module.scr"));
+            modules.Add(new ScriptModule("object", "object", ModuleTypeEnum.OBJECT, true,true), _helper.OpenModule("Objects\\Cross object call\\object_module.scr"));
 
-            ScriptProgramm programm = CompileObjects(modules);
+            ScriptProgramm programm = _helper.CompileModules(modules);
             ScriptInterpreter interpreter = new ScriptInterpreter(programm);
             interpreter.Debugger.AddBreakpoint("global", 7);
             interpreter.Debugger.AddBreakpoint("global", 30);
@@ -454,14 +585,15 @@ namespace UnitTests
 
 
         [TestMethod]
+        [Description("Проверка вызова процедур обьекта как функций.")]
         [ExpectedException(typeof(RuntimeException))]
         public void Interpreter_Objects_ProcedureAsFunction_Error()
         {
             IDictionary<ScriptModule, string> modules = new Dictionary<ScriptModule, string>();
-            modules.Add(new ScriptModule("global", "global", ModuleTypeEnum.STARTUP,true), OpenModule("Objects\\Object procedure as function call\\global_module.scr"));
-            modules.Add(new ScriptModule("object", "object", ModuleTypeEnum.OBJECT, true,true), OpenModule("Objects\\Object procedure as function call\\object_module.scr"));
+            modules.Add(new ScriptModule("global", "global", ModuleTypeEnum.STARTUP,true), _helper.OpenModule("Objects\\Object procedure as function call\\global_module.scr"));
+            modules.Add(new ScriptModule("object", "object", ModuleTypeEnum.OBJECT, true,true), _helper.OpenModule("Objects\\Object procedure as function call\\object_module.scr"));
 
-            ScriptProgramm programm = CompileObjects(modules);
+            ScriptProgramm programm = _helper.CompileModules(modules);
             ScriptInterpreter interpreter = new ScriptInterpreter(programm);
             interpreter.Run();
 
@@ -469,14 +601,15 @@ namespace UnitTests
 
 
         [TestMethod]
+        [Description("Проверка вызова, не публичных, методов обьекта.")]
         [ExpectedException(typeof(RuntimeException))]
         public void Interpreter_Objects_NotPublicFunctionCall_Error()
         {
             IDictionary<ScriptModule, string> modules = new Dictionary<ScriptModule, string>();
-            modules.Add(new ScriptModule("global", "global", ModuleTypeEnum.STARTUP,true), OpenModule("Objects\\Object not public call error\\global_module.scr"));
-            modules.Add(new ScriptModule("object", "object", ModuleTypeEnum.OBJECT, true,true), OpenModule("Objects\\Object not public call error\\object_module.scr"));
+            modules.Add(new ScriptModule("global", "global", ModuleTypeEnum.STARTUP,true), _helper.OpenModule("Objects\\Object not public call error\\global_module.scr"));
+            modules.Add(new ScriptModule("object", "object", ModuleTypeEnum.OBJECT, true,true), _helper.OpenModule("Objects\\Object not public call error\\object_module.scr"));
 
-            ScriptProgramm programm = CompileObjects(modules);
+            ScriptProgramm programm = _helper.CompileModules(modules);
             ScriptInterpreter interpreter = new ScriptInterpreter(programm);
             interpreter.Run();
 
@@ -484,14 +617,15 @@ namespace UnitTests
 
 
         [TestMethod]
+        [Description("Проверка вызова, не публичных, свойств обьекта.")]
         [ExpectedException(typeof(RuntimeException))]
         public void Interpreter_Objects_NotPublicPropertyCall_Error()
         {
             IDictionary<ScriptModule, string> modules = new Dictionary<ScriptModule, string>();
-            modules.Add(new ScriptModule("global", "global", ModuleTypeEnum.STARTUP,true), OpenModule("Objects\\Not public property call\\global_module.scr"));
-            modules.Add(new ScriptModule("object", "object", ModuleTypeEnum.OBJECT, true,true), OpenModule("Objects\\Not public property call\\object_module.scr"));
+            modules.Add(new ScriptModule("global", "global", ModuleTypeEnum.STARTUP,true), _helper.OpenModule("Objects\\Not public property call\\global_module.scr"));
+            modules.Add(new ScriptModule("object", "object", ModuleTypeEnum.OBJECT, true,true), _helper.OpenModule("Objects\\Not public property call\\object_module.scr"));
 
-            ScriptProgramm programm = CompileObjects(modules);
+            ScriptProgramm programm = _helper.CompileModules(modules);
             ScriptInterpreter interpreter = new ScriptInterpreter(programm);
             interpreter.Run();
 
@@ -501,13 +635,14 @@ namespace UnitTests
 
         #region Global
         [TestMethod]
+        [Description("Проверка вызова глобальных методов обьекта.")]
         public void Interpreter_GlobalFunctionCall()
         {
             IDictionary<ScriptModule, string> modules = new Dictionary<ScriptModule, string>();
-            modules.Add(new ScriptModule("global","global", ModuleTypeEnum.STARTUP,true), OpenModule("Global\\Function call\\global_module.scr"));
-            modules.Add(new ScriptModule("object", "object", ModuleTypeEnum.COMMON, true,false), OpenModule("Global\\Function call\\object_module.scr"));
+            modules.Add(new ScriptModule("global","global", ModuleTypeEnum.STARTUP,true), _helper.OpenModule("Global\\Function call\\global_module.scr"));
+            modules.Add(new ScriptModule("object", "object", ModuleTypeEnum.COMMON, true,false), _helper.OpenModule("Global\\Function call\\object_module.scr"));
 
-            ScriptProgramm programm = CompileObjects(modules);
+            ScriptProgramm programm = _helper.CompileModules(modules);
             ScriptInterpreter interpreter = new ScriptInterpreter(programm);
             interpreter.Debugger.AddBreakpoint("global", 6);
             interpreter.Debugger.AddBreakpoint("global", 20);
@@ -567,12 +702,13 @@ namespace UnitTests
         #region Function
 
         [TestMethod]
+        [Description("Проверка присвоения результата выполнения функции переменной.")]
         public void Interpreter_FunctionAssignResult()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
             files.Add("function", "Function\\assign_result.scr");
 
-            ScriptProgramm programm = Compile(files);
+            ScriptProgramm programm = _helper.Compile(files);
             ScriptInterpreter interpreter = new ScriptInterpreter(programm);
             interpreter.Debugger.AddBreakpoint("function", 10);
             interpreter.Debug();
@@ -587,12 +723,13 @@ namespace UnitTests
         }
 
         [TestMethod]
+        [Description("Проверка рекурсивного выполнения функции.")]
         public void Interpreter_FunctionRecursiveCall()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
             files.Add("function", "Function\\recursive_call.scr");
 
-            ScriptProgramm programm = Compile(files);
+            ScriptProgramm programm = _helper.Compile(files);
             ScriptInterpreter interpreter = new ScriptInterpreter(programm);
             interpreter.Debugger.AddBreakpoint("function", 12);
             interpreter.Debug();
@@ -604,12 +741,13 @@ namespace UnitTests
         #region Procedure
 
         [TestMethod]
+        [Description("Проверка выполнения процедур.")]
         public void Interpreter_Procedure()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
             files.Add("procedure", "Procedure\\procedure.scr");
 
-            ScriptProgramm programm = Compile(files);
+            ScriptProgramm programm = _helper.Compile(files);
             ScriptInterpreter interpreter = new ScriptInterpreter(programm);
             interpreter.Debugger.AddBreakpoint("procedure", 30);
             interpreter.Debug();
@@ -675,12 +813,13 @@ namespace UnitTests
 
 
         [TestMethod]
+        [Description("Проверка присвоения значений переменной.")]
         public void Interpreter_Var_Assign()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
             files.Add("var", "Var\\var_assign.scr");
 
-            ScriptProgramm programm = Compile(files);
+            ScriptProgramm programm = _helper.Compile(files);
             ScriptInterpreter interpreter = new ScriptInterpreter(programm);
             interpreter.Debugger.AddBreakpoint("var", 14);
             interpreter.Debugger.AddBreakpoint("var", 15);
@@ -703,39 +842,5 @@ namespace UnitTests
         }
 
         #endregion
-
-        private ScriptProgramm Compile(IDictionary<string, string> file_names)
-        {
-            IDictionary<ScriptModule, string> files = new Dictionary<ScriptModule, string>();
-            string path = Directory.GetCurrentDirectory() + "\\Scripts\\Interpreter\\";
-
-            foreach (KeyValuePair<string, string> file in file_names)
-            {
-                if (File.Exists(path + file.Value))
-                    files.Add(new ScriptModule(file.Key, file.Key, ModuleTypeEnum.STARTUP) { FileName = file.Value }, File.ReadAllText(path + file.Value));
-                else
-                    throw new Exception($"Файл {path} не найден.");
-            }
-
-            ScriptCompiler compiler = new ScriptCompiler();
-            return compiler.Compile(files);
-        }
-
-        private string OpenModule(string file_name)
-        {
-            string path = Directory.GetCurrentDirectory() + "\\Scripts\\Interpreter\\";
-
-            if (File.Exists(path + file_name))
-                return File.ReadAllText(path + file_name);
-            else
-                throw new Exception($"Файл {path + file_name} не найден.");
-
-        }
-
-        private ScriptProgramm CompileObjects(IDictionary<ScriptModule, string> modules)
-        {
-            ScriptCompiler compiler = new ScriptCompiler();
-            return compiler.Compile(modules);
-        }
     }
 }

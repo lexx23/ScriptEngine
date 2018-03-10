@@ -11,32 +11,32 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value.Values
 
         public bool AsBoolean()
         {
-            throw new NotImplementedException();
+            throw new Exception("Преобразование значения к типу Булево не может быть выполнено");
         }
 
         public DateTime AsDate()
         {
-            throw new NotImplementedException();
+            throw new Exception("Преобразование значения к типу Дата не может быть выполнено"); 
         }
 
         public int AsInt()
         {
-            throw new NotImplementedException();
+            throw new Exception("Преобразование значения к типу Число не может быть выполнено");
         }
 
         public decimal AsNumber()
         {
-            throw new NotImplementedException();
+            throw new Exception("Преобразование значения к типу Число не может быть выполнено");
         }
 
         public ScriptObjectContext AsScriptObject()
         {
-            throw new NotImplementedException();
+            throw new Exception("Преобразование значения к типу Обьект не может быть выполнено");
         }
 
         public string AsString()
         {
-            throw new NotImplementedException();
+            return "";
         }
 
         public object AsObject()

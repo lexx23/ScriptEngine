@@ -1,4 +1,5 @@
 ﻿using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
+using ScriptEngine.EngineBase.Compiler.Types.Variable;
 using ScriptEngine.EngineBase.Library;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -9,7 +10,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Function.LibraryMethods
     class FunctionWrapper<T> : IMethodWrapper
     {
         private T _instance;
-        private Func<T, IValue[], IValue> _function;
+        private Func<T, IVariable[], IValue> _function;
 
 
         /// <summary>
@@ -17,7 +18,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Function.LibraryMethods
         /// </summary>
         /// <param name="instance"></param>
         /// <param name="function"></param>
-        public FunctionWrapper(T instance, Func<T, IValue[], IValue> function)
+        public FunctionWrapper(T instance, Func<T, IVariable[], IValue> function)
         {
             _instance = instance;
             _function = function;
@@ -37,10 +38,10 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Function.LibraryMethods
         /// </summary>
         /// <param name="method"></param>
         /// <returns></returns>
-        private Func<T, IValue[], IValue> CreateFunction(MethodInfo method)
+        private Func<T, IVariable[], IValue> CreateFunction(MethodInfo method)
         {
             ParameterExpression instanceParameter = Expression.Parameter(typeof(T), "target");
-            ParameterExpression argumentsParameter = Expression.Parameter(typeof(IValue[]), "arguments");
+            ParameterExpression argumentsParameter = Expression.Parameter(typeof(IVariable[]), "arguments");
             Expression call;
             if (!method.IsStatic)
                 call = Expression.Call(instanceParameter, method, CreateParameterExpressions(method, argumentsParameter));
@@ -48,7 +49,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Function.LibraryMethods
                 call = Expression.Call(method, CreateParameterExpressions(method, argumentsParameter));
 
             Expression result = ConvertExpression.ConvertToScript(method.ReturnType,call);
-            return Expression.Lambda<Func<T, IValue[],IValue>>(result, instanceParameter, argumentsParameter).Compile();
+            return Expression.Lambda<Func<T, IVariable[],IValue>>(result, instanceParameter, argumentsParameter).Compile();
         }
 
         private Expression[] CreateParameterExpressions(MethodInfo method, Expression argumentsParameter)
@@ -58,10 +59,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Function.LibraryMethods
 
             foreach (ParameterInfo info in method.GetParameters())
             {
-                if (info.ParameterType == typeof(IValue[]))
-                    list[i] = argumentsParameter;
-                else
-                    list[i] = ConvertExpression.ConvertFromScript(Expression.ArrayIndex(argumentsParameter, Expression.Constant(i)), info.ParameterType);
+                list[i] = ConvertExpression.ConvertFromScript(argumentsParameter, info.ParameterType,i);
                 i++;
             }
             return list;
@@ -72,7 +70,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Function.LibraryMethods
         /// </summary>
         /// <param name="param"></param>
         /// <returns></returns>
-        public IValue Run(IValue[] param)
+        public IValue Run(IVariable[] param)
         {
             return _function(_instance, param);
         }

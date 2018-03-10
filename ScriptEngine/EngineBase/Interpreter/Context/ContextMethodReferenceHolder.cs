@@ -6,7 +6,7 @@ using System.Text;
 
 namespace ScriptEngine.EngineBase.Interpreter.Context
 {
-    class ContextMethodReferenceHolder
+    public class ContextMethodReferenceHolder
     {
         private IFunction _function;
         private IMethodWrapper _wrapper;

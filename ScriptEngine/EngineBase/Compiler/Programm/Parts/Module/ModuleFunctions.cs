@@ -1,4 +1,5 @@
 ﻿using ScriptEngine.EngineBase.Compiler.Types.Function;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -46,7 +47,11 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts.Module
         public void Add(IFunction function)
         {
             if (Get(function.Name) == null)
+            {
+                function.Name = function.Name;
+                function.Alias = function.Alias;
                 _functions.Add(function);
+            }
         }
 
         /// <summary>
@@ -59,7 +64,7 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts.Module
         {
             for (int i = 0; i < _functions.Count; i++)
             {
-                if (_functions[i].Name == name || _functions[i].Alias == name)
+                if (String.Equals(_functions[i].Name,name,StringComparison.OrdinalIgnoreCase) || String.Equals(_functions[i].Alias,name, StringComparison.OrdinalIgnoreCase))
                     return _functions[i];
             }
 

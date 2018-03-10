@@ -7,12 +7,10 @@ using ScriptEngine.EngineBase.Compiler.Types.Function;
 using ScriptEngine.EngineBase.Compiler.Types.Variable;
 using ScriptEngine.EngineBase.Library.Attributes;
 using ScriptEngine.EngineBase.Extensions;
-using ScriptEngine.EngineBase.Library;
 using System.Reflection;
 using System.Linq;
 using System;
-using ScriptEngine.EngineBase.Library.BaseTypes;
-using System.Collections.Generic;
+
 
 namespace ScriptEngine.EngineBase.Compiler.Programm.ModuleLoader
 {
@@ -89,11 +87,56 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.ModuleLoader
             _programm.GlobalVariables.Add(new Variable() { Name = attribute.Name, Alias = attribute.Alias, Reference = new SimpleReference() });
         }
 
+
+        /// <summary>
+        /// Добавить обьект определенного типа.
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="as_global"></param>
+        public void AddObjectOfType(Type type, bool as_global = false)
+        {
+            LibraryClassAttribute attribute = (LibraryClassAttribute)Attribute.GetCustomAttribute(type, typeof(LibraryClassAttribute), false);
+
+            ScriptModule module = new ScriptModule(attribute.Name, attribute.Alias, ModuleTypeEnum.OBJECT, as_global, true);
+            module.InstanceType = type;
+
+            foreach (PropertyInfo property in type.GetTypeInfo().GetProperties().Where(m => m.GetCustomAttributes(typeof(LibraryClassPropertyAttribute), false).Length > 0))
+            {
+                LibraryClassPropertyAttribute property_attr = property.GetCustomAttribute<LibraryClassPropertyAttribute>(false);
+
+                IVariableReference reference = ReferenceFactory.Create(type, property);
+                IVariable var = new Variable() { Name = property_attr.Name, Alias = property_attr.Alias, Public = true, Reference = reference };
+                module.Variables.Add(property_attr.Name, var);
+                if(as_global)
+                    _programm.GlobalVariables.Add(var);
+            }
+
+
+            foreach (MethodInfo method in type.GetTypeInfo().DeclaredMethods.Where(m => m.GetCustomAttributes(typeof(LibraryClassMethodAttribute), false).Length > 0))
+            {
+                LibraryClassMethodAttribute method_attr = method.GetCustomAttribute<LibraryClassMethodAttribute>(false);
+
+                IFunction function = module.Functions.Create(method_attr.Name, true);
+                function.Alias = method_attr.Alias;
+                function.Type = method.ReturnType == typeof(void) ? FunctionTypeEnum.PROCEDURE : FunctionTypeEnum.FUNCTION;
+                GetFunctionParameters(function, method);
+                function.Method = LibraryMethodFactory.Create(type, method);
+
+                if (as_global)
+                    _programm.GlobalFunctions.Add(function);
+            }
+
+            _programm.Modules.Add(module);
+            if(as_global)
+                _programm.GlobalVariables.Add(new Variable() { Name = attribute.Name, Alias = attribute.Alias, Reference = new SimpleReference() });
+        }
+
+
         /// <summary>
         /// Загрузка данных из сборки c#.
         /// </summary>
         /// <param name="assembly"></param>
-        private void LoadAssembly(Assembly assembly)
+        public void LoadAssembly(Assembly assembly)
         {
             foreach (Type type in assembly.ExportedTypes.Where(m => m.GetCustomAttributes(typeof(LibraryClassAttribute), false).Length > 0))
             {
@@ -102,34 +145,7 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.ModuleLoader
                 // Класс содержит только глобальные функции и процедуры.
                 if (attribute.AsGlobal && !attribute.AsObject)
                 {
-                    ScriptModule global_module = new ScriptModule(attribute.Name, attribute.Alias, ModuleTypeEnum.COMMON, true, true);
-                    global_module.InstanceType = type;
-
-                    foreach (PropertyInfo property in type.GetTypeInfo().GetProperties().Where(m => m.GetCustomAttributes(typeof(LibraryClassPropertyAttribute), false).Length > 0))
-                    {
-                        LibraryClassPropertyAttribute property_attr = property.GetCustomAttribute<LibraryClassPropertyAttribute>(false);
-
-                        IVariableReference reference = ReferenceFactory.Create(type, property);
-                        IVariable var = new Variable() { Name = property_attr.Name, Alias = property_attr.Alias, Public = true, Reference = reference };
-                        global_module.Variables.Add(property_attr.Name, var);
-                        _programm.GlobalVariables.Add(var);
-                    }
-
-
-                    foreach (MethodInfo method in type.GetTypeInfo().DeclaredMethods.Where(m => m.GetCustomAttributes(typeof(LibraryClassMethodAttribute), false).Length > 0))
-                    {
-                        LibraryClassMethodAttribute method_attr = method.GetCustomAttribute<LibraryClassMethodAttribute>(false);
-
-                        IFunction function = _programm.GlobalFunctions.Create(method_attr.Name);
-                        function.Alias = method_attr.Alias;
-                        function.Type = method.ReturnType == typeof(void) ? FunctionTypeEnum.PROCEDURE : FunctionTypeEnum.FUNCTION;
-                        GetFunctionParameters(function, method);
-                        function.Method = LibraryMethodFactory.Create(type, method);
-                        global_module.Functions.Add(function);
-                    }
-
-                    _programm.Modules.Add(global_module);
-                    _programm.GlobalVariables.Add(new Variable() { Name = attribute.Name, Alias = attribute.Alias, Reference = new SimpleReference() });
+                    AddObjectOfType(type,true);
                     continue;
                 }
 
@@ -143,30 +159,8 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.ModuleLoader
 
                 // Класс содержит объект который возможно создать оператором Новый.
                 if (!attribute.AsGlobal && attribute.AsObject)
-                {
-                    ScriptModule module = new ScriptModule(attribute.Name, attribute.Alias, ModuleTypeEnum.OBJECT, false, true);
-                    module.InstanceType = type;
-
-                    foreach (MethodInfo method in type.GetTypeInfo().DeclaredMethods.Where(m => m.GetCustomAttributes(typeof(LibraryClassMethodAttribute), false).Length > 0))
-                    {
-                        LibraryClassMethodAttribute method_attr = method.GetCustomAttribute<LibraryClassMethodAttribute>(false);
-
-                        IFunction function = module.Functions.Create(method_attr.Name, true);
-                        function.Alias = method_attr.Alias;
-                        function.Type = method.ReturnType == typeof(void) ? FunctionTypeEnum.PROCEDURE : FunctionTypeEnum.FUNCTION;
-                        GetFunctionParameters(function, method);
-                        function.Method = LibraryMethodFactory.Create(type, method);
-                    }
-
-                    _programm.Modules.Add(module);
-                }
+                    AddObjectOfType(type);
             }
-        }
-
-
-        public void LoadFromAssembly(Assembly assembly)
-        {
-            LoadAssembly(assembly);
         }
     }
 }

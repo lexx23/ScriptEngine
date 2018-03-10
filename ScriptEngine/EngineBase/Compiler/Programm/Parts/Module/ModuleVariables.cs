@@ -115,6 +115,9 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts.Module
             if (Get(name,variable.Scope) != null)
                 return false;
 
+            variable.Name = variable.Name;
+            variable.Alias = variable.Alias;
+
             _vars.Add(variable);
             _module.ModuleScope.Vars.Add(variable);
             _module.ModuleScope.VarCount++;
@@ -134,7 +137,7 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts.Module
 
             for (int i = 0; i < _vars.Count; i++)
             {
-                if (_vars[i].Name == name || _vars[i].Alias == name)
+                if (String.Equals(_vars[i].Name,name,StringComparison.OrdinalIgnoreCase) || String.Equals(_vars[i].Alias,name, StringComparison.OrdinalIgnoreCase))
                     if (_vars[i].Scope == scope)
                         return _vars[i];
             }
