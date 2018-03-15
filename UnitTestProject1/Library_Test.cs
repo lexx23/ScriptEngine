@@ -71,7 +71,7 @@ namespace UnitTests
             interpreter.Debugger.Continue();
 
             Assert.AreEqual(7, interpreter.CurrentLine);
-            Assert.AreEqual("(123 456,789)", interpreter.Debugger.RegisterGetValue("А").AsString());
+            Assert.AreEqual($"(123 456{System.Globalization.CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator}789)", interpreter.Debugger.RegisterGetValue("А").AsString());
             interpreter.Debugger.Continue();
 
             Assert.AreEqual(11, interpreter.CurrentLine);
