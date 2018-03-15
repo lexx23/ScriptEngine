@@ -1,4 +1,11 @@
-﻿using ScriptEngine.EngineBase.Compiler.Programm.Parts.Module;
+﻿/*----------------------------------------------------------
+	This Source Code Form is subject to the terms of the 
+	Mozilla Public License, v.2.0. If a copy of the MPL 
+	was not distributed with this file, You can obtain one 
+	at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+
+using ScriptEngine.EngineBase.Compiler.Programm.Parts.Module;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ScriptEngine.EngineBase.Compiler.Programm;
 using ScriptEngine.EngineBase.Interpreter;
@@ -16,6 +23,38 @@ namespace UnitTests
         {
             _helper = new Helper("Interpreter");
         }
+
+        #region Вычислить(Eval) Выполнить(Execute)
+        [TestMethod]
+        [Description("Проверка работы Вычислить(Eval)")]
+        public void Interpreter_Eval()
+        {
+            IDictionary<ScriptModule, string> modules = new Dictionary<ScriptModule, string>();
+            modules.Add(new ScriptModule("global", "global", ModuleTypeEnum.STARTUP, true, false), _helper.OpenModule("Eval\\eval.scr"));
+            modules.Add(new ScriptModule("object", "object", ModuleTypeEnum.OBJECT, true, true), _helper.OpenModule("Eval\\object_eval.scr"));
+
+            ScriptProgramm programm = _helper.CompileModules(modules);
+            ScriptInterpreter interpreter = new ScriptInterpreter(programm);
+            interpreter.Debugger.AddBreakpoint("global", 3);
+            interpreter.Debugger.AddBreakpoint("global", 5);
+            interpreter.Debugger.AddBreakpoint("global", 8);
+
+            interpreter.Debug();
+
+            Assert.AreEqual(3, interpreter.CurrentLine);
+            Assert.AreEqual(4, interpreter.Debugger.RegisterGetValue("результат").AsNumber());
+            interpreter.Debugger.Continue();
+
+            Assert.AreEqual(5, interpreter.CurrentLine);
+            Assert.AreEqual(10, interpreter.Debugger.RegisterGetValue("результат").AsNumber());
+            interpreter.Debugger.Continue();
+
+            Assert.AreEqual(8, interpreter.CurrentLine);
+            Assert.AreEqual(4, interpreter.Debugger.RegisterGetValue("результат").AsNumber());
+            interpreter.Debugger.Continue();
+        }
+
+        #endregion
 
 
         [TestMethod]
@@ -39,6 +78,30 @@ namespace UnitTests
 
             Assert.AreEqual(9, interpreter.CurrentLine);
             Assert.AreEqual(124, interpreter.Debugger.RegisterGetValue("значение").AsNumber());
+            interpreter.Debugger.Continue();
+        }
+
+        [TestMethod]
+        [Description("Проверка работы оперратор Новый(New)")]
+        public void Interpreter_New()
+        {
+            IDictionary<ScriptModule, string> modules = new Dictionary<ScriptModule, string>();
+            modules.Add(new ScriptModule("global", "global", ModuleTypeEnum.STARTUP, true, false), _helper.OpenModule("New\\new.scr"));
+
+
+            ScriptProgramm programm = _helper.CompileModules(modules);
+            ScriptInterpreter interpreter = new ScriptInterpreter(programm);
+            interpreter.Debugger.AddBreakpoint("global", 13);
+            interpreter.Debugger.AddBreakpoint("global", 32);
+
+            interpreter.Debug();
+
+            Assert.AreEqual(13, interpreter.CurrentLine);
+            Assert.AreEqual(0, interpreter.Debugger.RegisterGetValue("счетчик").AsNumber());
+            interpreter.Debugger.Continue();
+
+            Assert.AreEqual(32, interpreter.CurrentLine);
+            Assert.AreEqual(6, interpreter.Debugger.RegisterGetValue("счетчик").AsNumber());
             interpreter.Debugger.Continue();
         }
 
@@ -164,31 +227,6 @@ namespace UnitTests
             Assert.AreEqual(2, interpreter.Debugger.RegisterGetValue("f").AsNumber());
             interpreter.Debugger.Continue();
 
-        }
-
-        #endregion
-
-        #region Extension
-
-        [TestMethod]
-        public void Interpreter_ExtensionFunctionCall()
-        {
-            IDictionary<ScriptModule, string> modules = new Dictionary<ScriptModule, string>();
-            modules.Add(new ScriptModule("global", "global", ModuleTypeEnum.STARTUP,true,false), _helper.OpenModule("Extension\\function call.scr"));
-
-
-            ScriptProgramm programm = _helper.CompileModules(modules);
-            ScriptInterpreter interpreter = new ScriptInterpreter(programm);
-            interpreter.Debugger.AddBreakpoint("global", 12);
-
-            System.Diagnostics.Stopwatch sw = new Stopwatch();
-            sw.Start();
-            interpreter.Run();
-            //interpreter.Debug();
-            sw.Stop();
-
-            Assert.AreEqual(1800, sw.ElapsedMilliseconds,150);
-            //Assert.AreEqual(1000000, interpreter.Debugger.RegisterGetValue("ф").AsNumber());
         }
 
         #endregion
@@ -508,8 +546,8 @@ namespace UnitTests
         public void Interpreter_Objects_CrossObjectCall()
         {
             IDictionary<ScriptModule, string> modules = new Dictionary<ScriptModule, string>();
-            modules.Add(new ScriptModule("global", "global", ModuleTypeEnum.STARTUP,true), _helper.OpenModule("Objects\\Cross object call\\global_module.scr"));
-            modules.Add(new ScriptModule("object", "object", ModuleTypeEnum.OBJECT, true,true), _helper.OpenModule("Objects\\Cross object call\\object_module.scr"));
+            modules.Add(new ScriptModule("global", "global", ModuleTypeEnum.STARTUP, true), _helper.OpenModule("Objects\\Cross object call\\global_module.scr"));
+            modules.Add(new ScriptModule("object", "object", ModuleTypeEnum.OBJECT, true, true), _helper.OpenModule("Objects\\Cross object call\\object_module.scr"));
 
             ScriptProgramm programm = _helper.CompileModules(modules);
             ScriptInterpreter interpreter = new ScriptInterpreter(programm);
@@ -590,8 +628,8 @@ namespace UnitTests
         public void Interpreter_Objects_ProcedureAsFunction_Error()
         {
             IDictionary<ScriptModule, string> modules = new Dictionary<ScriptModule, string>();
-            modules.Add(new ScriptModule("global", "global", ModuleTypeEnum.STARTUP,true), _helper.OpenModule("Objects\\Object procedure as function call\\global_module.scr"));
-            modules.Add(new ScriptModule("object", "object", ModuleTypeEnum.OBJECT, true,true), _helper.OpenModule("Objects\\Object procedure as function call\\object_module.scr"));
+            modules.Add(new ScriptModule("global", "global", ModuleTypeEnum.STARTUP, true), _helper.OpenModule("Objects\\Object procedure as function call\\global_module.scr"));
+            modules.Add(new ScriptModule("object", "object", ModuleTypeEnum.OBJECT, true, true), _helper.OpenModule("Objects\\Object procedure as function call\\object_module.scr"));
 
             ScriptProgramm programm = _helper.CompileModules(modules);
             ScriptInterpreter interpreter = new ScriptInterpreter(programm);
@@ -606,8 +644,8 @@ namespace UnitTests
         public void Interpreter_Objects_NotPublicFunctionCall_Error()
         {
             IDictionary<ScriptModule, string> modules = new Dictionary<ScriptModule, string>();
-            modules.Add(new ScriptModule("global", "global", ModuleTypeEnum.STARTUP,true), _helper.OpenModule("Objects\\Object not public call error\\global_module.scr"));
-            modules.Add(new ScriptModule("object", "object", ModuleTypeEnum.OBJECT, true,true), _helper.OpenModule("Objects\\Object not public call error\\object_module.scr"));
+            modules.Add(new ScriptModule("global", "global", ModuleTypeEnum.STARTUP, true), _helper.OpenModule("Objects\\Object not public call error\\global_module.scr"));
+            modules.Add(new ScriptModule("object", "object", ModuleTypeEnum.OBJECT, true, true), _helper.OpenModule("Objects\\Object not public call error\\object_module.scr"));
 
             ScriptProgramm programm = _helper.CompileModules(modules);
             ScriptInterpreter interpreter = new ScriptInterpreter(programm);
@@ -622,8 +660,8 @@ namespace UnitTests
         public void Interpreter_Objects_NotPublicPropertyCall_Error()
         {
             IDictionary<ScriptModule, string> modules = new Dictionary<ScriptModule, string>();
-            modules.Add(new ScriptModule("global", "global", ModuleTypeEnum.STARTUP,true), _helper.OpenModule("Objects\\Not public property call\\global_module.scr"));
-            modules.Add(new ScriptModule("object", "object", ModuleTypeEnum.OBJECT, true,true), _helper.OpenModule("Objects\\Not public property call\\object_module.scr"));
+            modules.Add(new ScriptModule("global", "global", ModuleTypeEnum.STARTUP, true), _helper.OpenModule("Objects\\Not public property call\\global_module.scr"));
+            modules.Add(new ScriptModule("object", "object", ModuleTypeEnum.OBJECT, true, true), _helper.OpenModule("Objects\\Not public property call\\object_module.scr"));
 
             ScriptProgramm programm = _helper.CompileModules(modules);
             ScriptInterpreter interpreter = new ScriptInterpreter(programm);
@@ -639,8 +677,8 @@ namespace UnitTests
         public void Interpreter_GlobalFunctionCall()
         {
             IDictionary<ScriptModule, string> modules = new Dictionary<ScriptModule, string>();
-            modules.Add(new ScriptModule("global","global", ModuleTypeEnum.STARTUP,true), _helper.OpenModule("Global\\Function call\\global_module.scr"));
-            modules.Add(new ScriptModule("object", "object", ModuleTypeEnum.COMMON, true,false), _helper.OpenModule("Global\\Function call\\object_module.scr"));
+            modules.Add(new ScriptModule("global", "global", ModuleTypeEnum.STARTUP, true), _helper.OpenModule("Global\\Function call\\global_module.scr"));
+            modules.Add(new ScriptModule("object", "object", ModuleTypeEnum.COMMON, true, false), _helper.OpenModule("Global\\Function call\\object_module.scr"));
 
             ScriptProgramm programm = _helper.CompileModules(modules);
             ScriptInterpreter interpreter = new ScriptInterpreter(programm);

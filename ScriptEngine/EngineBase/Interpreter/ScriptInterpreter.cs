@@ -1,4 +1,4 @@
-﻿using ScriptEngine.EngineBase.Compiler.Types.Function.LibraryMethods;
+﻿using ScriptEngine.EngineBase.Library.BaseTypes.UniversalCollections;
 using ScriptEngine.EngineBase.Compiler.Types.Function.Parameters;
 using ScriptEngine.EngineBase.Compiler.Types.Variable.References;
 using ScriptEngine.EngineBase.Compiler.Programm.Parts.Module;
@@ -6,13 +6,12 @@ using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
 using ScriptEngine.EngineBase.Compiler.Types.Function;
 using ScriptEngine.EngineBase.Compiler.Types.Variable;
 using ScriptEngine.EngineBase.Interpreter.Context;
-using ScriptEngine.EngineBase.Library.Attributes;
 using ScriptEngine.EngineBase.Compiler.Programm;
 using ScriptBaseFunctionsLibrary.BuildInTypes;
 using ScriptEngine.EngineBase.Exceptions;
 using System.Collections.Generic;
 using System;
-using ScriptEngine.EngineBase.Library.BaseTypes;
+using ScriptEngine.EngineBase.Compiler;
 
 namespace ScriptEngine.EngineBase.Interpreter
 {
@@ -24,6 +23,7 @@ namespace ScriptEngine.EngineBase.Interpreter
 
         private Queue<IVariableReference> _stack;
         private IList<ScriptStatement> _code;
+        private IList<(int, int, int)> _eval;
         private ErrorInfo _error_info;
         private ScriptDebugger _debugger;
         private IValue _return_value;
@@ -78,6 +78,7 @@ namespace ScriptEngine.EngineBase.Interpreter
             _programm = programm;
             _instruction = int.MaxValue;
 
+            _eval = new List<(int, int, int)>();
             _debugger = new ScriptDebugger(this);
             _stack = new Queue<IVariableReference>();
             _context = new Context.InterpreterContext(_programm);
@@ -324,14 +325,50 @@ namespace ScriptEngine.EngineBase.Interpreter
                 }
         }
 
-
         /// <summary>
-        /// Проверить результат вычислений.
+        /// Оператор Новый(new) вариант 2: Новый(<Тип>[, <ПараметрыКонструктора>])
         /// </summary>
-        /// <param name="result"></param>
-        private void ErrorResult(string left, string right, OP_CODES code)
+        /// <returns></returns>
+        private IFunction NewType2()
         {
-            throw new RuntimeException(this, $"Невозможно рассчитать {EnumStringAttribute.GetStringValue(code)}  {left} и {right}.");
+            IVariableReference[] stack_param = new IVariableReference[_stack.Count];
+
+            int i = 0;
+            while (_stack.Count > 0)
+            {
+                stack_param[i] = _stack.Dequeue();
+                i++;
+            }
+
+            ScriptModule module;
+            string type_name = stack_param[0].Get().AsString();
+
+            // Проверяем что такой обьект существует.
+            if (!_programm.Modules.Exist(type_name))
+                throw new RuntimeException(this, $"Тип не определен ({type_name})");
+            else
+                module = _programm.Modules.Get(type_name);
+
+            // Находим его конструктор.
+            IFunction constructor = module.Functions.Get("Constructor");
+            if (constructor == null)
+                throw new RuntimeException(this, "Конструктор не найден.");
+
+            // Обрабатываем параметры.
+            if(stack_param.Length > 1)
+            {
+                IValue value = stack_param[1].Get();
+                if (value.Type == ValueTypeEnum.SCRIPT_OBJECT)
+                {
+                    // Если это массив то забираем параметры из массива.
+                    ScriptObjectContext script_object = value.AsScriptObject();
+                    if (typeof(ICollectionIndexer).IsAssignableFrom(script_object.Instance.GetType()) && typeof(IEnumerable<IValue>).IsAssignableFrom(script_object.Instance.GetType()))
+                        foreach (IValue array_value in script_object.Instance as IEnumerable<IValue>)
+                            _stack.Enqueue(ReferenceFactory.Create(array_value));
+                }
+            }
+
+            return constructor;
         }
 
         /// <summary>
@@ -345,7 +382,7 @@ namespace ScriptEngine.EngineBase.Interpreter
             {
                 try
                 {
-                    if (_instruction < 0 ||  _instruction >= _code.Count)
+                    if (_instruction < 0 || _instruction >= _code.Count)
                         return;
 
                     statement = _code[_instruction];
@@ -365,8 +402,19 @@ namespace ScriptEngine.EngineBase.Interpreter
                             break;
 
                         case OP_CODES.OP_NEW:
-                            FunctionCall(statement.Function, _context.Current);
-                            statement.Variable1.Value = _return_value;
+                            if (statement.Function != null)
+                            {
+                                // Вариант 1: Новый <Идентификатор типа>[(<Парам1>, <Парам2>, …)] 
+                                FunctionCall(statement.Function, _context.Current);
+                                statement.Variable1.Value = _return_value;
+                            }
+                            else
+                            {
+                                // Вариант 2: Новый(<Тип>[, <ПараметрыКонструктора>])
+                                IFunction constructor = NewType2();
+                                FunctionCall(constructor, _context.Current);
+                                statement.Variable1.Value = _return_value;
+                            }
                             continue;
 
                         case OP_CODES.OP_CALL:
@@ -395,21 +443,18 @@ namespace ScriptEngine.EngineBase.Interpreter
                             if (_instruction == -1)
                                 return;
 
-                            if (_return_value == null)
-                                _instruction++;
-
                             _debugger.OnFunctionReturn();
                             break;
 
                         case OP_CODES.OP_TRY:
-                            _context.TryAdd(statement.Variable2.Value.AsInt());
+                            _context.TryBlockAdd(statement.Variable2.Value.AsInt());
                             break;
                         case OP_CODES.OP_ENDTRY:
-                            _context.TryRemove();
+                            _context.TryBlockRemove();
                             _error_info = new ErrorInfo();
                             break;
                         case OP_CODES.OP_RAISE:
-                            throw new RuntimeException(this,statement.Variable2.Value.AsString());
+                            throw new RuntimeException(this, statement.Variable2.Value.AsString());
 
 
                         case OP_CODES.OP_OBJ_CALL:
@@ -445,23 +490,32 @@ namespace ScriptEngine.EngineBase.Interpreter
                             {
                                 ScriptObjectContext script_object = array_object.AsScriptObject();
 
+                                bool indexed = false;
+                                if (typeof(ICollectionIndexer).IsAssignableFrom(script_object.Instance.GetType()))
+                                    indexed = true;
+
+                                // Если значение число то обращение к номеру массива.
                                 if (statement.Variable3.Value.Type == ValueTypeEnum.NUMBER)
                                 {
-                                    if (!typeof(IScriptArray).IsAssignableFrom(script_object.Instance.GetType()))
+                                    if (!indexed)
                                         throw new RuntimeException(this, "Получение элемента по индексу для значения не определено.");
                                     else
                                     {
-                                        IVariableReference var_ref = new ArrayReference((IScriptArray)script_object.Instance, statement.Variable3.Value.AsInt());
+                                        IVariableReference var_ref = new CollectionReference((ICollectionIndexer)script_object.Instance, statement.Variable3.Value);
                                         _context.Update(statement.Variable1, var_ref);
                                     }
+
+                                    break;
                                 }
 
+                                // Если значение строка то обращение к свойству.
                                 if (statement.Variable3.Value.Type == ValueTypeEnum.STRING)
                                 {
-                                    IVariableReference var_ref = script_object.GetPublicVariable(statement.Variable3.Value.AsString());
-                                    if (var_ref == null)
-                                        throw new RuntimeException(this, $"Поле объекта не обнаружено [{statement.Variable3.Value.AsString()}]");
-
+                                    IVariableReference var_ref;
+                                    if (indexed)
+                                        var_ref = new CollectionReference((ICollectionIndexer)script_object.Instance, statement.Variable3.Value);
+                                    else
+                                        var_ref = script_object.GetPublicVariable(statement.Variable3.Value.AsString());
                                     _context.Update(statement.Variable1, var_ref);
                                 }
                             }
@@ -506,6 +560,31 @@ namespace ScriptEngine.EngineBase.Interpreter
                         case OP_CODES.OP_JMP:
                             _instruction = statement.Variable2.Value.AsInt();
                             continue;
+
+                        case OP_CODES.OP_EVAL:
+                            _eval.Add((_context.CurrentFunction.Scope.Vars.Count, _code.Count, _instruction));
+                            ScriptCompiler compiler = new ScriptCompiler();
+                            _instruction = compiler.CompileEval(statement.Variable2.Value.AsString(), statement.Variable1);
+                            continue;
+
+                        case OP_CODES.OP_EVAL_EXIT:
+                            (int, int, int) eval_exit = _eval[_eval.Count - 1];
+                            _eval.RemoveAt(_eval.Count - 1);
+                            int i;
+                            for (i = eval_exit.Item1; i < _context.CurrentFunction.Scope.Vars.Count; i++)
+                            {
+                                _context.CurrentModule.Variables.Remove(_context.CurrentFunction.Scope.Vars[i]);
+                                _context.CurrentFunction.Scope.Vars.RemoveAt(i);
+                            }
+
+                            i = eval_exit.Item2;
+                            while (i < _code.Count)
+                                _code.RemoveAt(i);
+
+                            statement.Variable2.Value = statement.Variable3.Value;
+
+                            _instruction = eval_exit.Item3;
+                            break;
 
 
                         case OP_CODES.OP_GT:
@@ -570,6 +649,9 @@ namespace ScriptEngine.EngineBase.Interpreter
                         _error_info = new ErrorInfo(ex);
                         _instruction = instruction;
                         _code = _context.CurrentModule.Code;
+
+                        Console.WriteLine(ex.StackTrace);
+
                     }
                     else
                         throw new RuntimeException(this, ex.Message);

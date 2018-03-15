@@ -23,7 +23,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value.Values
 
         public DateTime AsDate()
         {
-            throw new NotImplementedException();
+            return _value;
         }
 
         public int AsInt()
@@ -43,7 +43,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value.Values
 
         public string AsString()
         {
-            return _value.ToString("dd.MM.yyyy hh.mm:ss");
+            return _value.ToString("dd.MM.yyyy HH.mm:ss");
         }
 
         public object AsObject()

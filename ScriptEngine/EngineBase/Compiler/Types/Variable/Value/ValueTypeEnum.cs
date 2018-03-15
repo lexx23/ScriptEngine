@@ -12,6 +12,8 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
         NUMBER,
         BOOLEAN,
         SCRIPT_OBJECT,
-        OBJECT
+        OBJECT,
+        GUID,
+        TYPE
     }
 }

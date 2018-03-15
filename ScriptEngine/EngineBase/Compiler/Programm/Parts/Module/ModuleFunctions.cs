@@ -71,6 +71,23 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts.Module
             return null;
         }
 
+        /// <summary>
+        /// Удалить функцию из модуля.
+        /// </summary>
+        /// <param name="name"></param>
+        public void Delete(string name)
+        {
+            for (int i = 0; i < _functions.Count; i++)
+            {
+                if (String.Equals(_functions[i].Name, name, StringComparison.OrdinalIgnoreCase) || String.Equals(_functions[i].Alias, name, StringComparison.OrdinalIgnoreCase))
+                    _functions.RemoveAt(i);
+            }
+        }
+
+        public void Delete(int index)
+        {
+            _functions.RemoveAt(index);
+        }
 
         public IFunction[] ToArray()
         {

@@ -1,8 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace ScriptEngine.EngineBase.Praser.Token
+
+namespace ScriptEngine.EngineBase.Parser.Token
 {
     public class CodeInformation : Object
     {

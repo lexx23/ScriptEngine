@@ -1,14 +1,14 @@
-﻿using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
+﻿using ScriptEngine.EngineBase.Library.BaseTypes.UniversalCollections;
+using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
 using ScriptEngine.EngineBase.Library.Attributes;
 using ScriptEngine.EngineBase.Library.BaseTypes;
-using System.Collections;
 using System.Collections.Generic;
+using System.Collections;
 
-
-namespace ScriptBaseFunctionsLibrary.BuildInTypes
+namespace ScriptBaseFunctionsLibrary.BuildInTypes.UniversalCollections
 {
-    [LibraryClassAttribute(Name = "array", Alias = "Массив", AsGlobal = false, AsObject = true)]
-    public class ScriptArray : LibraryModule<ScriptArray>, IEnumerable<IValue>,IScriptArray
+    [LibraryClassAttribute(Name = "Array", Alias = "Массив", AsGlobal = false, AsObject = true)]
+    public class ScriptArray : LibraryModule<ScriptArray>, IEnumerable<IValue>, IUniversalCollection, ICollectionIndexer
     {
         private readonly List<IValue> _values;
 
@@ -37,9 +37,9 @@ namespace ScriptBaseFunctionsLibrary.BuildInTypes
         }
 
         [LibraryClassMethod(Alias = "Вставить", Name = "Insert")]
-        public void Insert(int index, IValue value)
+        public void Insert(IValue index, IValue value)
         {
-            _values.Insert(index, value);
+            _values.Insert(index.AsInt(), value);
         }
 
         [LibraryClassMethod(Alias = "Найти", Name = "Find")]
@@ -53,9 +53,9 @@ namespace ScriptBaseFunctionsLibrary.BuildInTypes
         }
 
         [LibraryClassMethod(Alias = "Удалить", Name = "Delete")]
-        public void Delete(int index)
+        public void Delete(IValue value)
         {
-            _values.RemoveAt(index);
+            _values.RemoveAt(value.AsInt());
         }
 
         [LibraryClassMethod(Alias = "ВГраница", Name = "UBound")]
@@ -64,14 +64,14 @@ namespace ScriptBaseFunctionsLibrary.BuildInTypes
             return _values.Count - 1;
         }
 
-        public IValue Get(int index)
+        public IValue Get(IValue index)
         {
-            return _values[index];
+            return _values[index.AsInt()];
         }
 
-        public void Set(int index, IValue value)
+        public void Set(IValue index, IValue value)
         {
-            _values[index] = value;
+            _values[index.AsInt()] = value;
         }
 
 

@@ -73,6 +73,12 @@ namespace ScriptEngine.EngineBase.Interpreter
         // Завершение блока исключения.
         OP_ENDTRY,
         // Вызвать исключение.
-        OP_RAISE
+        OP_RAISE,
+
+        // Вычислить
+        OP_EVAL,
+        OP_EVAL_EXIT,
+        // Выполнить
+        OP_EXECUTE
     }
 }

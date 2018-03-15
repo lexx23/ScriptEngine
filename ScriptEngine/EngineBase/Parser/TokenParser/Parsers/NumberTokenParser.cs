@@ -1,5 +1,4 @@
 ﻿using ScriptEngine.EngineBase.Parser.Token;
-using ScriptEngine.EngineBase.Praser.Token;
 using System;
 
 namespace ScriptEngine.EngineBase.Parser.TokenParser.Parsers
@@ -13,10 +12,10 @@ namespace ScriptEngine.EngineBase.Parser.TokenParser.Parsers
         {
             token = null;
             string content = string.Empty;
-            CodeInformation information = iterator.CodeInformation.Clone();
 
             if (Char.IsNumber(iterator.Current))
             {
+                CodeInformation information = iterator.CodeInformation.Clone();
                 content = iterator.GetDigits();
                 token = new TokenClass()
                 {

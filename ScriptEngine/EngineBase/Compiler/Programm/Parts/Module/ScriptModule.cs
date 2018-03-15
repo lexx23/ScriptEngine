@@ -1,8 +1,7 @@
-﻿using ScriptEngine.EngineBase.Compiler.Types;
-using ScriptEngine.EngineBase.Compiler.Types.Function;
-using ScriptEngine.EngineBase.Compiler.Types.Variable;
-using System;
+﻿using ScriptEngine.EngineBase.Compiler.Types.Function;
+using ScriptEngine.EngineBase.Compiler.Types;
 using System.Collections.Generic;
+using System;
 
 namespace ScriptEngine.EngineBase.Compiler.Programm.Parts.Module
 {
@@ -22,7 +21,7 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts.Module
 
         public string FileName { get; set; }
 
-        public ModuleVariables Variables { get => _vars; }
+        public ModuleVariables Variables { get => _vars; set => _vars = value; }
         public ModuleFunctions Functions { get => _functions; }
         public ModuleTypeEnum Type { get; set; }
         public IList<ScriptStatement> Code { get => _code; }
@@ -107,6 +106,5 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts.Module
         {
             return _code[index];
         }
-
     }
 }

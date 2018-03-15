@@ -1,7 +1,6 @@
 ﻿using ScriptEngine.EngineBase.Parser.Token;
-using ScriptEngine.EngineBase.Praser.Token;
-using System;
 using System.Collections.Generic;
+using System;
 
 namespace ScriptEngine.EngineBase.Parser.TokenParser.Parsers
 {
@@ -90,6 +89,12 @@ namespace ScriptEngine.EngineBase.Parser.TokenParser.Parsers
                 { "Возврат", TokenSubTypeEnum.I_RETURN },
                 { "Return", TokenSubTypeEnum.I_RETURN },
 
+                { "Вычислить", TokenSubTypeEnum.I_EVAL },
+                { "Eval", TokenSubTypeEnum.I_EVAL },
+                { "Выполнить", TokenSubTypeEnum.I_EXECUTE },
+                { "Execute", TokenSubTypeEnum.I_EXECUTE },
+
+
                 { "Перейти", TokenSubTypeEnum.I_GOTO },
                 { "Goto", TokenSubTypeEnum.I_GOTO },
 
@@ -115,9 +120,9 @@ namespace ScriptEngine.EngineBase.Parser.TokenParser.Parsers
             string content = string.Empty;
             TokenSubTypeEnum subtype;
 
-            CodeInformation information = iterator.CodeInformation.Clone();
             if (Char.IsLetter(iterator.Current) || iterator.Current == '_')
             {
+                CodeInformation information = iterator.CodeInformation.Clone();
                 content = iterator.GetLettersAndDigits();
 
                 if (!_table.TryGetValue(content, out subtype))

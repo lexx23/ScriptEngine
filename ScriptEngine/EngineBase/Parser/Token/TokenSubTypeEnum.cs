@@ -66,6 +66,11 @@ namespace ScriptEngine.EngineBase.Parser.Token
         [EnumStringAttribute("Возврат { Return }")]
         I_RETURN,
 
+        [EnumStringAttribute("Вычислить { Eval }")]
+        I_EVAL,
+        [EnumStringAttribute("Выполнить { Execute }")]
+        I_EXECUTE,
+
 
         [EnumStringAttribute("Не { Not }")]
         I_LOGIC_NOT,

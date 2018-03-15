@@ -1,9 +1,9 @@
 ﻿using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
 using ScriptEngine.EngineBase.Library.Attributes;
-using ScriptEngine.EngineBase.Extensions;
 using ScriptEngine.EngineBase.Library.BaseTypes;
+using ScriptEngine.EngineBase.Extensions;
 
-namespace ScriptBaseFunctionsLibrary.BuildInTypes
+namespace ScriptBaseFunctionsLibrary.BuildInTypes.UniversalCollections
 {
     /// <summary>
     /// Представляет собой пару из ключа и соответствующего ключу значения

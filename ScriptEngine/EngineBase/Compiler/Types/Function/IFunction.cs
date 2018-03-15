@@ -1,8 +1,8 @@
-﻿using ScriptEngine.EngineBase.Compiler.Programm.Parts.Module;
-using ScriptEngine.EngineBase.Compiler.Types.Function.LibraryMethods;
+﻿using ScriptEngine.EngineBase.Compiler.Types.Function.LibraryMethods;
 using ScriptEngine.EngineBase.Compiler.Types.Function.Parameters;
+using ScriptEngine.EngineBase.Compiler.Programm.Parts.Module;
 using ScriptEngine.EngineBase.Compiler.Types.Variable;
-using ScriptEngine.EngineBase.Praser.Token;
+using ScriptEngine.EngineBase.Parser.Token;
 using System.Collections.Generic;
 
 namespace ScriptEngine.EngineBase.Compiler.Types.Function

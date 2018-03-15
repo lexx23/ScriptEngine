@@ -1,4 +1,5 @@
-﻿using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
+﻿using ScriptEngine.EngineBase.Library.BaseTypes.UniversalCollections;
+using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
 using ScriptEngine.EngineBase.Compiler.Types.Variable;
 using ScriptEngine.EngineBase.Library.Attributes;
 using ScriptEngine.EngineBase.Library.BaseTypes;
@@ -6,7 +7,7 @@ using System.Collections.Generic;
 using System.Collections;
 using System;
 
-namespace ScriptBaseFunctionsLibrary.BuildInTypes
+namespace ScriptBaseFunctionsLibrary.BuildInTypes.UniversalCollections
 {
     /// <summary>
     /// Представляет собой коллекцию пар КлючИЗначение.
@@ -27,7 +28,6 @@ namespace ScriptBaseFunctionsLibrary.BuildInTypes
 
     /// счетчик = 0;
     /// Для Каждого значение из Запись Цикл
-
     ///     счетчик = счетчик + 1;
     ///	    Сообщить(значение.Ключ);
     ///     Сообщить(значение.Value);
@@ -39,7 +39,7 @@ namespace ScriptBaseFunctionsLibrary.BuildInTypes
     /// Запись = Новый Структура("Настройки,Отчет",124,"Отчет");
     /// </example>
     [LibraryClassAttribute(Name = "Structure", Alias = "Структура", AsGlobal = false, AsObject = true)]
-    public class ScriptStructure : LibraryModule<ScriptStructure>, IEnumerable<IValue>, IScriptDynamicProperties
+    public class ScriptStructure : LibraryModule<ScriptStructure>, IEnumerable<IValue>, IScriptDynamicProperties, IUniversalCollection
     {
         private readonly IDictionary<string, IValue> _values;
 
@@ -62,15 +62,20 @@ namespace ScriptBaseFunctionsLibrary.BuildInTypes
         }
 
         [LibraryClassMethod(Alias = "Вставить", Name = "Insert")]
+        public void Insert(IValue name, IValue value = null)
+        {
+            _values[name.AsString()] = value;
+        }
+
         public void Insert(string name, IValue value = null)
         {
             _values[name] = value;
         }
 
         [LibraryClassMethod(Alias = "Удалить", Name = "Delete")]
-        public void Delete(string name)
+        public void Delete(IValue value)
         {
-            _values.Remove(name);
+            _values.Remove(value.AsString());
         }
 
         [LibraryClassMethod(Alias = "Свойство", Name = "Property")]

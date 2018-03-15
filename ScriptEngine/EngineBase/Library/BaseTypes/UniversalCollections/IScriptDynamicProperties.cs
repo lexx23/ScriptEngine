@@ -1,6 +1,6 @@
 ﻿using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
 
-namespace ScriptEngine.EngineBase.Library.BaseTypes
+namespace ScriptEngine.EngineBase.Library.BaseTypes.UniversalCollections
 {
     public interface IScriptDynamicProperties
     {

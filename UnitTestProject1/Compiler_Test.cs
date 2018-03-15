@@ -1,4 +1,11 @@
-﻿using ScriptEngine.EngineBase.Compiler.Programm.Parts.Module;
+﻿/*----------------------------------------------------------
+	This Source Code Form is subject to the terms of the 
+	Mozilla Public License, v.2.0. If a copy of the MPL 
+	was not distributed with this file, You can obtain one 
+	at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+
+using ScriptEngine.EngineBase.Compiler.Programm.Parts.Module;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ScriptEngine.EngineBase.Exceptions;
 using System.Collections.Generic;
@@ -15,6 +22,29 @@ namespace UnitTests
         {
             _helper = new Helper("Compiler");
         }
+
+        #region Вычислить(Eval) Выполнить(Execute)
+        [TestMethod]
+        [Description("Проверка Вычислить.")]
+        public void Compile_Eval()
+        {
+            IDictionary<string, string> files = new Dictionary<string, string>();
+            files.Add("eval", "Eval\\eval.scr");
+
+            _helper.Compile(files);
+        }
+
+        [TestMethod]
+        [Description("Проверка Вычислить без параметров.")]
+        [ExpectedException(typeof(CompilerException))]
+        public void Compile_EvalError()
+        {
+            IDictionary<string, string> files = new Dictionary<string, string>();
+            files.Add("eval", "Eval\\eval_error.scr");
+
+            _helper.Compile(files);
+        }
+        #endregion
 
         #region Try
         [TestMethod]
@@ -49,15 +79,39 @@ namespace UnitTests
         }
 
 
-
+        #region Новый(New)
         [TestMethod]
-        public void Compile_NewSimpleCall()
+        [Description("Проверка Новый(Вариант 1: Новый <Идентификатор типа>[(<Парам1>, <Парам2>, …)] ).")]
+        public void Compile_NewType1()
         {
             IDictionary<string, string> files = new Dictionary<string, string>();
             files.Add("new", "New\\simple.scr");
 
             _helper.Compile(files);
         }
+
+        [TestMethod]
+        [Description("Проверка Новый(Вариант 2: Новый(<Тип>[, <ПараметрыКонструктора>])")]
+        public void Compile_NewType2()
+        {
+            IDictionary<string, string> files = new Dictionary<string, string>();
+            files.Add("new", "New\\type2.scr");
+
+            _helper.Compile(files);
+        }
+
+        [TestMethod]
+        [Description("Проверка Новый(Вариант 2: Новый(<Тип>[, <ПараметрыКонструктора>]), более 2х параметров")]
+        [ExpectedException(typeof(CompilerException))]
+        public void Compile_NewType2Erorr()
+        {
+            IDictionary<string, string> files = new Dictionary<string, string>();
+            files.Add("new", "New\\type2_error.scr");
+
+            _helper.Compile(files);
+        }
+
+        #endregion
 
 
         #region Extension

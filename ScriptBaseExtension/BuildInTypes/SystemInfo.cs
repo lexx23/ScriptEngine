@@ -4,10 +4,9 @@ using ScriptEngine.EngineBase.Library.BaseTypes;
 using ScriptEngine.EngineBase.Extensions;
 using ScriptBaseFunctionsLibrary.Enums;
 using System.Runtime.InteropServices;
-using System;
-using System.Diagnostics;
-using System.IO;
 using System.Text.RegularExpressions;
+using System.IO;
+using System;
 
 namespace ScriptBaseFunctionsLibrary.BuildInTypes
 {

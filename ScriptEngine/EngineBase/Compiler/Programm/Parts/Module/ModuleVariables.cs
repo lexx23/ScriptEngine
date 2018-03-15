@@ -1,9 +1,9 @@
-﻿using ScriptEngine.EngineBase.Compiler.Types;
+﻿using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
 using ScriptEngine.EngineBase.Compiler.Types.Variable;
-using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
-using System;
+using ScriptEngine.EngineBase.Compiler.Types;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
+using System;
 
 namespace ScriptEngine.EngineBase.Compiler.Programm.Parts.Module
 {
@@ -17,7 +17,6 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts.Module
             _module = module;
             _vars = new List<IVariable>();
         }
-
 
         /// <summary>
         /// Попытка переиспользовать переменную.
@@ -100,6 +99,7 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts.Module
             return var;
         }
 
+
         /// <summary>
         /// Добавить переменную в модуль.
         /// </summary>
@@ -145,5 +145,12 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts.Module
             return null;
         }
 
+        /// <summary>
+        /// Удаление переменной.
+        /// </summary>
+        public void Remove(IVariable variable)
+        {
+            _vars.Remove(variable);
+        }
     }
 }

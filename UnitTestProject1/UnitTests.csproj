@@ -33,6 +33,12 @@
     <None Update="Scripts\Compiler\Array\indexer.scr">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Scripts\Compiler\Eval\eval.scr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Scripts\Compiler\Eval\eval_error.scr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Scripts\Compiler\Exception\raise_error.scr">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -123,6 +129,12 @@
     <None Update="Scripts\Compiler\New\simple.scr">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Scripts\Compiler\New\type2.scr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Scripts\Compiler\New\type2_error.scr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Scripts\Compiler\Objects\Cross object call\global_module.scr">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -148,6 +160,12 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Scripts\Compiler\Exception\try.scr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Scripts\Interpreter\Eval\eval.scr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Scripts\Interpreter\Eval\object_eval.scr">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Scripts\Interpreter\Exception\error_info.scr">
@@ -180,7 +198,16 @@
     <None Update="Scripts\Interpreter\If\if.scr">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Scripts\Interpreter\New\new.scr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Scripts\Interpreter\Other\readonly_property_error.scr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Scripts\Library\Functions\format.scr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Scripts\Library\map.scr">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Scripts\Library\message_status.scr">
@@ -192,7 +219,13 @@
     <None Update="Scripts\Library\systeminfo.scr">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Scripts\OneScript\bdd.scr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Scripts\OneScript\main_module.scr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Scripts\OneScript\xunit.scr">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Scripts\Preprocessor\not_closed_if.scr">
@@ -205,9 +238,6 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Scripts\SpeedTest\array.scr">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Scripts\Interpreter\Extension\function call.scr">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Scripts\Interpreter\For\for.scr">
@@ -319,6 +349,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Scripts\Interpreter\Objects\Object procedure as function call\object_module.scr">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Scripts\SpeedTest\eval.scr">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Scripts\SpeedTest\foreach.scr">

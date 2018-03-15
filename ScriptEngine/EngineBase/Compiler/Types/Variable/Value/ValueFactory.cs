@@ -19,6 +19,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
         public static IValue Create() => _null_value;
         public static IValue Create(string value) => new StringValue(value);
         public static IValue Create(decimal value) => new NumberValue(value);
+        public static IValue Create(Int64 value) => new NumberValue(value);
         public static IValue Create(int value) => new NumberValue(value);
         public static IValue Create(DateTime value) => new DateValue(value);
         public static IValue Create(object value) => new ObjectValue(value);
@@ -55,7 +56,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
                     throw new Exception($"Ошибка преобразования в логический тип, значения [{value}]");
 
                 case ValueTypeEnum.DATE:
-                    string[] formats = { "yyyyMMddhhmmss", "yyyyMMdd", "yyyyMMddhhmm" };
+                    string[] formats = { "yyyyMMddHHmmss", "yyyyMMdd", "yyyyMMddHHmm" };
                     if (DateTime.TryParseExact(value, formats, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out DateTime date))
                         return Create(date);
 

@@ -1,9 +1,8 @@
-﻿using ScriptEngine.EngineBase.Parser.Token;
+﻿using ScriptEngine.EngineBase.Parser.TokenParser.Parsers;
 using ScriptEngine.EngineBase.Parser.TokenParser;
-using ScriptEngine.EngineBase.Parser.TokenParser.Parsers;
-using ScriptEngine.EngineBase.Praser.Token;
-using System;
+using ScriptEngine.EngineBase.Parser.Token;
 using System.Collections.Generic;
+using System;
 
 namespace ScriptEngine.EngineBase.Parser
 {

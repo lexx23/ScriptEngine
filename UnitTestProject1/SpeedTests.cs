@@ -1,4 +1,11 @@
-﻿using ScriptEngine.EngineBase.Compiler.Programm.Parts.Module;
+﻿/*----------------------------------------------------------
+	This Source Code Form is subject to the terms of the 
+	Mozilla Public License, v.2.0. If a copy of the MPL 
+	was not distributed with this file, You can obtain one 
+	at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+
+using ScriptEngine.EngineBase.Compiler.Programm.Parts.Module;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ScriptEngine.EngineBase.Compiler.Programm;
 using ScriptEngine.EngineBase.Interpreter;
@@ -39,7 +46,7 @@ namespace UnitTests
             interpreter.Run();
             sw.Stop();
 
-            Assert.AreEqual(1500, sw.ElapsedMilliseconds, 200);
+            Assert.AreEqual(1700, sw.ElapsedMilliseconds, 200);
         }
 
         /// <summary>
@@ -107,6 +114,28 @@ namespace UnitTests
             sw.Stop();
 
             Assert.AreEqual(2100, sw.ElapsedMilliseconds, 500);
+        }
+
+        /// <summary>
+        /// OneScript: 85000, 1C: 18000
+        /// </summary>
+        [TestMethod]
+        [TestCategory("Speed")]
+        [Description("Проверка скорости работы массива.")]
+        public void SpeedTest_Eval()
+        {
+            IDictionary<string, string> files = new Dictionary<string, string>();
+            files.Add("eval_test", "eval.scr");
+
+            ScriptProgramm programm = _helper.Compile(files);
+            ScriptInterpreter interpreter = new ScriptInterpreter(programm);
+
+            System.Diagnostics.Stopwatch sw = new Stopwatch();
+            sw.Start();
+            interpreter.Run();
+            sw.Stop();
+
+            Assert.AreEqual(50000, sw.ElapsedMilliseconds, 3000);
         }
 
         /// <summary>

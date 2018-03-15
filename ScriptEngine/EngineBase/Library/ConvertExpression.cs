@@ -40,8 +40,11 @@ namespace ScriptEngine.EngineBase.Library
                 case "Decimal":
                     return Expression.Call(value, typeof(IValue).GetMethod("AsDecimal"));
 
+                case "Int64":
+                    return Expression.Convert(Expression.Call(value, typeof(IValue).GetMethod("AsDecimal")),typeof(long));
+
                 case "DateTime":
-                    return Expression.Call(value, typeof(IValue).GetMethod("AsDateTime"));
+                    return Expression.Call(value, typeof(IValue).GetMethod("AsDate"));
 
                 case "Int32":
                     return Expression.Call(value, typeof(IValue).GetMethod("AsInt"));

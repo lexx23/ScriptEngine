@@ -1,8 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Text;
+using System;
 
 namespace ScriptEngine.EngineBase.Compiler.Types.Variable.References
 {
@@ -13,6 +12,17 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.References
         /// </summary>
         /// <returns></returns>
         public static IVariableReference Create() => new SimpleReference();
+
+        /// <summary>
+        /// Статические переменные с значением по умолчанию.
+        /// </summary>
+        /// <returns></returns>
+        public static IVariableReference Create(IValue value)
+        {
+            IVariableReference reference = new SimpleReference();
+            reference.Set(value);
+            return reference;
+        }
 
         /// <summary>
         /// Создает обертку для доступа к переменным которые ссылаются на другие переменные.

@@ -1,21 +1,20 @@
-﻿using ScriptEngine.EngineBase.Compiler.Types.Function.LibraryMethods;
+﻿using ScriptEngine.EngineBase.Library.BaseTypes.UniversalCollections;
 using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
-using ScriptEngine.EngineBase.Library.BaseTypes;
 using System;
 
 
 namespace ScriptEngine.EngineBase.Compiler.Types.Variable.References
 {
-    public class ArrayReference : IVariableReference
+    public class CollectionReference : IVariableReference
     {
-        private int _index;
-        private IScriptArray _array;
+        private IValue _index;
+        private ICollectionIndexer _array;
 
 
         /// <summary>
         /// Простой конструктор.
         /// </summary>
-        public ArrayReference(IScriptArray array,int index)
+        public CollectionReference(ICollectionIndexer array,IValue index)
         {
             _index = index;
             _array = array;
@@ -38,7 +37,8 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.References
         {
             //if (_array.Set == null)
             //  new Exception("Поле объекта недоступно для записи");
-            _array.Set(_index, value);        }
+            _array.Set(_index, value);
+        }
 
         /// <summary>
         /// Клонировать класс с новым объектом.

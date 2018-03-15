@@ -21,7 +21,7 @@ namespace ScriptEngine.EngineBase.Compiler
         private ScriptProgramm _programm;
         private ScriptScope _scope;
         private ScriptModule _current_module;
-        private IDictionary<string, IVariable> _deferred_var;
+        private IDictionary<string, (IVariable, CodeInformation)> _deferred_var;
         private IList<(ScriptModule, IFunction)> _deferred_function;
         private IList<IList<int>> _loop;
 
@@ -59,7 +59,7 @@ namespace ScriptEngine.EngineBase.Compiler
         public ScriptCompiler()
         {
             _programm = new ScriptProgramm();
-            _deferred_var = new Dictionary<string, IVariable>();
+            _deferred_var = new Dictionary<string, (IVariable, CodeInformation)>();
             _deferred_function = new List<(ScriptModule, IFunction)>();
             _loop = new List<IList<int>>();
             _goto_jmp = new List<(string, int)>();
@@ -84,6 +84,10 @@ namespace ScriptEngine.EngineBase.Compiler
 
             _op_codes = new Dictionary<OP_CODES, op_code>
             {
+                { OP_CODES.OP_EVAL, new op_code { code = OP_CODES.OP_EVAL, type = OP_TYPE.RESULT } },
+                { OP_CODES.OP_EVAL_EXIT, new op_code { code = OP_CODES.OP_EVAL_EXIT, type = OP_TYPE.WO_RESULT } },
+                { OP_CODES.OP_EXECUTE, new op_code { code = OP_CODES.OP_EXECUTE, type = OP_TYPE.WO_RESULT } },
+
                 { OP_CODES.OP_RAISE, new op_code { code = OP_CODES.OP_RAISE, type = OP_TYPE.WO_RESULT } },
                 { OP_CODES.OP_ENDTRY, new op_code { code = OP_CODES.OP_ENDTRY, type = OP_TYPE.WO_RESULT } },
                 { OP_CODES.OP_TRY, new op_code { code = OP_CODES.OP_TRY, type = OP_TYPE.WO_RESULT } },
@@ -282,11 +286,32 @@ namespace ScriptEngine.EngineBase.Compiler
             statement.Variable2 = left;
             statement.Variable3 = right;
 
-
-
-
             return result;
         }
+
+        #region Вычислить(Eval) Выполнить(Execute)
+        private IVariable ParseEval()
+        {
+            if (_iterator.CheckToken(TokenTypeEnum.IDENTIFIER, TokenSubTypeEnum.I_EVAL))
+            {
+                // Установить точку входа модуля.
+                SetModuleEntryPoint();
+
+                _iterator.ExpectToken(TokenTypeEnum.PUNCTUATION, TokenSubTypeEnum.P_PARENTHESESOPEN);
+
+                // Забрать выражение.
+                IVariable expression = ParseExpression((int)Priority.TOP);
+                if (expression == null || expression.Value?.Type == ValueTypeEnum.NULL)
+                    throw new CompilerException(_iterator.Current.CodeInformation, "Ожидается выражение.");
+
+                _iterator.ExpectToken(TokenTypeEnum.PUNCTUATION, TokenSubTypeEnum.P_PARENTHESESCLOSE);
+
+                // Добавить в код модуля компиляцию выражения.
+                return EmitCode(OP_CODES.OP_EVAL, expression, null);
+            }
+            return null;
+        }
+        #endregion
 
         #region Исключения
         private bool ParseRaise()
@@ -333,12 +358,12 @@ namespace ScriptEngine.EngineBase.Compiler
 
                 // Парсинг тела блока попытка.
                 EmitCode(OP_CODES.OP_TRY, null, null);
-                try_index = _current_module.ProgrammLine-1;
+                try_index = _current_module.ProgrammLine - 1;
                 ParseModuleBody(TokenSubTypeEnum.I_EXCEPT);
                 _iterator.ExpectToken(TokenTypeEnum.IDENTIFIER, TokenSubTypeEnum.I_EXCEPT);
 
                 EmitCode(OP_CODES.OP_JMP, null, null);
-                exit_try = _current_module.ProgrammLine-1;
+                exit_try = _current_module.ProgrammLine - 1;
                 // Патч перехода в случае исключения.
                 statement = _current_module.StatementGet(try_index);
                 statement.Variable2 = _programm.StaticVariables.Create(ValueFactory.Create(_current_module.ProgrammLine));
@@ -389,6 +414,9 @@ namespace ScriptEngine.EngineBase.Compiler
 
             if (var == null)
                 var = ParseNew();
+
+            if (var == null)
+                var = ParseEval();
 
             // Парсер значений в скобках.
             if (var == null)
@@ -609,10 +637,10 @@ namespace ScriptEngine.EngineBase.Compiler
                         Name = token.Content,
                         Scope = _scope
                     };
-                    _deferred_var[var.Name + _scope.Name] = var;
+                    _deferred_var[var.Name + _scope.Name] = (var, token.CodeInformation);
                 }
                 else
-                    var = _deferred_var[token.Content + _scope.Name];
+                    var = _deferred_var[token.Content + _scope.Name].Item1;
             }
 
             if (!create && var == null)
@@ -744,18 +772,18 @@ namespace ScriptEngine.EngineBase.Compiler
         {
             IVariable var = null;
 
-            foreach (KeyValuePair<string, IVariable> var_kp in _deferred_var)
+            foreach (KeyValuePair<string, (IVariable, CodeInformation)> var_kp in _deferred_var)
             {
                 // глобальный контекст
-                var = _programm.GlobalVariables.Get(var_kp.Value.Name);
+                var = _programm.GlobalVariables.Get(var_kp.Value.Item1.Name);
                 if (var != null)
                 {
-                    var_kp.Value.StackNumber = var.StackNumber;
-                    var_kp.Value.Scope = _programm.GlobalScope;
-                    var_kp.Value.Reference = var.Reference;
+                    var_kp.Value.Item1.StackNumber = var.StackNumber;
+                    var_kp.Value.Item1.Scope = _programm.GlobalScope;
+                    var_kp.Value.Item1.Reference = var.Reference;
                 }
                 else
-                    throw new CompilerException($"Переменная не определена [{var_kp.Value.Name}], модуль [{var_kp.Value.Scope.Module.Name}].");
+                    throw new CompilerException(var_kp.Value.Item2, $"Переменная не определена [{var_kp.Value.Item1.Name}], модуль [{var_kp.Value.Item1.Scope.Module.Name}].");
             }
 
             _deferred_var.Clear();
@@ -866,7 +894,7 @@ namespace ScriptEngine.EngineBase.Compiler
 
                 // Информация о функции, имя и расположение в коде.
                 function_name = _iterator.Current;
-                function_name.CodeInformation = _iterator.Current.CodeInformation.Clone();
+                function_name.CodeInformation = _iterator.Current.CodeInformation;
 
                 _iterator.IsTokenType(TokenTypeEnum.IDENTIFIER);
                 _iterator.MoveNext();
@@ -916,7 +944,7 @@ namespace ScriptEngine.EngineBase.Compiler
                 function.EntryPoint = _current_module.ProgrammLine;
                 function.DefinedParameters = param_list;
                 function.Type = type.SubType == TokenSubTypeEnum.I_PROCEDURE ? FunctionTypeEnum.PROCEDURE : FunctionTypeEnum.FUNCTION;
-                function.CodeInformation = function_name.CodeInformation.Clone();
+                function.CodeInformation = function_name.CodeInformation;
                 function.Scope = _scope;
 
                 // Парсим все содержимое функции/процедуры, до оператора КонецФункции/Процедуры.
@@ -1039,7 +1067,7 @@ namespace ScriptEngine.EngineBase.Compiler
                     Name = token.Content,
                     CallParameters = new List<IVariable>(),
                     Scope = _scope,
-                    CodeInformation = token.CodeInformation.Clone()
+                    CodeInformation = token.CodeInformation
                 };
 
                 while (_iterator.Current.SubType != TokenSubTypeEnum.P_PARENTHESESCLOSE)
@@ -1096,14 +1124,43 @@ namespace ScriptEngine.EngineBase.Compiler
                 // Вариант 2: Новый(<Тип>[, <ПараметрыКонструктора>])
                 if (_iterator.CheckToken(TokenTypeEnum.PUNCTUATION, TokenSubTypeEnum.P_PARENTHESESOPEN))
                 {
+                    IFunction stub = new Function()
+                    {
+                        CallParameters = new List<IVariable>()
+                    };
 
+                    // Получить название обьекта, может быть любое выражение или вызов.
+                    IVariable object_name = ParseExpression((int)Priority.TOP);
+                    if (object_name == null)
+                        throw new CompilerException(_iterator.Current.CodeInformation, "Ожидается имя обьекта.");
+                    stub.CallParameters.Add(object_name);
+
+                    if (_iterator.CheckToken(TokenTypeEnum.PUNCTUATION, TokenSubTypeEnum.P_COMMA))
+                    {
+                        // Получить массив параметров для конструктора.
+                        IVariable params_array = ParseExpression((int)Priority.TOP);
+                        if (params_array == null)
+                            throw new CompilerException(_iterator.Current.CodeInformation, "Ожидается выражение.");
+                        stub.CallParameters.Add(params_array);
+                    }
+
+                    _iterator.ExpectToken(TokenTypeEnum.PUNCTUATION, TokenSubTypeEnum.P_PARENTHESESCLOSE);
+
+                    if (stub.CallParameters.Count == 0)
+                        throw new CompilerException(_iterator.Current.CodeInformation, "Ожидается тип создаваемого объекта.");
+
+                    // Добавить в код передачу параметров через стек.
+                    foreach (IVariable var in stub.CallParameters)
+                        EmitCode(OP_CODES.OP_PUSH, var, null);
+
+                    result = EmitCode(OP_CODES.OP_NEW, null, null);
                 }
                 // Вариант 1: Новый <Идентификатор типа>[(<Парам1>, <Парам2>, …)]
                 else
                 {
 
                     IToken token = _iterator.Current;
-                    if(!_iterator.CheckToken(TokenTypeEnum.IDENTIFIER))
+                    if (!_iterator.CheckToken(TokenTypeEnum.IDENTIFIER))
                         throw new CompilerException(token.CodeInformation, "Ожидается имя обьекта.");
 
                     IFunction function;
@@ -1124,7 +1181,7 @@ namespace ScriptEngine.EngineBase.Compiler
                         Name = "Constructor",
                         CallParameters = new List<IVariable>(),
                         Scope = module.ModuleScope,
-                        CodeInformation = token.CodeInformation.Clone()
+                        CodeInformation = token.CodeInformation
                     };
 
                     if (_iterator.CheckToken(TokenTypeEnum.PUNCTUATION, TokenSubTypeEnum.P_PARENTHESESOPEN))
@@ -1139,11 +1196,9 @@ namespace ScriptEngine.EngineBase.Compiler
                         foreach (IVariable var in function.CallParameters)
                             EmitCode(OP_CODES.OP_PUSH, var, null);
                     }
-                    //else
-                    //    _iterator.MoveNext();
 
                     result = EmitCode(OP_CODES.OP_NEW, null, null);
-                    function.EntryPoint = _current_module.ProgrammLine-1;
+                    function.EntryPoint = _current_module.ProgrammLine - 1;
 
                     // Добавить в отложенные функции для последующей проверки.
                     _deferred_function.Add((_current_module, function));
@@ -1170,7 +1225,7 @@ namespace ScriptEngine.EngineBase.Compiler
                     Name = token.Content,
                     CallParameters = new List<IVariable>(),
                     Scope = _scope,
-                    CodeInformation = token.CodeInformation.Clone()
+                    CodeInformation = token.CodeInformation
                 };
 
                 // Обработка передачи параметров.
@@ -1253,10 +1308,10 @@ namespace ScriptEngine.EngineBase.Compiler
                             Name = token.Content,
                             Scope = _scope
                         };
-                        _deferred_var[var.Name + _scope.Name] = var;
+                        _deferred_var[var.Name + _scope.Name] = (var, token.CodeInformation);
                     }
                     else
-                        var = _deferred_var[token.Content + _scope.Name];
+                        var = _deferred_var[token.Content + _scope.Name].Item1;
                 }
 
                 // Парсинг частей вызова, разделенных точкой.
@@ -1881,6 +1936,46 @@ namespace ScriptEngine.EngineBase.Compiler
             while (_iterator.MoveNext() && !stop_type.Contains(_iterator.Current.SubType));
         }
 
+        /// <summary>
+        /// Компилирование оператора Вычислить(Eval).
+        /// </summary>
+        /// <param name="expression"></param>
+        /// <returns></returns>
+        public int CompileEval(string expression, IVariable return_value)
+        {
+            if (Interpreter.ScriptInterpreter.Interpreter != null)
+            {
+                ParserClass parser;
+                Dictionary<string, bool> defines = new Dictionary<string, bool>();
+                defines.Add("НаКлиенте", true);
+
+                parser = new ParserClass(Interpreter.ScriptInterpreter.Interpreter.CurrentModule.Alias, expression);
+                PrecompilerClass precompiler = new PrecompilerClass(parser.GetEnumerator(), defines);
+                _iterator = precompiler.GetEnumerator();
+
+                _programm = Interpreter.ScriptInterpreter.Interpreter.Programm;
+                _current_module = Interpreter.ScriptInterpreter.Interpreter.CurrentModule;
+
+                _iterator.MoveNext();
+
+                int entry_point = _current_module.ProgrammLine;
+                _scope = Interpreter.ScriptInterpreter.Interpreter.CurrentFunction.Scope;
+
+                IVariable result = ParseExpression((int)Priority.TOP);
+                if (result == null || result.Value?.Type == ValueTypeEnum.NULL)
+                    throw new CompilerException(_iterator.Current.CodeInformation, "Выражение Вычислить не может использоваться без аргументов.");
+
+                EmitCode(OP_CODES.OP_EVAL_EXIT, return_value, result);
+
+                ProcessDifferedVars();
+                ProcessDifferedFunctions();
+
+                return entry_point;
+            }
+            else
+                throw new Exception("Оператор Вычислить(Eval) возможно компилировать только из интерпретатора.");
+        }
+
 
         /// <summary>
         /// Компилирует группу модулей в программу.
@@ -1907,6 +2002,8 @@ namespace ScriptEngine.EngineBase.Compiler
                 _current_module = module.Key;
                 _scope = _current_module.ModuleScope;
 
+                //_current_module.Variables.Create("ЭтотОбъект",false,_scope);
+
                 _iterator.MoveNext();
                 ParseModuleBody();
 
@@ -1928,9 +2025,9 @@ namespace ScriptEngine.EngineBase.Compiler
                 if (_current_module.AsGlobal)
                 {
                     IValue module_object = ValueFactory.Create();
-                    _programm.GlobalVariables.Create(_current_module.Name, module_object);
+                    IVariable var = _programm.GlobalVariables.Create(_current_module.Name, module_object);
                     if (_current_module.Name != _current_module.Alias)
-                        _programm.GlobalVariables.Create(_current_module.Alias, module_object);
+                        var.Alias = _current_module.Alias;
                 }
 
                 ProcessGoto();

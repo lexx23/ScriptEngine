@@ -1,7 +1,5 @@
-﻿using ScriptEngine.EngineBase.Praser.Token;
+﻿using ScriptEngine.EngineBase.Parser.Token;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ScriptEngine.EngineBase.Exceptions
 {

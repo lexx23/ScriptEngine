@@ -154,6 +154,8 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.ModuleLoader
                 {
                     if (type.BaseType.Name == "BaseEnum`1")
                         LoadEnum(type);
+                    else
+                        AddObjectOfType(type, true);
                     continue;
                 }
 

@@ -60,8 +60,9 @@ namespace ScriptEngine.EngineBase.Interpreter.Context
         {
             IVariableReference[] _function_context = _current_function_context;
 
-            _current_function_context = new IVariableReference[function.Scope.VarCount];
-            for (int i = 0; i < function.Scope.VarCount; i++)
+            _current_function_context = new IVariableReference[function.Scope.Vars.Count];
+
+            for (int i = 0; i < function.Scope.Vars.Count; i++)
             {
                 IVariableReference reference = new SimpleReference();
                 function.Scope.Vars[i].Reference = reference;
@@ -104,12 +105,14 @@ namespace ScriptEngine.EngineBase.Interpreter.Context
                 _current = data.Item2;
 
             _current_function_context = data.Item3;
-            _function = data.Item4;
             _catch_blocks = data.Item5;
+            _function = data.Item4;
 
             if (_function != null)
-                for (int i = 0; i < _function.Scope.VarCount; i++)
+            {
+                for (int i = 0; i < _current_function_context.Length; i++)
                     _function.Scope.Vars[i].Reference = _current_function_context[i];
+            }
 
             return data.Item1;
         }
@@ -118,7 +121,7 @@ namespace ScriptEngine.EngineBase.Interpreter.Context
         /// Добавить номер инструкции Catch блока.
         /// </summary>
         /// <param name="instruction"></param>
-        public void TryAdd(int instruction)
+        public void TryBlockAdd(int instruction)
         {
             _catch_blocks.Add(instruction);
         }
@@ -126,7 +129,7 @@ namespace ScriptEngine.EngineBase.Interpreter.Context
         /// <summary>
         /// Удалить блок Catch.
         /// </summary>
-        public void TryRemove()
+        public void TryBlockRemove()
         {
             _catch_blocks.RemoveAt(_catch_blocks.Count - 1);
         }

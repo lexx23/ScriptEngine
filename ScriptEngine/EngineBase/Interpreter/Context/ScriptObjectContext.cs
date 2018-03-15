@@ -1,13 +1,11 @@
-﻿using ScriptEngine.EngineBase.Compiler.Types.Variable.References;
+﻿using ScriptEngine.EngineBase.Compiler.Types.Function.LibraryMethods;
+using ScriptEngine.EngineBase.Library.BaseTypes.UniversalCollections;
+using ScriptEngine.EngineBase.Compiler.Types.Variable.References;
 using ScriptEngine.EngineBase.Compiler.Programm.Parts.Module;
 using ScriptEngine.EngineBase.Compiler.Types.Function;
 using ScriptEngine.EngineBase.Compiler.Types.Variable;
 using System.Linq;
 using System;
-using ScriptEngine.EngineBase.Compiler.Types.Function.LibraryMethods;
-using ScriptEngine.EngineBase.Exceptions;
-using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
-using ScriptEngine.EngineBase.Library.BaseTypes;
 
 namespace ScriptEngine.EngineBase.Interpreter.Context
 {
@@ -58,7 +56,7 @@ namespace ScriptEngine.EngineBase.Interpreter.Context
         }
 
         /// <summary>
-        /// Установка функциям и свойствам модуля
+        /// Установка функциям и свойствам модуля текущих значений.
         /// </summary>
         public void Set()
         {

@@ -1,9 +1,4 @@
-﻿using ScriptEngine.EngineBase.Praser.Token;
-using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace ScriptEngine.EngineBase.Parser.Token
+﻿namespace ScriptEngine.EngineBase.Parser.Token
 {
     public interface IToken
     {

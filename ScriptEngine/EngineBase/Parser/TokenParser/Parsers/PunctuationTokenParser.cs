@@ -1,5 +1,4 @@
 ﻿using ScriptEngine.EngineBase.Parser.Token;
-using ScriptEngine.EngineBase.Praser.Token;
 using System.Collections.Generic;
 
 namespace ScriptEngine.EngineBase.Parser.TokenParser.Parsers
@@ -54,11 +53,11 @@ namespace ScriptEngine.EngineBase.Parser.TokenParser.Parsers
             string content = string.Empty;
             TokenSubTypeEnum subtype;
 
-            CodeInformation information = iterator.CodeInformation.Clone();
             if (_punctuation_table.TryGetValue(iterator.Current.ToString(),out subtype))
             {
                 char forward_symbol;
 
+                CodeInformation information = iterator.CodeInformation.Clone();
                 forward_symbol = iterator.GetForwardSymbol();
                 content += iterator.Current;
 

@@ -1,10 +1,8 @@
-﻿using System;
+﻿using ScriptEngine.EngineBase.Library.Attributes;
+using ScriptEngine.EngineBase.Exceptions;
 using System.Collections.Generic;
 using System.Collections;
-using ScriptEngine.EngineBase.Exceptions;
-using ScriptEngine.EngineBase.Praser.Token;
-using ScriptEngine.EngineBase.Parser.Token;
-using ScriptEngine.EngineBase.Library.Attributes;
+using System;
 
 namespace ScriptEngine.EngineBase.Parser.Token
 {

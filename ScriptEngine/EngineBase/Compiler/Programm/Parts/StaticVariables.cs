@@ -1,8 +1,7 @@
 ﻿using ScriptEngine.EngineBase.Compiler.Types.Variable;
 using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
-using System;
+using ScriptEngine.EngineBase.Library.BaseTypes.UniversalCollections;
 using System.Collections.Generic;
-using System.Text;
 
 namespace ScriptEngine.EngineBase.Compiler.Programm.Parts
 {
@@ -12,7 +11,7 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts
 
         public StaticVariables()
         {
-            _static_vars = new Dictionary<IValue, IVariable>();
+            _static_vars = new Dictionary<IValue, IVariable>(new IValueComparer());
         }
 
 
@@ -24,9 +23,9 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts
         public IVariable Create(IValue value)
         {
             IVariable tmp_var;
-            if (Exist(value))
+            tmp_var = Exist(value);
+            if (tmp_var != null)
             {
-                tmp_var = _static_vars[value];
                 tmp_var.Users++;
                 return tmp_var;
             }
@@ -46,10 +45,12 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>
-        public bool Exist(IValue value)
+        public IVariable Exist(IValue value)
         {
-            return _static_vars.ContainsKey(value);
-
+            if (_static_vars.TryGetValue(value, out IVariable out_value))
+                return out_value;
+            else
+                return null;
         }
 
         /// <summary>
@@ -61,7 +62,7 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts
         {
             IVariable tmp_var;
 
-            if (Exist(variable.Value))
+            if (Exist(variable.Value) != null)
             {
                 tmp_var = _static_vars[variable.Value];
                 tmp_var.Users--;
