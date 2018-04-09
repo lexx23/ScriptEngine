@@ -122,7 +122,7 @@ namespace UnitTests
             interpreter.Debugger.AddBreakpoint("global", 17, (interpreater) =>
             {
                 Assert.AreEqual(17, interpreter.CurrentLine);
-                Assert.AreEqual("20.08.2002", interpreter.Debugger.RegisterGetValue("А").AsString());
+            Assert.AreEqual($"20{CultureInfo.CurrentCulture.DateTimeFormat.DateSeparator}08{CultureInfo.CurrentCulture.DateTimeFormat.DateSeparator}2002", interpreter.Debugger.RegisterGetValue("А").AsString());
             });
 
             interpreter.Debugger.AddBreakpoint("global", 19, (interpreater) =>
