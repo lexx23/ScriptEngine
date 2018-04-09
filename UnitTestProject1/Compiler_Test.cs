@@ -582,7 +582,7 @@ namespace UnitTests
         {
             IList<ScriptModule> modules = new List<ScriptModule>()
             {
-                new ScriptModule("if","if", ModuleTypeEnum.STARTUP,false,_path + "if\\if_error2.scr")
+                new ScriptModule("if","if", ModuleTypeEnum.STARTUP,false,_path + "If\\if_error2.scr")
             };
 
             ScriptCompiler compiler = new ScriptCompiler();
