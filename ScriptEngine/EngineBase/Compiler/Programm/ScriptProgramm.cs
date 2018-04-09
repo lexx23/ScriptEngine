@@ -44,15 +44,15 @@ namespace ScriptEngine.EngineBase.Compiler.Programm
         /// </summary>
         public void LoadDefaultLibraries()
         {
-            string path = Directory.GetCurrentDirectory() + Path.DirectorySeparatorChar +  "LanguageExtensions" + Path.DirectorySeparatorChar;
+            string path = Directory.GetCurrentDirectory() + Path.DirectorySeparatorChar + "ScriptBaseFunctionsLibrary.dll";
             Loader loader = new Loader(this);
             {
                 // Обьект описывающий исключение.
                 loader.AddObjectOfType(typeof(ErrorInfo));
 
-                foreach (string file in Directory.GetFiles(path, "*.dll", SearchOption.AllDirectories))
+             //   foreach (string file in Directory.GetFiles(path, "*.dll", SearchOption.AllDirectories))
                 {
-                    Assembly assembly = Assembly.LoadFile(file);
+                    Assembly assembly = Assembly.LoadFile(path);
                     loader.LoadAssembly(assembly);
                     assembly = null;
                 }

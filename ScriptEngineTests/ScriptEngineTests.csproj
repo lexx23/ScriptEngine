@@ -22,14 +22,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ScriptBaseExtension\ScriptBaseFunctionsLibrary.csproj" />
+    <ProjectReference Include="..\ScriptBaseExtension\ScriptBaseFunctionsLibrary.csproj">
+      <Private>true</Private>
+    </ProjectReference>
     <ProjectReference Include="..\ScriptEngine\ScriptEngine.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="LanguageExtensions\ScriptBaseFunctionsLibrary.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Update="Scripts\Compiler\Array\indexer.scr">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -468,7 +467,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="LanguageExtensions\" />
     <Folder Include="Scripts\Interpreter\Objects\Not public property call\" />
     <Folder Include="Scripts\Interpreter\Objects\Object not public call error\" />
   </ItemGroup>
