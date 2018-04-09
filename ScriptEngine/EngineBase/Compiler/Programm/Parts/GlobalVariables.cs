@@ -30,8 +30,6 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts
                 return;
 
             _global_scope.Vars.Add(variable);
-            _global_scope.VarCount++;
-
             _vars.Add(variable);
         }
 
@@ -57,12 +55,9 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts
                 Type = VariableTypeEnum.STACKVARIABLE,
                 Users = 1,
                 Scope = _global_scope,
-                StackNumber = _global_scope.VarCount
             };
 
             _global_scope.Vars.Add(var);
-            _global_scope.VarCount++;
-
             _vars.Add(var);
             return var;
         }

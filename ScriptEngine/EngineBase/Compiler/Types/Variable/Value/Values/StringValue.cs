@@ -1,15 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using ScriptEngine.EngineBase.Interpreter.Context;
+﻿using ScriptEngine.EngineBase.Interpreter.Context;
+using System;
 
 namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value.Values
 {
     class StringValue : IValue
     {
         private string _value;
+        public ValueTypeEnum BaseType => ValueTypeEnum.STRING;
 
-        public ValueTypeEnum Type => ValueTypeEnum.STRING;
+        public InternalScriptType ScriptType => ScriptEngine.EngineBase.Interpreter.ScriptInterpreter.Interpreter.Programm.InternalTypes.Get("Строка");
 
         public StringValue(string value)
         {
@@ -35,7 +34,10 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value.Values
 
         public int AsInt()
         {
-            return int.Parse(_value);
+            if (int.TryParse(_value, out int value))
+                return value;
+            else
+                throw new Exception($"Невозможно преобразовать [{_value}] в число.");
         }
 
         public decimal AsNumber()
@@ -66,7 +68,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value.Values
             if (other is null) return false;
             if (ReferenceEquals(this, other)) return true;
 
-            if (other.Type == ValueTypeEnum.STRING)
+            if (other.BaseType == ValueTypeEnum.STRING)
                 return _value == other.AsString();
 
             return false;
@@ -74,7 +76,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value.Values
 
         public int CompareTo(IValue other)
         {
-            switch (other.Type)
+            switch (other.BaseType)
             {
                 case ValueTypeEnum.STRING:
                     return _value.CompareTo(other.AsString());

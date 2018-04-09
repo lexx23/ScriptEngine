@@ -1,6 +1,5 @@
 ﻿using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
 using ScriptEngine.EngineBase.Compiler.Types.Variable;
-using ScriptEngine.EngineBase.Library.Attributes;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Linq;
@@ -18,16 +17,15 @@ namespace ScriptEngine.EngineBase.Library
         /// <returns></returns>
         public static Expression ConvertFromScript(Expression variable, Type to_type, int index)
         {
-
             Expression value = null;
-            if (!to_type.IsArray)
-                value = Expression.Call(Expression.ArrayIndex(variable, Expression.Constant(index)), typeof(IVariable).GetProperty("Value").GetGetMethod());
 
-            if (to_type.IsEnum)
-            {
-                MethodInfo enum_converter = typeof(ConvertExpression).GetMethod("ConvertEnum").MakeGenericMethod(to_type);
-                return Expression.Call(enum_converter, value);
-            }
+            if (variable.Type.IsArray)
+                value = Expression.ArrayIndex(variable, Expression.Constant(index));
+            else
+                value = variable;
+
+            if (!to_type.IsArray && value.Type == typeof(IVariable))
+                value = Expression.Call(value, typeof(IVariable).GetProperty("Value").GetGetMethod());
 
             switch (to_type.Name)
             {
@@ -41,7 +39,7 @@ namespace ScriptEngine.EngineBase.Library
                     return Expression.Call(value, typeof(IValue).GetMethod("AsDecimal"));
 
                 case "Int64":
-                    return Expression.Convert(Expression.Call(value, typeof(IValue).GetMethod("AsDecimal")),typeof(long));
+                    return Expression.Convert(Expression.Call(value, typeof(IValue).GetMethod("AsDecimal")), typeof(long));
 
                 case "DateTime":
                     return Expression.Call(value, typeof(IValue).GetMethod("AsDate"));
@@ -52,8 +50,14 @@ namespace ScriptEngine.EngineBase.Library
                 case "String":
                     return Expression.Call(value, typeof(IValue).GetMethod("AsString"));
 
+                case "Boolean":
+                    return Expression.Call(value, typeof(IValue).GetMethod("AsBoolean"));
+
                 case "IVariable":
                     return Expression.ArrayIndex(variable, Expression.Constant(index));
+
+                case "ScriptObjectContext":
+                    return Expression.Call(value, typeof(IValue).GetMethod("AsScriptObject"));
 
                 default:
                     Expression call = Expression.Call(value, typeof(IValue).GetMethod("AsObject"));
@@ -67,25 +71,6 @@ namespace ScriptEngine.EngineBase.Library
             return array.Select(x => x.Value).ToArray();
         }
 
-        /// <summary>
-        /// Конвертер IValue в перечисление. Используется в вызовах "внешних" методов.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        public static T ConvertEnum<T>(IValue value)
-        {
-            if (value != null)
-                foreach (FieldInfo field in typeof(T).GetFields().Where(x => x.GetCustomAttributes(typeof(EnumStringAttribute), false).Length > 0))
-                {
-                    EnumStringAttribute attr = field.GetCustomAttributes<EnumStringAttribute>().First();
-                    if (attr.Value == value.AsString() || field.Name == value.AsString())
-                        return (T)field.GetValue(null);
-                }
-
-            throw new Exception("Несоответствие типов.");
-        }
-
 
         /// <summary>
         /// Конструктор для типов c#.
@@ -96,6 +81,7 @@ namespace ScriptEngine.EngineBase.Library
         public static Expression ConvertToScript(Type type, Expression value)
         {
             MethodInfo method;
+            MethodInfo method_sample;
 
             if (type == typeof(IValue))
                 return value;
@@ -106,18 +92,13 @@ namespace ScriptEngine.EngineBase.Library
             if (type == typeof(object))
                 value = Expression.Convert(value, typeof(object));
 
+            method_sample = typeof(ValueFactory).GetMethod("Create", new Type[] { typeof(object) });
             method = typeof(ValueFactory).GetMethod("Create", new Type[] { type });
 
-            if (method == null)
-            {
-                LibraryClassAttribute attribute = (LibraryClassAttribute)Attribute.GetCustomAttribute(type, typeof(LibraryClassAttribute), false);
-                if (attribute != null)
-                    return Expression.Convert(value, typeof(IValue));
-            }
-            else
-                return Expression.Call(method, value);
+            if (method == method_sample && type != typeof(object))
+                throw new Exception($"Тип {type.ToString()} не является наследником IValue.");
 
-            throw new Exception($"Тип {type.ToString()} не поддерживается.");
+            return Expression.Call(method, value);
         }
 
     }

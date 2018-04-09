@@ -13,13 +13,9 @@ namespace ScriptEngine.EngineBase.Compiler.Types
 
         public IList<IVariable> Vars { get; set; }
 
-        public int StackIndex { get; set; }
-        public int VarCount { get; set; }
-
         public ScriptScope()
         {
             Vars = new List<IVariable>();
-            VarCount = 0;
         }
     }
 }

@@ -5,15 +5,14 @@ using ScriptEngine.EngineBase.Compiler.Types.Variable;
 using ScriptEngine.EngineBase.Compiler.Programm;
 using System.Collections.Generic;
 
-
 namespace ScriptEngine.EngineBase.Interpreter.Context
 {
     class InterpreterContext
     {
         private IFunction _function;
         private ScriptProgramm _programm;
-        private ScriptObjectContext _current;
         private IList<int> _catch_blocks;
+        private ScriptObjectContext _current;
         private IVariableReference[] _current_function_context { get; set; }
 
         private Stack<(int, ScriptObjectContext, IVariableReference[], IFunction, IList<int>)> _history;
@@ -29,14 +28,6 @@ namespace ScriptEngine.EngineBase.Interpreter.Context
             _catch_blocks = new List<int>();
             _programm = programm;
             _history = new Stack<(int, ScriptObjectContext, IVariableReference[], IFunction, IList<int>)>();
-        }
-
-
-        public ScriptObjectContext CreateObject(ScriptModule type)
-        {
-            ScriptObjectContext context = new ScriptObjectContext(type);
-            context.Set();
-            return context;
         }
 
         /// <summary>
@@ -89,7 +80,14 @@ namespace ScriptEngine.EngineBase.Interpreter.Context
         /// <param name="reference"></param>
         public void Update(IVariable variable, IVariableReference reference)
         {
-            _current_function_context[variable.StackNumber] = reference;
+            for (int i = 0; i < _function.Scope.Vars.Count; i++)
+            {
+                if (_function.Scope.Vars[i] == variable)
+                {
+                    _current_function_context[i] = reference;
+                    break;
+                }
+            }
             variable.Reference = reference;
         }
 

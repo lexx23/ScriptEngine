@@ -4,6 +4,7 @@ using ScriptEngine.EngineBase.Compiler.Types;
 using System.Collections.Generic;
 using System.Linq;
 using System;
+using ScriptEngine.EngineBase.Compiler.Types.Variable.References;
 
 namespace ScriptEngine.EngineBase.Compiler.Programm.Parts.Module
 {
@@ -44,10 +45,8 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts.Module
                     }
 
                     if (!scope.Vars.Contains(var))
-                    {
                         scope.Vars.Add(var);
-                        scope.VarCount++;
-                    }
+
                     return var;
                 }
             }
@@ -88,13 +87,10 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts.Module
                 Value = value,
                 Public = as_public,
                 Type = VariableTypeEnum.STACKVARIABLE,
-                Users = 1,
-                StackNumber = scope.VarCount
+                Users = 1
             };
 
             scope.Vars.Add(var);
-            scope.VarCount++;
-
             _vars.Add(var);
             return var;
         }
@@ -120,7 +116,6 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts.Module
 
             _vars.Add(variable);
             _module.ModuleScope.Vars.Add(variable);
-            _module.ModuleScope.VarCount++;
             return true;
         }
 

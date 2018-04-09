@@ -1,13 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using ScriptEngine.EngineBase.Interpreter.Context;
+﻿using ScriptEngine.EngineBase.Interpreter.Context;
+using System;
 
 namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value.Values
 {
     class NullValue : IValue
     {
-        public ValueTypeEnum Type => ValueTypeEnum.NULL;
+        public ValueTypeEnum BaseType => ValueTypeEnum.NULL;
+
+        public InternalScriptType ScriptType => ScriptEngine.EngineBase.Interpreter.ScriptInterpreter.Interpreter.Programm.InternalTypes.Get("Неопределено");
 
         public bool AsBoolean()
         {
@@ -49,7 +49,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value.Values
             if (other is null) return false;
             if (ReferenceEquals(this, other)) return true;
 
-            if (other.Type == ValueTypeEnum.NULL)
+            if (other.BaseType == ValueTypeEnum.NULL)
                 return true;
 
             return false;
@@ -57,7 +57,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value.Values
 
         public int CompareTo(IValue other)
         {
-            switch (other.Type)
+            switch (other.BaseType)
             {
                 case ValueTypeEnum.NULL:
                     return 0;

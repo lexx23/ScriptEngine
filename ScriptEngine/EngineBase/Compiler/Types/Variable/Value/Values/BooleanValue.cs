@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using ScriptEngine.EngineBase.Interpreter.Context;
+﻿using ScriptEngine.EngineBase.Interpreter.Context;
+using System;
 
 namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value.Values
 {
@@ -9,7 +7,9 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value.Values
     {
         private bool _value;
 
-        public ValueTypeEnum Type => ValueTypeEnum.BOOLEAN;
+        public ValueTypeEnum BaseType => ValueTypeEnum.BOOLEAN;
+
+        public InternalScriptType ScriptType => ScriptEngine.EngineBase.Interpreter.ScriptInterpreter.Interpreter.Programm.InternalTypes.Get("Булево"); 
 
         public BooleanValue(bool value)
         {
@@ -58,7 +58,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value.Values
             if (other is null) return false;
             if (ReferenceEquals(this, other)) return true;
 
-            if (other.Type == ValueTypeEnum.BOOLEAN)
+            if (other.BaseType == ValueTypeEnum.BOOLEAN)
                 return _value == other.AsBoolean();
 
             return false;
@@ -66,7 +66,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value.Values
 
         public int CompareTo(IValue other)
         {
-            switch (other.Type)
+            switch (other.BaseType)
             {
                 case ValueTypeEnum.BOOLEAN:
                     return _value.CompareTo(other.AsBoolean());

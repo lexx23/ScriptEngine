@@ -6,8 +6,9 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value.Values
     public class UUIDValue : IValue
     {
         protected Guid _value;
+        public ValueTypeEnum BaseType => ValueTypeEnum.GUID;
 
-        public ValueTypeEnum Type => ValueTypeEnum.GUID;
+        public virtual InternalScriptType ScriptType { get; set; }
 
         public bool AsBoolean()
         {
@@ -51,7 +52,13 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value.Values
 
         public bool Equals(IValue other)
         {
-            return AsString().Equals(other.AsString());
+            if (other is null) return false;
+            if (ReferenceEquals(this, other)) return true;
+
+            if (other.BaseType == ValueTypeEnum.GUID)
+                return AsString() == other.AsString();
+
+            return false;
         }
     }
 }

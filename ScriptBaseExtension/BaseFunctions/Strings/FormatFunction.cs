@@ -270,7 +270,7 @@ namespace ScriptBaseFunctionsLibrary.BaseFunctions.Strings
 
             string formattedValue;
 
-            switch (value.Type)
+            switch (value.BaseType)
             {
                 case ValueTypeEnum.BOOLEAN:
                     formattedValue = FormatBoolean(value.AsBoolean(), formatParameters);

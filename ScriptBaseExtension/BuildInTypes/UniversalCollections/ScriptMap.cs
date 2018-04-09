@@ -8,7 +8,7 @@ using System.Collections;
 
 namespace ScriptBaseFunctionsLibrary.BuildInTypes.UniversalCollections
 {
-    [LibraryClassAttribute(Name = "Map", Alias = "Соответствие", AsGlobal = false, AsObject = true)]
+    [LibraryClassAttribute(Name = "Map", Alias = "Соответствие", RegisterType = true, AsGlobal = false)]
     public class ScriptMap : LibraryModule<ScriptMap>, IEnumerable<IValue>, IUniversalCollection, ICollectionIndexer
     {
         private readonly Dictionary<IValue, IValue> _values = new Dictionary<IValue, IValue>(new IValueComparer());

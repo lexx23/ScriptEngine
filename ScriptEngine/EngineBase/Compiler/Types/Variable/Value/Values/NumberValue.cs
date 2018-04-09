@@ -1,15 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using ScriptEngine.EngineBase.Interpreter.Context;
+﻿using ScriptEngine.EngineBase.Interpreter.Context;
+using System;
 
 namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value.Values
 {
     class NumberValue : IValue
     {
         private decimal _value;
+        public ValueTypeEnum BaseType => ValueTypeEnum.NUMBER;
 
-        public ValueTypeEnum Type => ValueTypeEnum.NUMBER;
+        public InternalScriptType ScriptType => ScriptEngine.EngineBase.Interpreter.ScriptInterpreter.Interpreter.Programm.InternalTypes.Get("Число");
 
         public NumberValue(decimal value)
         {
@@ -60,7 +59,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value.Values
             if (other is null) return false;
             if (ReferenceEquals(this, other)) return true;
 
-            if (other.Type == ValueTypeEnum.NUMBER)
+            if (other.BaseType == ValueTypeEnum.NUMBER)
                 return _value == other.AsNumber();
 
             return false;
@@ -68,7 +67,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value.Values
 
         public int CompareTo(IValue other)
         {
-            switch (other.Type)
+            switch (other.BaseType)
             {
                 case ValueTypeEnum.NUMBER:
                     return _value.CompareTo(other.AsNumber());

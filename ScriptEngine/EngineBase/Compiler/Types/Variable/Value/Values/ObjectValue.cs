@@ -1,7 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using ScriptEngine.EngineBase.Interpreter.Context;
+﻿using ScriptEngine.EngineBase.Interpreter.Context;
+using ScriptEngine.EngineBase.Library.Attributes;
+using System.Reflection;
+using System.Linq;
+using System;
 
 namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value.Values
 {
@@ -9,8 +10,9 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value.Values
     {
         private object _value;
 
-        public ValueTypeEnum Type => ValueTypeEnum.OBJECT;
+        public ValueTypeEnum BaseType => ValueTypeEnum.OBJECT;
 
+        public InternalScriptType ScriptType => ScriptEngine.EngineBase.Interpreter.ScriptInterpreter.Interpreter.Programm.InternalTypes.Get(_value);
 
         public ObjectValue(object value)
         {
@@ -45,8 +47,23 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value.Values
 
         public string AsString()
         {
-            return _value.ToString();
+            if (!_value.GetType().IsEnum)
+                return _value.ToString();
+            else
+                return EnumToString(_value.GetType());
         }
+
+        private string EnumToString(Type type)
+        {
+            foreach (FieldInfo field in type.GetFields().Where(x => x.GetCustomAttributes(typeof(EnumStringAttribute), false).Length > 0))
+            {
+                EnumStringAttribute attr = field.GetCustomAttributes<EnumStringAttribute>().First();
+                if (attr.Value == _value.ToString() || field.Name == _value.ToString())
+                    return attr.Value;
+            }
+            return "";
+        }
+
 
         public object AsObject()
         {
@@ -64,10 +81,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value.Values
             if (other is null) return false;
             if (ReferenceEquals(this, other)) return true;
 
-            if (other.Type == ValueTypeEnum.STRING)
-                return _value == other.AsObject();
-
-            return false;
+            return AsString() == other.AsString();
         }
     }
 }

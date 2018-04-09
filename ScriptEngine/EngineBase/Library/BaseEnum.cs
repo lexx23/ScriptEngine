@@ -7,27 +7,36 @@ using System.Collections;
 using System.Reflection;
 using System.Linq;
 using System;
-
+using ScriptEngine.EngineBase.Library.BaseTypes.UniversalCollections;
 
 namespace ScriptEngine.EngineBase.Library
 {
-    public class BaseEnum<T> : IEnumerable<IValue> where T : struct, IConvertible
+    public class BaseEnum<T> : IScriptDynamicProperties,IEnumerable<IValue> where T : struct, IConvertible
     {
         public IList<IVariable> Properties { get; set; }
 
         public BaseEnum()
         {
             Properties = new List<IVariable>();
-            foreach (FieldInfo field in typeof(T).GetFields().Where(x => x.GetCustomAttributes(typeof(EnumStringAttribute), false).Length > 0))
+        }
+
+        public void Create()
+        {
+            foreach (FieldInfo field in typeof(T).GetFields())
             {
-                EnumStringAttribute attr = field.GetCustomAttributes<EnumStringAttribute>().First();
+                if (field.FieldType == typeof(Int32))
+                    continue;
 
-                IValue value = ValueFactory.Create(attr.Value);
+                EnumStringAttribute attr = field.GetCustomAttributes<EnumStringAttribute>().FirstOrDefault();
+                string alias = string.Empty;
+                if (attr != null)
+                    alias = attr.Value;
 
-                IVariable var = new Variable() { Name = field.Name, Alias = attr.Value, Public = true, Reference = new ReferenceReadOnly(value) };
+                IValue value = ValueFactory.Create(field.GetValue(null));
+
+                IVariable var = new Variable() { Name = field.Name, Alias = alias, Public = true, Reference = new ReferenceReadOnly(value) };
                 Properties.Add(var);
             }
-
         }
 
         public IEnumerator<IValue> GetEnumerator()
@@ -43,6 +52,29 @@ namespace ScriptEngine.EngineBase.Library
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
+        }
+
+        private IValue Find(string name)
+        {
+            for (int i = 0; i < Properties.Count; i++)
+                if (String.Equals(Properties[i].Name, name, StringComparison.OrdinalIgnoreCase) || String.Equals(Properties[i].Alias, name, StringComparison.OrdinalIgnoreCase))
+                    return Properties[i].Value;
+            return null;
+        }
+
+        public bool Exist(string name)
+        {
+            return Find(name) != null;
+        }
+
+        public IValue Get(string name)
+        {
+            return Find(name);
+        }
+
+        public void Set(string name, IValue value)
+        {
+            throw new Exception("Свойство только для чтения.");
         }
     }
 }

@@ -24,9 +24,6 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts
         public void Add(ScriptModule module)
         {
             _modules.Add(module);
-
-            if (module.Alias == null || module.Alias == string.Empty)
-                module.Alias = module.Name;
         }
 
         /// <summary>
@@ -48,7 +45,7 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts
         {
             for (int i = 0; i < _modules.Count; i++)
             {
-                if (String.Equals(_modules[i].Name,name,StringComparison.OrdinalIgnoreCase) || String.Equals(_modules[i].Alias,name,StringComparison.OrdinalIgnoreCase))
+                if (String.Equals(_modules[i].Name,name,StringComparison.OrdinalIgnoreCase) || String.Equals(_modules[i].Alias, name, StringComparison.OrdinalIgnoreCase))
                     return _modules[i];
             }
 
@@ -65,21 +62,6 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts
             return _modules[index];
         }
 
-        /// <summary>
-        /// Получить индекс модуля в коллекции.
-        /// </summary>
-        /// <param name="name"></param>
-        /// <returns></returns>
-        public int GetIndex(string name)
-        {
-            for (int i = 0; i < _modules.Count; i++)
-            {
-                if (_modules[i].Name == name || _modules[i].Alias == name)
-                    return i;
-            }
-
-            return -1;
-        }
 
         public IEnumerator<ScriptModule> GetEnumerator()
         {

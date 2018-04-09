@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using ScriptEngine.EngineBase.Interpreter.Context;
+﻿using ScriptEngine.EngineBase.Interpreter.Context;
+using System;
 
 namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value.Values
 {
@@ -9,7 +7,9 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value.Values
     {
         protected ScriptObjectContext _value;
 
-        public ValueTypeEnum Type => ValueTypeEnum.SCRIPT_OBJECT;
+        public ValueTypeEnum BaseType => ValueTypeEnum.SCRIPT_OBJECT;
+
+        public InternalScriptType ScriptType => ScriptEngine.EngineBase.Interpreter.ScriptInterpreter.Interpreter.Programm.InternalTypes.Get(_value);
 
         public ScriptObjectValue()
         {
@@ -50,7 +50,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value.Values
         public string AsString()
         {
             if (_value != null)
-                return _value.Module?.Alias;
+                return _value.Module?.Name;
             else
                 return "Неопределено";
         }
@@ -66,7 +66,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value.Values
             if (other is null) return false;
             if (ReferenceEquals(this, other)) return true;
 
-            if (other.Type == ValueTypeEnum.SCRIPT_OBJECT)
+            if (other.BaseType == ValueTypeEnum.SCRIPT_OBJECT)
                 return _value.Module?.Name == other.AsScriptObject().Module?.Name && _value.Instance == other.AsScriptObject().Instance;
 
             return false;

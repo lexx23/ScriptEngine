@@ -259,7 +259,8 @@ namespace ScriptEngine.EngineBase
             CodeInformation inforamtion = CodeInformation.Clone();
             do
             {
-                AddToBuffer(_current_symbol, ref buffer);
+                if (_current_symbol != '|' && _current_symbol != '\t')
+                    buffer += _current_symbol;
                 if (_current_symbol == '"')
                 {
                     counter++;
@@ -279,7 +280,7 @@ namespace ScriptEngine.EngineBase
             buffer = buffer.Remove(0, 1);
             buffer = buffer.Remove(buffer.Length - 1, 1);
 
-            return buffer.Replace("\"\"","\"");
+            return buffer.Replace("\"\"", "\"");
         }
 
 

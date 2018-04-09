@@ -38,7 +38,7 @@ namespace ScriptBaseFunctionsLibrary.BuildInTypes.UniversalCollections
     /// Запись = Новый Структура("Настройки,Отчет",124);
     /// Запись = Новый Структура("Настройки,Отчет",124,"Отчет");
     /// </example>
-    [LibraryClassAttribute(Name = "Structure", Alias = "Структура", AsGlobal = false, AsObject = true)]
+    [LibraryClassAttribute(Name = "Structure", Alias = "Структура", RegisterType = true, AsGlobal = false)]
     public class ScriptStructure : LibraryModule<ScriptStructure>, IEnumerable<IValue>, IScriptDynamicProperties, IUniversalCollection
     {
         private readonly IDictionary<string, IValue> _values;

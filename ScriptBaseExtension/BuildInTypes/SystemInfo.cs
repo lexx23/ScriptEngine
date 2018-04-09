@@ -10,7 +10,7 @@ using System;
 
 namespace ScriptBaseFunctionsLibrary.BuildInTypes
 {
-    [LibraryClassAttribute(Name = "SystemInfo", Alias = "СистемнаяИнформация", AsGlobal = false, AsObject = true)]
+    [LibraryClassAttribute(Name = "SystemInfo", Alias = "СистемнаяИнформация",RegisterType = true ,AsGlobal = false)]
     public class SystemInfo : LibraryModule<SystemInfo>
     {
         /// <summary>

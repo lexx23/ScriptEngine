@@ -10,7 +10,7 @@ namespace ScriptEngine.EngineBase.Parser.Token
     public class TokenClass : IToken
     {
         /// <summary>
-        /// Наименование лексемы.
+        /// Тип токена.
         /// </summary>
         public TokenTypeEnum Type{ get; set; }
 

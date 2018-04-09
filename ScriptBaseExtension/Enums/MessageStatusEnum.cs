@@ -1,5 +1,5 @@
-﻿using ScriptEngine.EngineBase.Library;
-using ScriptEngine.EngineBase.Library.Attributes;
+﻿using ScriptEngine.EngineBase.Library.Attributes;
+using ScriptEngine.EngineBase.Library;
 
 namespace ScriptBaseFunctionsLibrary.Enums
 {
@@ -25,9 +25,12 @@ namespace ScriptBaseFunctionsLibrary.Enums
     }
 
 
-    [LibraryClassAttribute(Name = "СтатусСообщения", Alias = "MessageStatus", AsGlobal = true, AsObject = true)]
+    [LibraryClassAttribute(Name = "MessageStatus", Alias = "СтатусСообщения", AsGlobal = true)]
     public class MessageStatusEnumClass : BaseEnum<MessageStatusEnumInner>
     {
-
+        public MessageStatusEnumClass()
+        {
+            Create();
+        }
     }
 }

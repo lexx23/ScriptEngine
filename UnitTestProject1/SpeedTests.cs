@@ -11,6 +11,8 @@ using ScriptEngine.EngineBase.Compiler.Programm;
 using ScriptEngine.EngineBase.Interpreter;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using ScriptEngine.EngineBase.Compiler;
 
 namespace UnitTests
 {
@@ -18,10 +20,10 @@ namespace UnitTests
     [TestClass]
     public class SpeedTests
     {
-        private Helper _helper;
+        private readonly string _path;
         public SpeedTests()
         {
-            _helper = new Helper("SpeedTest");
+            _path = Directory.GetCurrentDirectory() + "\\Scripts\\SpeedTest\\";
         }
 
         // Скорость для OneScript указана без оптимизации сборки и без отладки.
@@ -35,10 +37,13 @@ namespace UnitTests
         [Description("Проверка скорости работы структуры и динамического доступа к свойствам.")]
         public void SpeedTest_Structure()
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("struct", "structure.scr");
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("struct","struct", ModuleTypeEnum.STARTUP,false,_path+"structure.scr")
+            };
 
-            ScriptProgramm programm = _helper.Compile(files);
+            ScriptCompiler compiler = new ScriptCompiler();
+            ScriptProgramm programm = compiler.CompileProgramm(modules);
             ScriptInterpreter interpreter = new ScriptInterpreter(programm);
 
             System.Diagnostics.Stopwatch sw = new Stopwatch();
@@ -46,7 +51,7 @@ namespace UnitTests
             interpreter.Run();
             sw.Stop();
 
-            Assert.AreEqual(1700, sw.ElapsedMilliseconds, 200);
+            Assert.AreEqual(2300, sw.ElapsedMilliseconds, 200);
         }
 
         /// <summary>
@@ -57,11 +62,13 @@ namespace UnitTests
         [Description("Проверка скорости работы вызова функции из внешней библиотеки.")]
         public void SpeedTest_LibraryFunctionCall()
         {
-            IDictionary<ScriptModule, string> modules = new Dictionary<ScriptModule, string>();
-            modules.Add(new ScriptModule("global", "global", ModuleTypeEnum.STARTUP, true, false), _helper.OpenModule("speed_test_library_call.scr"));
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("struct","struct", ModuleTypeEnum.STARTUP,false,_path+"speed_test_library_call.scr")
+            };
 
-
-            ScriptProgramm programm = _helper.CompileModules(modules);
+            ScriptCompiler compiler = new ScriptCompiler();
+            ScriptProgramm programm = compiler.CompileProgramm(modules);
             ScriptInterpreter interpreter = new ScriptInterpreter(programm);
 
             System.Diagnostics.Stopwatch sw = new Stopwatch();
@@ -80,10 +87,13 @@ namespace UnitTests
         [Description("Проверка скорости работы вызова функции.")]
         public void SpeedTest_FunctionCall()
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("function", "speed_test_function_call.scr");
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("function","function", ModuleTypeEnum.STARTUP,false,_path+"speed_test_function_call.scr")
+            };
 
-            ScriptProgramm programm = _helper.Compile(files);
+            ScriptCompiler compiler = new ScriptCompiler();
+            ScriptProgramm programm = compiler.CompileProgramm(modules);
             ScriptInterpreter interpreter = new ScriptInterpreter(programm);
 
             System.Diagnostics.Stopwatch sw = new Stopwatch();
@@ -91,7 +101,7 @@ namespace UnitTests
             interpreter.Run();
             sw.Stop();
 
-            Assert.AreEqual(3300, sw.ElapsedMilliseconds, 350);
+            Assert.AreEqual(3400, sw.ElapsedMilliseconds, 350);
         }
 
         /// <summary>
@@ -102,10 +112,14 @@ namespace UnitTests
         [Description("Проверка скорости работы оператора для каждого.")]
         public void SpeedTest_ForEach()
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("foreach_test", "foreach.scr");
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("foreach_test","foreach_test", ModuleTypeEnum.STARTUP,false,_path+"foreach.scr")
+            };
 
-            ScriptProgramm programm = _helper.Compile(files);
+
+            ScriptCompiler compiler = new ScriptCompiler();
+            ScriptProgramm programm = compiler.CompileProgramm(modules);
             ScriptInterpreter interpreter = new ScriptInterpreter(programm);
 
             System.Diagnostics.Stopwatch sw = new Stopwatch();
@@ -117,17 +131,20 @@ namespace UnitTests
         }
 
         /// <summary>
-        /// OneScript: 85000, 1C: 18000
+        /// OneScript: 8500, 1C: 1800
         /// </summary>
         [TestMethod]
         [TestCategory("Speed")]
         [Description("Проверка скорости работы массива.")]
         public void SpeedTest_Eval()
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("eval_test", "eval.scr");
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("eval_test","foreach_test", ModuleTypeEnum.STARTUP,false,_path+"eval.scr")
+            };
 
-            ScriptProgramm programm = _helper.Compile(files);
+            ScriptCompiler compiler = new ScriptCompiler();
+            ScriptProgramm programm = compiler.CompileProgramm(modules);
             ScriptInterpreter interpreter = new ScriptInterpreter(programm);
 
             System.Diagnostics.Stopwatch sw = new Stopwatch();
@@ -135,7 +152,7 @@ namespace UnitTests
             interpreter.Run();
             sw.Stop();
 
-            Assert.AreEqual(50000, sw.ElapsedMilliseconds, 3000);
+            Assert.AreEqual(5000, sw.ElapsedMilliseconds, 500);
         }
 
         /// <summary>
@@ -146,10 +163,14 @@ namespace UnitTests
         [Description("Проверка скорости работы массива.")]
         public void SpeedTest_Array()
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("array_test", "array.scr");
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("array_test","foreach_test", ModuleTypeEnum.STARTUP,false,_path+"array.scr")
+            };
 
-            ScriptProgramm programm = _helper.Compile(files);
+
+            ScriptCompiler compiler = new ScriptCompiler();
+            ScriptProgramm programm = compiler.CompileProgramm(modules);
             ScriptInterpreter interpreter = new ScriptInterpreter(programm);
 
             System.Diagnostics.Stopwatch sw = new Stopwatch();
@@ -165,15 +186,22 @@ namespace UnitTests
         [Description("Проверка результатов работы с массивом.")]
         public void SpeedTest_ArrayDebug()
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("array_test", "array.scr");
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("array_test","foreach_test", ModuleTypeEnum.STARTUP,false,_path+"array.scr")
+            };
 
-            ScriptProgramm programm = _helper.Compile(files);
+            ScriptCompiler compiler = new ScriptCompiler();
+            ScriptProgramm programm = compiler.CompileProgramm(modules);
             ScriptInterpreter interpreter = new ScriptInterpreter(programm);
-            interpreter.Debugger.AddBreakpoint("array_test", 28);
+
+            interpreter.Debugger.AddBreakpoint("array_test", 28, (interpreter_int) =>
+            {
+                Assert.AreEqual(499999500000, interpreter_int.Debugger.RegisterGetValue("result").AsNumber());
+            });
 
             interpreter.Debug();
-            Assert.AreEqual(499999500000, interpreter.Debugger.RegisterGetValue("result").AsNumber());
+
         }
 
 
@@ -185,12 +213,16 @@ namespace UnitTests
         [Description("Проверка скорости работы вычислений при компиляции.")]
         public void SpeedTest_Precalc()
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("other", "speed_test.scr");
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("other","other", ModuleTypeEnum.STARTUP,false,_path+"speed_test.scr")
+            };
+
+            ScriptCompiler compiler = new ScriptCompiler();
 
             System.Diagnostics.Stopwatch sw = new Stopwatch();
             sw.Start();
-            ScriptProgramm programm = _helper.Compile(files);
+            ScriptProgramm programm = compiler.CompileProgramm(modules);
             sw.Stop();
             Assert.AreEqual(60, sw.ElapsedMilliseconds, 80);
 
@@ -207,16 +239,21 @@ namespace UnitTests
         [Description("Проверка результатов вычислений при компиляции.")]
         public void SpeedTest_Precalc_Debug()
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("other", "speed_test.scr");
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("other","other", ModuleTypeEnum.STARTUP,false,_path+"speed_test.scr")
+            };
 
-            ScriptProgramm programm = _helper.Compile(files);
+            ScriptCompiler compiler = new ScriptCompiler();
+            ScriptProgramm programm = compiler.CompileProgramm(modules);
             ScriptInterpreter interpreter = new ScriptInterpreter(programm);
-            interpreter.Debugger.AddBreakpoint("other", 107);
+            interpreter.Debugger.AddBreakpoint("other", 107, (interpreter_int) =>
+            {
+                Assert.AreEqual(107, interpreter.CurrentLine, 10);
+                Assert.AreEqual(1000000, interpreter.Debugger.RegisterGetValue("ф").AsInt());
+            });
             interpreter.Debug();
 
-            Assert.AreEqual(107, interpreter.CurrentLine);
-            Assert.AreEqual(1000000, interpreter.Debugger.RegisterGetValue("ф").AsInt());
         }
     }
 }

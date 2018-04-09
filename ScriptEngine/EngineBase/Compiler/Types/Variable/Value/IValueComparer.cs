@@ -19,7 +19,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
 
         public int Compare(IValue left, IValue right)
         {
-            if (left.Type == right.Type)
+            if (left.BaseType == right.BaseType)
                 return left.CompareTo(right);
             else
                 return left.AsString().CompareTo(right.AsString());

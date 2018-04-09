@@ -1,29 +1,50 @@
 ﻿using ScriptEngine.EngineBase.Interpreter;
-using ScriptEngine.EngineBase.Interpreter.Context;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ScriptEngine.EngineBase.Exceptions
 {
     public class RuntimeException: ApplicationException
     {
-        private ScriptInterpreter _script_interpreter;
+        private int _line;
+        private string _module;
+        public  string _message;
 
+        internal RuntimeException(Exception ex)
+        {
+            if (ex.Data.Count != 0)
+            {
+                _line = Convert.ToInt32(ex.Data["line"]);
+                _module = Convert.ToString(ex.Data["module"]);
+                _message = Convert.ToString(ex.Data["message"]);
+                base.Data["line"] = ex.Data["line"];
+                base.Data["module"] = ex.Data["module"];
+                base.Data["message"] = ex.Data["message"];
+            }
+            else
+                _message = ex.Message;
+        }
+
+
+        internal RuntimeException(int line,string module, string message) : base(message)
+        {
+            _line = line;
+            _module = module;
+            _message = message;
+            base.Data["line"] = _line;
+            base.Data["module"] = _module;
+            base.Data["message"] = message;
+        }
 
         internal RuntimeException(ScriptInterpreter interpreter, string message) : base(message)
         {
-            _script_interpreter = interpreter;
+            _module = interpreter.CurrentModule.Name;
+            _line = interpreter.CurrentLine;
+            _message = message;
+            base.Data["line"] = _line;
+            base.Data["module"] = _module;
+            base.Data["message"] = message;
         }
 
-
-        public string MessageWithLine
-        {
-            get
-            {
-                return $"{{{_script_interpreter.CurrentModule.Name}({_script_interpreter.CurrentLine})}} : " + base.Message;
-            }
-        }
 
         /// <summary>
         /// Текст ошибки.
@@ -32,7 +53,7 @@ namespace ScriptEngine.EngineBase.Exceptions
         {
             get
             {
-                return MessageWithLine;
+                return $"{{{_module}({_line})}} : " + _message;
             }
         }
     }

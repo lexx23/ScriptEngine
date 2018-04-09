@@ -1,20 +1,18 @@
-﻿using ScriptEngine.EngineBase.Compiler.Programm;
-using ScriptEngine.EngineBase.Compiler.Types;
+﻿using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
 using ScriptEngine.EngineBase.Compiler.Types.Variable;
-using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
-using ScriptEngine.EngineBase.Interpreter.Context;
-using System;
 using System.Collections.Generic;
-using System.Text;
+using System;
 
 namespace ScriptEngine.EngineBase.Interpreter
 {
     public class ScriptDebugger
     {
         private ScriptInterpreter _interpreter;
-        private IDictionary<string, IList<int>> _break_points;
+        private IDictionary<string, IDictionary<int, OnBreakHandler>> _break_points;
         private string _current_break_point;
+        private string _eval_break_point;
         private int _step_break_point;
+
         public bool Debug { get; set; }
 
         private OnBreakHandler _on_break_delegate;
@@ -35,7 +33,8 @@ namespace ScriptEngine.EngineBase.Interpreter
             Debug = false;
             _interpreter = interpreter;
             _step_break_point = int.MaxValue;
-            _break_points = new Dictionary<string, IList<int>>();
+            _eval_break_point = string.Empty;
+            _break_points = new Dictionary<string, IDictionary<int, OnBreakHandler>>();
         }
 
         /// <summary>
@@ -49,10 +48,29 @@ namespace ScriptEngine.EngineBase.Interpreter
                 throw new Exception($"В программе нет модуля с именем [{module_name}].");
 
             if (!_break_points.ContainsKey(module_name))
-                _break_points[module_name] = new List<int>();
+                _break_points[module_name] = new Dictionary<int, OnBreakHandler>();
 
-            if (_break_points[module_name].IndexOf(line) == -1)
-                _break_points[module_name].Add(line);
+            if (!_break_points[module_name].ContainsKey(line))
+                _break_points[module_name].Add(line, null);
+        }
+
+        /// <summary>
+        /// Добавить событие для конкретного модуля и строки.
+        /// </summary>
+        /// <param name="module_name"></param>
+        /// <param name="line"></param>
+        public void AddBreakpoint(string module_name, int line, OnBreakHandler handler)
+        {
+            if (!_interpreter.Programm.Modules.Exist(module_name))
+                throw new Exception($"В программе нет модуля с именем [{module_name}].");
+
+            if (!_break_points.ContainsKey(module_name))
+                _break_points[module_name] = new Dictionary<int, OnBreakHandler>();
+
+            if (_break_points[module_name].ContainsKey(line))
+                _break_points[module_name][line] = handler;
+            else
+                _break_points[module_name].Add(line, handler);
         }
 
         /// <summary>
@@ -62,12 +80,10 @@ namespace ScriptEngine.EngineBase.Interpreter
         /// <param name="line"></param>
         public void RemoveBreakpoint(string module_name, int line)
         {
-            int line_index;
-            if (!_break_points.ContainsKey(module_name))
+            if (_break_points.ContainsKey(module_name))
             {
-                line_index = _break_points[module_name].IndexOf(line);
-                if (line_index != -1)
-                    _break_points[module_name].RemoveAt(line_index);
+                if (_break_points[module_name].ContainsKey(line))
+                    _break_points[module_name].Remove(line);
             }
 
         }
@@ -78,7 +94,7 @@ namespace ScriptEngine.EngineBase.Interpreter
         public void StepInto()
         {
             _step_break_point = (int)DEBUG_COMMANDS.STEP_INTO_START;
-            _interpreter.Execute();
+            //_interpreter.Execute();
         }
 
         /// <summary>
@@ -87,7 +103,7 @@ namespace ScriptEngine.EngineBase.Interpreter
         public void StepOver()
         {
             GetNextStep();
-            _interpreter.Execute();
+            //_interpreter.Execute();
         }
 
         /// <summary>
@@ -127,7 +143,7 @@ namespace ScriptEngine.EngineBase.Interpreter
         public void Continue()
         {
             _step_break_point = int.MaxValue;
-            _interpreter.Execute();
+            //_interpreter.Execute();
         }
 
         /// <summary>
@@ -172,6 +188,44 @@ namespace ScriptEngine.EngineBase.Interpreter
             return null;
         }
 
+        /// <summary>
+        /// Рассчитать выражение.
+        /// </summary>
+        /// <param name="expression"></param>
+        /// <returns></returns>
+        public IValue Eval(string expression)
+        {
+            if (_interpreter.CurrentLine != -1 && _interpreter.CurrentFunction != null)
+            {
+                IVariable result = Variable.Create(ValueFactory.Create("Не удалось рассчитать значение."));
+                try
+                {
+                    _eval_break_point = _interpreter.CurrentModule.Name + "_" + _interpreter.IstructionIndex;
+                    _interpreter.Eval(expression, result);
+                }
+                catch (Exception ex)
+                {
+                    _eval_break_point = string.Empty;
+                    return ValueFactory.Create(ex.Message);
+                }
+
+                _interpreter.Execute();
+                return result.Value;
+            }
+            else
+                return ValueFactory.Create("Достигнут конец кода.");
+        }
+
+        internal bool OnEvalExit()
+        {
+            if (_eval_break_point == _interpreter.CurrentModule.Name + "_" + _interpreter.IstructionIndex)
+            {
+                _eval_break_point = string.Empty;
+                return true;
+            }
+            return false;
+        }
+
 
         internal void OnFunctionCall()
         {
@@ -185,34 +239,37 @@ namespace ScriptEngine.EngineBase.Interpreter
                 GetNextStep();
         }
 
+        private void ExecuteEvent(string module, int line)
+        {
+            if (_break_points.ContainsKey(module) && _break_points[module].ContainsKey(line))
+                _break_points[_interpreter.CurrentModule.Name][line]?.Invoke(_interpreter);
+            _on_break_delegate?.Invoke(_interpreter);
+        }
 
-        internal bool OnExecute(ScriptStatement statement)
+
+        internal void OnExecute()
         {
             if (Debug)
             {
                 if (_interpreter.CurrentLine != -1)
                 {
+                    if (_current_break_point == _interpreter.CurrentModule.Name + "_" + _interpreter.CurrentLine)
+                        return;
+
                     if (_break_points.Count > 0)
                     {
-                        if (_break_points.ContainsKey(_interpreter.CurrentModule.Name) && _break_points[_interpreter.CurrentModule.Name].Contains(_interpreter.CurrentLine))
+                        if (_break_points.ContainsKey(_interpreter.CurrentModule.Name) && _break_points[_interpreter.CurrentModule.Name].ContainsKey(_interpreter.CurrentLine))
                         {
-                            if (_current_break_point != _interpreter.CurrentModule.Name + "_" + _interpreter.CurrentLine)
-                            {
-                                _current_break_point = _interpreter.CurrentModule.Name + "_" + _interpreter.CurrentLine;
-                                _on_break_delegate?.Invoke(_interpreter);
-                                return true;
-                            }
+                            _current_break_point = _interpreter.CurrentModule.Name + "_" + _interpreter.CurrentLine;
+                            ExecuteEvent(_interpreter.CurrentModule.Name, _interpreter.CurrentLine);
+                            return;
                         }
                     }
 
                     if (_step_break_point == (int)DEBUG_COMMANDS.STEP_INTO_BREAK || _step_break_point == _interpreter.CurrentLine)
-                    {
-                        _on_break_delegate?.Invoke(_interpreter);
-                        return true;
-                    }
+                        ExecuteEvent(_interpreter.CurrentModule.Name, _interpreter.CurrentLine);
                 }
             }
-            return false;
         }
     }
 }

@@ -30,7 +30,6 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Function.Parameters
                 Name = name,
                 Scope = scope,
                 Type = VariableTypeEnum.REFERENCE,
-                StackNumber = 2,
                 Value = default_value
             };
 
@@ -45,7 +44,6 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Function.Parameters
                 Name = name,
                 Scope = scope,
                 Type = VariableTypeEnum.CONSTANTVARIABLE,
-                StackNumber = 2,
                 Value = default_value
             };
 

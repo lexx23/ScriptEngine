@@ -5,31 +5,47 @@
 	at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ScriptEngine.EngineBase.Compiler.Programm.Parts.Module;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using ScriptEngine.EngineBase.Compiler.Programm;
+using ScriptEngine.EngineBase.Interpreter;
+using ScriptEngine.EngineBase.Compiler;
 using System.Collections.Generic;
-
+using System.IO;
+using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
 
 namespace UnitTests
 {
     [TestClass]
     public class OneScript_Test
     {
-        private Helper _helper;
+        private readonly string _path;
         public OneScript_Test()
         {
-            _helper = new Helper("OneScript");
+            _path = Directory.GetCurrentDirectory() + "\\Scripts\\OneScript\\";
         }
 
         [TestMethod]
         public void OneScript_MainTest()
         {
-            IDictionary<ScriptModule, string> modules = new Dictionary<ScriptModule, string>();
-            //modules.Add(new ScriptModule("global", "global", ModuleTypeEnum.STARTUP), _helper.OpenModule("main_module.scr"));
-            modules.Add(new ScriptModule("Утверждения", "Approval", ModuleTypeEnum.OBJECT, true, true), _helper.OpenModule("xunit.scr"));
-            modules.Add(new ScriptModule("Ожидаем", "Expect", ModuleTypeEnum.OBJECT, true, true), _helper.OpenModule("bdd.scr"));
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("global", "global", ModuleTypeEnum.STARTUP,true, _path + "main_module.scr"),
+                new ScriptModule("testrunner", "testrunner", ModuleTypeEnum.OBJECT,true, _path + "testrunner.scr"),
+                new ScriptModule("Утверждения", "Approval", ModuleTypeEnum.OBJECT, true, _path + "xunit.scr"),
+                new ScriptModule("Ожидаем", "Expect", ModuleTypeEnum.OBJECT, true, _path + "bdd.scr")
+            };
 
-            _helper.CompileModules(modules);
+            ScriptCompiler compiler = new ScriptCompiler();
+            ScriptProgramm programm = compiler.CompileProgramm(modules);
+            ScriptInterpreter interpreter = new ScriptInterpreter(programm);
+            interpreter.Debugger.AddBreakpoint("testrunner", 523, (interpreter1) =>
+              {
+                 IValue val1 =  interpreter1.Debugger.Eval("ПервоеЗначение");
+                 IValue val2 = interpreter1.Debugger.Eval("ВтороеЗначение");
+              });
+
+            interpreter.Debug();
         }
     }
 }

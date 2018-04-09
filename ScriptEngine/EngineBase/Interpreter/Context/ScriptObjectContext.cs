@@ -2,9 +2,8 @@
 using ScriptEngine.EngineBase.Library.BaseTypes.UniversalCollections;
 using ScriptEngine.EngineBase.Compiler.Types.Variable.References;
 using ScriptEngine.EngineBase.Compiler.Programm.Parts.Module;
+using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
 using ScriptEngine.EngineBase.Compiler.Types.Function;
-using ScriptEngine.EngineBase.Compiler.Types.Variable;
-using System.Linq;
 using System;
 
 namespace ScriptEngine.EngineBase.Interpreter.Context
@@ -16,31 +15,37 @@ namespace ScriptEngine.EngineBase.Interpreter.Context
 
         public ScriptModule Module { get => _module; }
         public object Instance { get; set; }
-        private ContextVariableReferenceHolder[] Context { get; set; }
+        private ContextVariableReferenceHolder[] _properties { get; set; }
 
         public ScriptObjectContext(ScriptModule module, object instance = null)
         {
             _module = module;
 
-            IVariable[] vars = _module.ModuleScope.Vars.ToArray();
-            Context = new ContextVariableReferenceHolder[_module.ModuleScope.Vars.Count];
-
+            // Если есть внешний тип модуля (загружен из библиотеки) то инициализирую его.
             if (instance == null)
             {
                 if (module.InstanceType != null)
+                {
                     Instance = Activator.CreateInstance(module.InstanceType);
+                    if (Instance == null)
+                        throw new Exception($"Ошибка при создании обьекта {module.Name}");
+                }
             }
             else
                 Instance = instance;
 
-
+            // Создаю хранилище для переменных модуля.
+            _properties = new ContextVariableReferenceHolder[_module.ModuleScope.Vars.Count];
+            // Клонирование ссылок переменных для нового инстанса.
             for (int i = 0; i < _module.ModuleScope.Vars.Count; i++)
             {
                 _module.ModuleScope.Vars[i].Reference = _module.ModuleScope.Vars[i].Reference.Clone(Instance);
-                Context[i] = new ContextVariableReferenceHolder(_module.ModuleScope.Vars[i], _module.ModuleScope.Vars[i].Reference);
+                _properties[i] = new ContextVariableReferenceHolder(_module.ModuleScope.Vars[i], _module.ModuleScope.Vars[i].Reference);
             }
 
+            // Создаю хранилище для функций модуля.
             _functions = new ContextMethodReferenceHolder[_module.Functions.Count];
+            // Клонирование ссылок функций.
             IFunction[] functions_array = _module.Functions.ToArray();
             for (int i = 0; i < _module.Functions.Count; i++)
             {
@@ -53,6 +58,14 @@ namespace ScriptEngine.EngineBase.Interpreter.Context
                 _functions[i] = new ContextMethodReferenceHolder(functions_array[i], wrapper);
             }
 
+             // Инициализация переменной ЭтотОбъект.
+            if (module.Variables.Get("ЭтотОбъект") != null)
+                GetAnyVaribale("ЭтотОбъект").Set(ValueFactory.Create(this));
+
+            // Инициализация обьекта. Запуск кода в конце модуля.
+            IFunction function = module.Functions.Get("<<entry_point>>");
+            if (function != null && function.EntryPoint != -1)
+                ScriptInterpreter.Interpreter.FunctionCall(this, function);
         }
 
         /// <summary>
@@ -65,8 +78,8 @@ namespace ScriptEngine.EngineBase.Interpreter.Context
                 for (int i = 0; i < _functions.Length; i++)
                     _functions[i].Set();
 
-                for (int i = 0; i < Context.Length; i++)
-                    Context[i].Set();
+                for (int i = 0; i < _properties.Length; i++)
+                    _properties[i].Set();
             }
         }
 
@@ -143,6 +156,14 @@ namespace ScriptEngine.EngineBase.Interpreter.Context
         }
 
         /// <summary>
+        /// Получить значение публичного свойства объекта по индексу.
+        /// </summary>
+        public ContextVariableReferenceHolder GetPublicVariable(int index)
+        {
+            return _properties[index]; 
+        }
+
+        /// <summary>
         /// Получить значение, любого в том числе и приватного, свойства объекта. 
         /// </summary>
         public IVariableReference GetAnyVaribale(string name)
@@ -151,6 +172,14 @@ namespace ScriptEngine.EngineBase.Interpreter.Context
             return context_variable;
         }
 
+        /// <summary>
+        /// Количество переменных.
+        /// </summary>
+        /// <returns></returns>
+        public int VariablesCount()
+        {
+            return _properties.Length;
+        }
 
         /// <summary>
         /// Получить свойство из контекста объекта, по его имени.
@@ -158,9 +187,9 @@ namespace ScriptEngine.EngineBase.Interpreter.Context
         private IVariableReference GetContextVariable(string name,bool only_public)
         {
             // Поиск в статических свойствах обьекта.
-            for (int i = 0; i < Context.Length; i++)
+            for (int i = 0; i < _properties.Length; i++)
             {
-                ContextVariableReferenceHolder context_variable = Context[i];
+                ContextVariableReferenceHolder context_variable = _properties[i];
                 if (String.Equals(context_variable.Variable.Name,name,StringComparison.OrdinalIgnoreCase) || String.Equals(context_variable.Variable.Alias,name,StringComparison.OrdinalIgnoreCase))
                 {
                     if (!context_variable.Variable.Public && only_public)

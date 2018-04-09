@@ -8,8 +8,9 @@
 using ScriptEngine.EngineBase.Compiler.Programm.Parts.Module;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ScriptEngine.EngineBase.Exceptions;
+using ScriptEngine.EngineBase.Compiler;
 using System.Collections.Generic;
-using System;
+using System.IO;
 
 namespace UnitTests
 {
@@ -17,10 +18,10 @@ namespace UnitTests
     public class Compiler_Test
     {
 
-        private Helper _helper;
+        private string _path;
         public Compiler_Test()
         {
-            _helper = new Helper("Compiler");
+            _path = Directory.GetCurrentDirectory() + "\\Scripts\\Compiler\\";
         }
 
         #region Вычислить(Eval) Выполнить(Execute)
@@ -28,10 +29,13 @@ namespace UnitTests
         [Description("Проверка Вычислить.")]
         public void Compile_Eval()
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("eval", "Eval\\eval.scr");
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("eval","eval", ModuleTypeEnum.STARTUP,false,_path+"Eval\\eval.scr")
+            };
 
-            _helper.Compile(files);
+            ScriptCompiler compiler = new ScriptCompiler();
+            compiler.CompileProgramm(modules);
         }
 
         [TestMethod]
@@ -39,32 +43,55 @@ namespace UnitTests
         [ExpectedException(typeof(CompilerException))]
         public void Compile_EvalError()
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("eval", "Eval\\eval_error.scr");
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("eval","eval", ModuleTypeEnum.STARTUP,false,_path+"Eval\\eval_error.scr")
+            };
 
-            _helper.Compile(files);
+            ScriptCompiler compiler = new ScriptCompiler();
+            compiler.CompileProgramm(modules);
         }
         #endregion
 
         #region Try
         [TestMethod]
+        [Description("Проверка блока Попытка-Исключение.")]
         public void Compile_Try()
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("try", "Exception\\try.scr");
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("try","try", ModuleTypeEnum.STARTUP,false,_path+"Exception\\try.scr")
+            };
 
-            _helper.Compile(files);
+            ScriptCompiler compiler = new ScriptCompiler();
+            compiler.CompileProgramm(modules);
         }
 
         [TestMethod]
-        [Description("Проверка вызватьисключение без параметров.")]
+        [Description("Проверка ВызватьИсключение без параметров.")]
         [ExpectedException(typeof(CompilerException))]
         public void Compile_RaiseError()
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("raise", "Exception\\raise_error.scr");
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("raise","raise", ModuleTypeEnum.STARTUP,false,_path + "Exception\\raise_error.scr")
+            };
 
-            _helper.Compile(files);
+            ScriptCompiler compiler = new ScriptCompiler();
+            compiler.CompileProgramm(modules);
+        }
+
+        [TestMethod]
+        [Description("Проверка ВызватьИсключение без параметров внутри блока Исключение.")]
+        public void Compile_RaiseWoError()
+        {
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("raise","raise", ModuleTypeEnum.STARTUP,false,_path + "Exception\\raise_wo_error.scr")
+            };
+
+            ScriptCompiler compiler = new ScriptCompiler();
+            compiler.CompileProgramm(modules);
         }
         #endregion
 
@@ -72,10 +99,13 @@ namespace UnitTests
         [TestMethod]
         public void Compile_ArrayIndexer()
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("new", "Array\\indexer.scr");
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("global","global", ModuleTypeEnum.STARTUP,false,_path + "Array\\indexer.scr")
+            };
 
-            _helper.Compile(files);
+            ScriptCompiler compiler = new ScriptCompiler();
+            compiler.CompileProgramm(modules);
         }
 
 
@@ -84,20 +114,40 @@ namespace UnitTests
         [Description("Проверка Новый(Вариант 1: Новый <Идентификатор типа>[(<Парам1>, <Парам2>, …)] ).")]
         public void Compile_NewType1()
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("new", "New\\simple.scr");
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("new","new", ModuleTypeEnum.STARTUP,false,_path + "New\\simple.scr")
+            };
 
-            _helper.Compile(files);
+            ScriptCompiler compiler = new ScriptCompiler();
+            compiler.CompileProgramm(modules);
+        }
+
+        [TestMethod]
+        [Description("Проверка Новый(Вариант 1), примитивные типы")]
+        [ExpectedException(typeof(CompilerException))]
+        public void Compile_NewType1Erorr()
+        {
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("new","new", ModuleTypeEnum.STARTUP,false,_path + "New\\type1_error.scr")
+            };
+
+            ScriptCompiler compiler = new ScriptCompiler();
+            compiler.CompileProgramm(modules);
         }
 
         [TestMethod]
         [Description("Проверка Новый(Вариант 2: Новый(<Тип>[, <ПараметрыКонструктора>])")]
         public void Compile_NewType2()
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("new", "New\\type2.scr");
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("new","new", ModuleTypeEnum.STARTUP,false,_path + "New\\type2.scr")
+            };
 
-            _helper.Compile(files);
+            ScriptCompiler compiler = new ScriptCompiler();
+            compiler.CompileProgramm(modules);
         }
 
         [TestMethod]
@@ -105,10 +155,13 @@ namespace UnitTests
         [ExpectedException(typeof(CompilerException))]
         public void Compile_NewType2Erorr()
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("new", "New\\type2_error.scr");
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("new","new", ModuleTypeEnum.STARTUP,false,_path + "New\\type2_error.scr")
+            };
 
-            _helper.Compile(files);
+            ScriptCompiler compiler = new ScriptCompiler();
+            compiler.CompileProgramm(modules);
         }
 
         #endregion
@@ -119,10 +172,13 @@ namespace UnitTests
         [TestMethod]
         public void Compile_ExtensionFunctionCall()
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("function", "Extension\\function call.scr");
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("function","function", ModuleTypeEnum.STARTUP,false,_path + "Extension\\function call.scr")
+            };
 
-            _helper.Compile(files);
+            ScriptCompiler compiler = new ScriptCompiler();
+            compiler.CompileProgramm(modules);
         }
 
 
@@ -133,40 +189,53 @@ namespace UnitTests
         [TestMethod]
         public void Compile_Goto()
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("goto", "Goto\\goto.scr");
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("goto","goto", ModuleTypeEnum.STARTUP,false,_path + "Goto\\goto.scr")
+            };
 
-            _helper.Compile(files);
+            ScriptCompiler compiler = new ScriptCompiler();
+            compiler.CompileProgramm(modules);
+
         }
 
         [TestMethod]
         [ExpectedException(typeof(CompilerException))]
         public void Compile_GotoError()
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("goto", "Goto\\goto_error.scr");
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("goto","goto", ModuleTypeEnum.STARTUP,false,_path + "Goto\\goto_error.scr")
+            };
 
-            _helper.Compile(files);
+            ScriptCompiler compiler = new ScriptCompiler();
+            compiler.CompileProgramm(modules);
         }
 
         [TestMethod]
         [ExpectedException(typeof(CompilerException))]
         public void Compile_GotoError2()
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("goto", "Goto\\goto_error2.scr");
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("goto","goto", ModuleTypeEnum.STARTUP,false,_path + "Goto\\goto_error2.scr")
+            };
 
-            _helper.Compile(files);
+            ScriptCompiler compiler = new ScriptCompiler();
+            compiler.CompileProgramm(modules);
         }
 
         [TestMethod]
         [ExpectedException(typeof(CompilerException))]
         public void Compile_GotoError3()
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("goto", "Goto\\goto_error3.scr");
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("goto","goto", ModuleTypeEnum.STARTUP,false,_path + "Goto\\goto_error3.scr")
+            };
 
-            _helper.Compile(files);
+            ScriptCompiler compiler = new ScriptCompiler();
+            compiler.CompileProgramm(modules);
         }
 
 
@@ -174,10 +243,13 @@ namespace UnitTests
         [ExpectedException(typeof(CompilerException))]
         public void Compile_GotoError4()
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("goto", "Goto\\goto_error4.scr");
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("goto","goto", ModuleTypeEnum.STARTUP,false,_path + "Goto\\goto_error4.scr")
+            };
 
-            _helper.Compile(files);
+            ScriptCompiler compiler = new ScriptCompiler();
+            compiler.CompileProgramm(modules);
         }
         #endregion
 
@@ -187,99 +259,134 @@ namespace UnitTests
         [TestMethod]
         public void Compile_ForEach()
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("foreach", "For\\foreach.scr");
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("foreach","foreach", ModuleTypeEnum.STARTUP,false,_path + "For\\foreach.scr")
+            };
 
-            _helper.Compile(files);
+            ScriptCompiler compiler = new ScriptCompiler();
+            compiler.CompileProgramm(modules);
         }
 
         [TestMethod]
         [ExpectedException(typeof(CompilerException))]
         public void Compile_ForEachError()
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("foreach", "For\\foreach_error.scr");
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("foreach","foreach", ModuleTypeEnum.STARTUP,false,_path + "For\\foreach_error.scr")
+            };
 
-            _helper.Compile(files);
+            ScriptCompiler compiler = new ScriptCompiler();
+            compiler.CompileProgramm(modules);
         }
 
         [TestMethod]
         [ExpectedException(typeof(CompilerException))]
         public void Compile_ForEachError2()
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("foreach", "For\\foreach_error2.scr");
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("foreach","foreach", ModuleTypeEnum.STARTUP,false,_path + "For\\foreach_error2.scr")
+            };
 
-            _helper.Compile(files);
+            ScriptCompiler compiler = new ScriptCompiler();
+            compiler.CompileProgramm(modules);
         }
 
         [TestMethod]
         [ExpectedException(typeof(CompilerException))]
         public void Compile_ForEachError3()
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("foreach", "For\\foreach_error3.scr");
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("foreach","foreach", ModuleTypeEnum.STARTUP,false,_path + "For\\foreach_error3.scr")
+            };
 
-            _helper.Compile(files);
+            ScriptCompiler compiler = new ScriptCompiler();
+            compiler.CompileProgramm(modules);
         }
 
         [TestMethod]
         [ExpectedException(typeof(CompilerException))]
         public void Compile_ForEachError4()
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("foreach", "For\\foreach_error4.scr");
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("foreach","foreach", ModuleTypeEnum.STARTUP,false,_path + "For\\foreach_error4.scr")
+            };
 
-            _helper.Compile(files);
+            ScriptCompiler compiler = new ScriptCompiler();
+            compiler.CompileProgramm(modules);
+
         }
 
         [TestMethod]
         public void Compile_For()
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("for", "For\\for.scr");
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("for","foreach", ModuleTypeEnum.STARTUP,false,_path + "For\\for.scr")
+            };
 
-            _helper.Compile(files);
+            ScriptCompiler compiler = new ScriptCompiler();
+            compiler.CompileProgramm(modules);
         }
 
         [TestMethod]
         [ExpectedException(typeof(CompilerException))]
         public void Compile_ForError()
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("for", "For\\for_error.scr");
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("for","for", ModuleTypeEnum.STARTUP,false,_path + "For\\for_error.scr")
+            };
 
-            _helper.Compile(files);
+            ScriptCompiler compiler = new ScriptCompiler();
+            compiler.CompileProgramm(modules);
+
         }
 
         [TestMethod]
         [ExpectedException(typeof(CompilerException))]
         public void Compile_ForError2()
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("for", "For\\for_error2.scr");
 
-            _helper.Compile(files);
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("for","for", ModuleTypeEnum.STARTUP,false,_path + "For\\for_error2.scr")
+            };
+
+            ScriptCompiler compiler = new ScriptCompiler();
+            compiler.CompileProgramm(modules);
+
         }
 
         [TestMethod]
         [ExpectedException(typeof(CompilerException))]
         public void Compile_ForError3()
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("for", "For\\for_error3.scr");
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("for","for", ModuleTypeEnum.STARTUP,false,_path + "For\\for_error3.scr")
+            };
 
-            _helper.Compile(files);
+            ScriptCompiler compiler = new ScriptCompiler();
+            compiler.CompileProgramm(modules);
         }
 
         [TestMethod]
         [ExpectedException(typeof(CompilerException))]
         public void Compile_ForError4()
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("for", "For\\for_error4.scr");
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("for","for", ModuleTypeEnum.STARTUP,false,_path + "For\\for_error4.scr")
+            };
 
-            _helper.Compile(files);
+            ScriptCompiler compiler = new ScriptCompiler();
+            compiler.CompileProgramm(modules);
+
         }
 
         #endregion
@@ -289,50 +396,82 @@ namespace UnitTests
         [TestMethod]
         public void Compile_While()
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("while", "While\\while.scr");
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("while","while", ModuleTypeEnum.STARTUP,false,_path + "While\\while.scr")
+            };
 
-            _helper.Compile(files);
+            ScriptCompiler compiler = new ScriptCompiler();
+            compiler.CompileProgramm(modules);
+        }
+
+        [TestMethod]
+        [Description("Проверка вложенного цикла пока, без ; у вложенного цикла.")]
+        public void Compile_WhileWoSemicolon()
+        {
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("while","while", ModuleTypeEnum.STARTUP,false,_path + "While\\while_wo_semicolon.scr")
+            };
+
+            ScriptCompiler compiler = new ScriptCompiler();
+            compiler.CompileProgramm(modules);
         }
 
         [TestMethod]
         [ExpectedException(typeof(CompilerException))]
         public void Compile_WhileError()
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("while", "While\\while_error.scr");
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("while","while", ModuleTypeEnum.STARTUP,false,_path + "While\\while_error.scr")
+            };
 
-            _helper.Compile(files);
+            ScriptCompiler compiler = new ScriptCompiler();
+            compiler.CompileProgramm(modules);
         }
 
         [TestMethod]
         [ExpectedException(typeof(CompilerException))]
         public void Compile_WhileError2()
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("while", "While\\while_error2.scr");
 
-            _helper.Compile(files);
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("while","while", ModuleTypeEnum.STARTUP,false,_path + "While\\while_error2.scr")
+            };
+
+            ScriptCompiler compiler = new ScriptCompiler();
+            compiler.CompileProgramm(modules);
+
         }
 
         [TestMethod]
         [ExpectedException(typeof(CompilerException))]
         public void Compile_LoopWordsError()
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("while", "While\\loop_words_error.scr");
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("while","while", ModuleTypeEnum.STARTUP,false,_path + "While\\loop_words_error.scr")
+            };
 
-            _helper.Compile(files);
+            ScriptCompiler compiler = new ScriptCompiler();
+            compiler.CompileProgramm(modules);
+
         }
 
         [TestMethod]
         [ExpectedException(typeof(CompilerException))]
         public void Compile_LoopWordsError2()
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("while", "While\\loop_words_error2.scr");
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("while","while", ModuleTypeEnum.STARTUP,false,_path + "While\\loop_words_error2.scr")
+            };
 
-            _helper.Compile(files);
+            ScriptCompiler compiler = new ScriptCompiler();
+            compiler.CompileProgramm(modules);
+
         }
 
 
@@ -344,90 +483,125 @@ namespace UnitTests
         [TestMethod]
         public void Compile_IfShort()
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("if", "If\\short_if.scr");
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("if","if", ModuleTypeEnum.STARTUP,false,_path + "if\\short_if.scr")
+            };
 
-            _helper.Compile(files);
+            ScriptCompiler compiler = new ScriptCompiler();
+            compiler.CompileProgramm(modules);
         }
 
         [TestMethod]
         [ExpectedException(typeof(CompilerException))]
         public void Compile_IfShortError()
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("if", "If\\short_if_error.scr");
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("if","if", ModuleTypeEnum.STARTUP,false,_path + "if\\short_if_error.scr")
+            };
 
-            _helper.Compile(files);
+            ScriptCompiler compiler = new ScriptCompiler();
+            compiler.CompileProgramm(modules);
+
         }
 
         [TestMethod]
         [ExpectedException(typeof(CompilerException))]
         public void Compile_IfShortError2()
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("if", "If\\short_if_error2.scr");
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("if","if", ModuleTypeEnum.STARTUP,false,_path + "if\\short_if_error2.scr")
+            };
 
-            _helper.Compile(files);
+            ScriptCompiler compiler = new ScriptCompiler();
+            compiler.CompileProgramm(modules);
+
         }
 
         [TestMethod]
         [ExpectedException(typeof(CompilerException))]
         public void Compile_IfShortError3()
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("if", "If\\short_if_error3.scr");
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("if","if", ModuleTypeEnum.STARTUP,false,_path + "if\\short_if_error3.scr")
+            };
 
-            _helper.Compile(files);
+            ScriptCompiler compiler = new ScriptCompiler();
+            compiler.CompileProgramm(modules);
+
         }
 
         [TestMethod]
         [ExpectedException(typeof(CompilerException))]
         public void Compile_IfShortError4()
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("if", "If\\short_if_error4.scr");
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("if","if", ModuleTypeEnum.STARTUP,false,_path + "if\\short_if_error4.scr")
+            };
 
-            _helper.Compile(files);
+            ScriptCompiler compiler = new ScriptCompiler();
+            compiler.CompileProgramm(modules);
+
         }
 
 
         [TestMethod]
         public void Compile_If()
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("if", "If\\if.scr");
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("if","if", ModuleTypeEnum.STARTUP,false,_path + "if\\if.scr")
+            };
 
-            _helper.Compile(files);
+            ScriptCompiler compiler = new ScriptCompiler();
+            compiler.CompileProgramm(modules);
+
         }
 
         [TestMethod]
         [ExpectedException(typeof(CompilerException))]
         public void Compile_IfError()
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("if", "If\\if_error.scr");
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("if","if", ModuleTypeEnum.STARTUP,false,_path + "if\\if_error.scr")
+            };
 
-            _helper.Compile(files);
+            ScriptCompiler compiler = new ScriptCompiler();
+            compiler.CompileProgramm(modules);
+
         }
 
         [TestMethod]
         [ExpectedException(typeof(CompilerException))]
         public void Compile_IfError2()
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("if", "If\\if_error2.scr");
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("if","if", ModuleTypeEnum.STARTUP,false,_path + "if\\if_error2.scr")
+            };
 
-            _helper.Compile(files);
+            ScriptCompiler compiler = new ScriptCompiler();
+            compiler.CompileProgramm(modules);
+
         }
 
         [TestMethod]
         [ExpectedException(typeof(CompilerException))]
         public void Compile_IfError3()
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("if", "If\\if_error3.scr");
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("if","if", ModuleTypeEnum.STARTUP,false,_path + "if\\if_error3.scr")
+            };
 
-            _helper.Compile(files);
+            ScriptCompiler compiler = new ScriptCompiler();
+            compiler.CompileProgramm(modules);
+
         }
         #endregion
 
@@ -435,14 +609,17 @@ namespace UnitTests
         #region Global
 
         [TestMethod]
-        [ExpectedException(typeof(Exception))]
+        [ExpectedException(typeof(CompilerException))]
         public void Compile_Global_CommonWithCodeError()
         {
-            IDictionary<ScriptModule, string> modules = new Dictionary<ScriptModule, string>();
-            modules.Add(new ScriptModule("global", "global", ModuleTypeEnum.STARTUP), _helper.OpenModule("Global\\Common with code error\\global_module.scr"));
-            modules.Add(new ScriptModule("object", "object", ModuleTypeEnum.COMMON, true), _helper.OpenModule("Global\\Common with code error\\object_module.scr"));
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("global", "global", ModuleTypeEnum.STARTUP,true,_path +  "Global\\Common with code error\\global_module.scr"),
+                new ScriptModule("object", "object", ModuleTypeEnum.COMMON, true, _path + "Global\\Common with code error\\object_module.scr")
+            };
 
-            _helper.CompileModules(modules);
+            ScriptCompiler compiler = new ScriptCompiler();
+            compiler.CompileProgramm(modules);
         }
 
         #endregion
@@ -453,11 +630,14 @@ namespace UnitTests
         [TestMethod]
         public void Сompile_Objects_CrossObjectCall()
         {
-            IDictionary<ScriptModule, string> modules = new Dictionary<ScriptModule, string>();
-            modules.Add(new ScriptModule("global", "global", ModuleTypeEnum.STARTUP), _helper.OpenModule("Objects\\Cross object call\\global_module.scr"));
-            modules.Add(new ScriptModule("object", "object", ModuleTypeEnum.OBJECT,true,true), _helper.OpenModule("Objects\\Cross object call\\object_module.scr"));
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("global", "global", ModuleTypeEnum.STARTUP,true,_path +  "Objects\\Cross object call\\global_module.scr"),
+                new ScriptModule("object", "object", ModuleTypeEnum.OBJECT, true, _path + "Objects\\Cross object call\\object_module.scr")
+            };
 
-            _helper.CompileModules(modules);
+            ScriptCompiler compiler = new ScriptCompiler();
+            compiler.CompileProgramm(modules);
         }
 
         #endregion
@@ -467,29 +647,41 @@ namespace UnitTests
         [TestMethod]
         public void Compile_Function()
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("function", "Function\\function.scr");
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("function", "function", ModuleTypeEnum.STARTUP,true,_path +  "Function\\function.scr")
+            };
 
-            _helper.Compile(files);
+            ScriptCompiler compiler = new ScriptCompiler();
+            compiler.CompileProgramm(modules);
+
         }
 
         [TestMethod]
         public void Compile_Function_AssignResult()
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("function", "Function\\assign_result.scr");
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("function", "function", ModuleTypeEnum.STARTUP,true,_path +  "Function\\assign_result.scr")
+            };
 
-            _helper.Compile(files);
+            ScriptCompiler compiler = new ScriptCompiler();
+            compiler.CompileProgramm(modules);
+
         }
 
         [TestMethod]
         [ExpectedException(typeof(CompilerException))]
         public void Compile_Function_EmptyReturn()
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("function", "Function\\function_empty_return.scr");
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("function", "function", ModuleTypeEnum.STARTUP,true,_path +  "Function\\function_empty_return.scr")
+            };
 
-            _helper.Compile(files);
+            ScriptCompiler compiler = new ScriptCompiler();
+            compiler.CompileProgramm(modules);
+
         }
         #endregion
 
@@ -498,100 +690,140 @@ namespace UnitTests
         [TestMethod]
         public void Compile_Procedure()
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("procedure", "Procedure\\procedure.scr");
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("procedure", "procedure", ModuleTypeEnum.STARTUP,true,_path +  "Procedure\\procedure.scr")
+            };
 
-            _helper.Compile(files);
+            ScriptCompiler compiler = new ScriptCompiler();
+            compiler.CompileProgramm(modules);
+
         }
 
         [TestMethod]
         public void Compile_Procedure_Return()
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("procedure", "Procedure\\return.scr");
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("procedure", "procedure", ModuleTypeEnum.STARTUP,true,_path +  "Procedure\\return.scr")
+            };
 
-            _helper.Compile(files);
+            ScriptCompiler compiler = new ScriptCompiler();
+            compiler.CompileProgramm(modules);
+
         }
 
         [TestMethod]
         [ExpectedException(typeof(CompilerException))]
         public void Compile_Procedure_ReturnError()
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("procedure", "Procedure\\return_error.scr");
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("procedure", "procedure", ModuleTypeEnum.STARTUP,true,_path +  "Procedure\\return_error.scr")
+            };
 
-            _helper.Compile(files);
+            ScriptCompiler compiler = new ScriptCompiler();
+            compiler.CompileProgramm(modules);
+
         }
 
         [TestMethod]
         [ExpectedException(typeof(CompilerException))]
         public void Compile_Procedure_AsFunctionError()
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("procedure", "Procedure\\procedure_as_function_error.scr");
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("procedure", "procedure", ModuleTypeEnum.STARTUP,true,_path +  "Procedure\\procedure_as_function_error.scr")
+            };
 
-            _helper.Compile(files);
+            ScriptCompiler compiler = new ScriptCompiler();
+            compiler.CompileProgramm(modules);
+
         }
 
         [TestMethod]
         [ExpectedException(typeof(CompilerException))]
         public void Compile_Procedure_CallNotFoundError()
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("procedure", "Procedure\\procedure_call_not_found.scr");
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("procedure", "procedure", ModuleTypeEnum.STARTUP,true,_path +  "Procedure\\procedure_call_not_found.scr")
+            };
 
-            _helper.Compile(files);
+            ScriptCompiler compiler = new ScriptCompiler();
+            compiler.CompileProgramm(modules);
+
         }
-        
+
 
         [TestMethod]
         [ExpectedException(typeof(CompilerException))]
         public void Compile_Procedure_AsFunctionError2()
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("procedure", "Procedure\\procedure_as_function_error2.scr");
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("procedure", "procedure", ModuleTypeEnum.STARTUP,true,_path +  "Procedure\\procedure_as_function_error2.scr")
+            };
 
-            _helper.Compile(files);
+            ScriptCompiler compiler = new ScriptCompiler();
+            compiler.CompileProgramm(modules);
+
         }
 
         [TestMethod]
         [ExpectedException(typeof(CompilerException))]
         public void Compile_Procedure_AsFunctionError3()
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("procedure", "Procedure\\procedure_as_function_error3.scr");
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("procedure", "procedure", ModuleTypeEnum.STARTUP,true,_path +  "Procedure\\procedure_as_function_error3.scr")
+            };
 
-            _helper.Compile(files);
+            ScriptCompiler compiler = new ScriptCompiler();
+            compiler.CompileProgramm(modules);
+
         }
 
         [TestMethod]
         [ExpectedException(typeof(CompilerException))]
         public void Compile_Procedure_AsFunctionError4()
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("procedure", "Procedure\\procedure_as_function_error4.scr");
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("procedure", "procedure", ModuleTypeEnum.STARTUP,true,_path +  "Procedure\\procedure_as_function_error4.scr")
+            };
 
-            _helper.Compile(files);
+            ScriptCompiler compiler = new ScriptCompiler();
+            compiler.CompileProgramm(modules);
+
         }
 
         [TestMethod]
         [ExpectedException(typeof(CompilerException))]
         public void Compile_Procedure_AsFunctionError5()
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("procedure", "Procedure\\procedure_as_function_error5.scr");
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("procedure", "procedure", ModuleTypeEnum.STARTUP,true,_path +  "Procedure\\procedure_as_function_error5.scr")
+            };
 
-            _helper.Compile(files);
+            ScriptCompiler compiler = new ScriptCompiler();
+            compiler.CompileProgramm(modules);
+
         }
 
         [TestMethod]
         [ExpectedException(typeof(CompilerException))]
         public void Compile_Procedure_ParamCountError()
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("procedure", "Procedure\\procedure_error_param_count.scr");
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("procedure", "procedure", ModuleTypeEnum.STARTUP,true,_path +  "Procedure\\procedure_error_param_count.scr")
+            };
 
-            _helper.Compile(files);
+            ScriptCompiler compiler = new ScriptCompiler();
+            compiler.CompileProgramm(modules);
+
         }
 
 
@@ -599,20 +831,28 @@ namespace UnitTests
         [ExpectedException(typeof(CompilerException))]
         public void Compile_Procedure_ParamCountError2()
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("procedure", "Procedure\\procedure_error_param_count2.scr");
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("procedure", "procedure", ModuleTypeEnum.STARTUP,true,_path +  "Procedure\\procedure_error_param_count2.scr")
+            };
 
-            _helper.Compile(files);
+            ScriptCompiler compiler = new ScriptCompiler();
+            compiler.CompileProgramm(modules);
+
         }
 
 
         [TestMethod]
         public void Compile_Procedure_VarOrder()
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("procedure", "Procedure\\procedure_var_order.scr");
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("procedure", "procedure", ModuleTypeEnum.STARTUP,true,_path +  "Procedure\\procedure_var_order.scr")
+            };
 
-            _helper.Compile(files);
+            ScriptCompiler compiler = new ScriptCompiler();
+            compiler.CompileProgramm(modules);
+
         }
 
 
@@ -620,10 +860,14 @@ namespace UnitTests
         [ExpectedException(typeof(CompilerException))]
         public void Compile_Procedure_VarOrderError()
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("procedure", "Procedure\\procedure_var_order_error.scr");
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("procedure", "procedure", ModuleTypeEnum.STARTUP,true,_path +  "Procedure\\procedure_var_order_error.scr")
+            };
 
-            _helper.Compile(files);
+            ScriptCompiler compiler = new ScriptCompiler();
+            compiler.CompileProgramm(modules);
+
         }
 
 
@@ -631,10 +875,14 @@ namespace UnitTests
         [ExpectedException(typeof(CompilerException))]
         public void Compile_Procedure_RepeatError()
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("procedure", "Procedure\\procedure_var_repeat_error.scr");
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("procedure", "procedure", ModuleTypeEnum.STARTUP,true,_path +  "Procedure\\procedure_var_repeat_error.scr")
+            };
 
-            _helper.Compile(files);
+            ScriptCompiler compiler = new ScriptCompiler();
+            compiler.CompileProgramm(modules);
+
         }
 
         #endregion
@@ -645,20 +893,27 @@ namespace UnitTests
         [TestMethod]
         public void Compile_Var_Assign()
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("var", "Var\\var_assign.scr");
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("var", "var", ModuleTypeEnum.STARTUP,true,_path +  "Var\\var_assign.scr")
+            };
 
-            _helper.Compile(files);
+            ScriptCompiler compiler = new ScriptCompiler();
+            compiler.CompileProgramm(modules);
         }
 
         [TestMethod]
         [ExpectedException(typeof(CompilerException))]
         public void Compile_Var_RepeatError()
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("repeat", "Var\\var_repeat_error.scr");
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("var", "var", ModuleTypeEnum.STARTUP,true,_path +  "Var\\var_repeat_error.scr")
+            };
 
-            _helper.Compile(files);
+            ScriptCompiler compiler = new ScriptCompiler();
+            compiler.CompileProgramm(modules);
+
         }
 
 
@@ -666,10 +921,14 @@ namespace UnitTests
         [ExpectedException(typeof(CompilerException))]
         public void Compile_Var_OrderError()
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("order", "Var\\var_order_error.scr");
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("var", "var", ModuleTypeEnum.STARTUP,true,_path +  "Var\\var_order_error.scr")
+            };
 
-            _helper.Compile(files);
+            ScriptCompiler compiler = new ScriptCompiler();
+            compiler.CompileProgramm(modules);
+
         }
 
 
@@ -677,19 +936,27 @@ namespace UnitTests
         [ExpectedException(typeof(CompilerException))]
         public void Compile_Var_OrderError2()
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("order", "Var\\var_order_error2.scr");
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("var", "var", ModuleTypeEnum.STARTUP,true,_path +  "Var\\var_order_error2.scr")
+            };
 
-            _helper.Compile(files);
+            ScriptCompiler compiler = new ScriptCompiler();
+            compiler.CompileProgramm(modules);
+
         }
 
         [TestMethod]
         public void Compile_Var_AllTypes()
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("var", "Var\\var_all_types.scr");
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("var", "var", ModuleTypeEnum.STARTUP,true,_path +  "Var\\var_all_types.scr")
+            };
 
-            _helper.Compile(files);
+            ScriptCompiler compiler = new ScriptCompiler();
+            compiler.CompileProgramm(modules);
+
         }
 
         #endregion
@@ -699,11 +966,16 @@ namespace UnitTests
         [ExpectedException(typeof(CompilerException))]
         public void Compile_Other_ThrowError()
         {
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("Проверка деления на 0", "Other\\throw_error.scr");
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("other", "other", ModuleTypeEnum.STARTUP,true,_path +  "Other\\throw_error.scr")
+            };
 
-            _helper.Compile(files);
+            ScriptCompiler compiler = new ScriptCompiler();
+            compiler.CompileProgramm(modules);
+
         }
+
         #endregion
     }
 }

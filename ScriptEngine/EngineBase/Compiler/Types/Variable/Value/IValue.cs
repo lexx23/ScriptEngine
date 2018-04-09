@@ -5,7 +5,8 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
 {
     public interface IValue : IEquatable<IValue>, IComparable<IValue>
     {
-        ValueTypeEnum Type { get; }
+        ValueTypeEnum BaseType { get; }
+        InternalScriptType ScriptType { get; }
 
         int AsInt();
         bool AsBoolean();

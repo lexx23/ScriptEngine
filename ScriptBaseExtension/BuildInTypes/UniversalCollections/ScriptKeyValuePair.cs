@@ -8,7 +8,7 @@ namespace ScriptBaseFunctionsLibrary.BuildInTypes.UniversalCollections
     /// <summary>
     /// Представляет собой пару из ключа и соответствующего ключу значения
     /// </summary>
-    [LibraryClassAttribute(Alias = "КлючИЗначение", Name = "KeyAndValue", AsGlobal = false, AsObject = true)]
+    [LibraryClassAttribute(Alias = "КлючИЗначение", Name = "KeyAndValue", RegisterType = true, AsGlobal = false)]
     public class ScriptKeyValuePair: LibraryModule<ScriptKeyValuePair>
     {
         private readonly IValue _key;

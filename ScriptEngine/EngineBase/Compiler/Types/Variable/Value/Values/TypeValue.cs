@@ -1,15 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using ScriptEngine.EngineBase.Interpreter.Context;
+﻿using ScriptEngine.EngineBase.Interpreter.Context;
+using System;
 
 namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value.Values
 {
     class TypeValue : IValue
     {
-        private ValueTypeEnum _value;
+        private InternalScriptType _value;
+        public ValueTypeEnum BaseType => ValueTypeEnum.TYPE;
 
-        public ValueTypeEnum Type => ValueTypeEnum.TYPE;
+        public InternalScriptType ScriptType => ScriptEngine.EngineBase.Interpreter.ScriptInterpreter.Interpreter.Programm.InternalTypes.Get("Тип"); 
+
+        public TypeValue(InternalScriptType value)
+        {
+            _value = value;
+        }
 
         public bool AsBoolean()
         {
@@ -23,12 +27,12 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value.Values
 
         public int AsInt()
         {
-            throw new NotImplementedException();
+            return _value.Index;
         }
 
         public decimal AsNumber()
         {
-            throw new NotImplementedException();
+            return _value.Index; ;
         }
 
         public object AsObject()
@@ -43,17 +47,23 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value.Values
 
         public string AsString()
         {
-            throw new NotImplementedException();
+            return _value.Description;
         }
 
         public int CompareTo(IValue other)
         {
-            throw new NotImplementedException();
+            return _value.Index.CompareTo(other.AsInt());
         }
 
         public bool Equals(IValue other)
         {
-            throw new NotImplementedException();
+            if (other is null) return false;
+            if (ReferenceEquals(this, other)) return true;
+
+            if (other.BaseType == ValueTypeEnum.TYPE)
+                return _value.Index == other.AsInt();
+
+            return false;
         }
     }
 }

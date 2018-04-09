@@ -7,7 +7,7 @@ using System;
 
 namespace ScriptBaseFunctionsLibrary.BuildInTypes.FileSystem
 {
-    [LibraryClassAttribute(Name = "File", Alias = "Файл", AsGlobal = false, AsObject = true)]
+    [LibraryClassAttribute(Name = "File", Alias = "Файл", RegisterType = true, AsGlobal = false)]
     public class ScriptFile : LibraryModule<ScriptFile>
     {
         private readonly string _file_name;
@@ -39,7 +39,7 @@ namespace ScriptBaseFunctionsLibrary.BuildInTypes.FileSystem
         }
 
         [LibraryClassProperty(Alias = "Имя", Name = "Name")]
-        public string Name { get => System.IO.Path.GetFileName(_name.TrimEnd(System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar)); }
+        public string Name { get => LazyField(ref _name, GetFileNameV8Compatible); }
 
         [LibraryClassProperty(Alias = "ИмяБезРасширения", Name = "BaseName")]
         public string BaseName { get => LazyField(ref _base_name, System.IO.Path.GetFileNameWithoutExtension); }
@@ -49,6 +49,11 @@ namespace ScriptBaseFunctionsLibrary.BuildInTypes.FileSystem
 
         [LibraryClassProperty(Alias = "Путь", Name = "Path")]
         public string Path { get => LazyField(ref _path, GetPathWithEndingDelimiter); }
+
+        private string GetFileNameV8Compatible(string arg)
+        {
+            return System.IO.Path.GetFileName(arg.TrimEnd(System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar));
+        }
 
         private string GetPathWithEndingDelimiter(string src)
         {

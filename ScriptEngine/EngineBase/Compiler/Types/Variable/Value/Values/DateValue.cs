@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using ScriptEngine.EngineBase.Interpreter.Context;
+﻿using ScriptEngine.EngineBase.Interpreter.Context;
+using System;
 
 namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value.Values
 {
@@ -9,7 +7,9 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value.Values
     {
         private DateTime _value;
 
-        public ValueTypeEnum Type => ValueTypeEnum.DATE;
+        public ValueTypeEnum BaseType => ValueTypeEnum.DATE;
+
+        public InternalScriptType ScriptType => ScriptEngine.EngineBase.Interpreter.ScriptInterpreter.Interpreter.Programm.InternalTypes.Get("Дата");
 
         public DateValue(DateTime value)
         {
@@ -56,7 +56,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value.Values
             if (other is null) return false;
             if (ReferenceEquals(this, other)) return true;
 
-            if (other.Type == ValueTypeEnum.DATE)
+            if (other.BaseType == ValueTypeEnum.DATE)
                 return _value == other.AsDate();
 
             return false;
@@ -64,7 +64,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value.Values
 
         public int CompareTo(IValue other)
         {
-            switch (other.Type)
+            switch (other.BaseType)
             {
                 case ValueTypeEnum.DATE:
                     return _value.CompareTo(other.AsDate());

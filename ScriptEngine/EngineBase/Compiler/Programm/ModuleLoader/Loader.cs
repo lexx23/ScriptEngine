@@ -11,7 +11,6 @@ using System.Reflection;
 using System.Linq;
 using System;
 
-
 namespace ScriptEngine.EngineBase.Compiler.Programm.ModuleLoader
 {
     public class Loader
@@ -70,18 +69,15 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.ModuleLoader
         {
             LibraryClassAttribute attribute = (LibraryClassAttribute)Attribute.GetCustomAttribute(type, typeof(LibraryClassAttribute), false);
 
-            ScriptModule enum_module = new ScriptModule(attribute.Name, attribute.Alias, ModuleTypeEnum.ENUM, true, true);
-            enum_module.InstanceType = type;
+            ScriptModule enum_module = new ScriptModule(attribute.Name, attribute.Alias, ModuleTypeEnum.ENUM, true)
+            {
+                InstanceType = type
+            };
+
+            _programm.InternalTypes.Add(new InternalScriptType() { Name = "Enum"+attribute.Name, Alias = "Перечисление" + attribute.Alias, Description = "Перечисление" + attribute.Alias, Module = enum_module, Type = type });
 
             var generic_type = type.BaseType.GetGenericArguments()[0];
-
-            foreach (FieldInfo field in generic_type.GetFields().Where(x => x.GetCustomAttributes(typeof(EnumStringAttribute), false).Length > 0))
-            {
-                EnumStringAttribute attr = field.GetCustomAttributes<EnumStringAttribute>().First();
-                IValue value = ValueFactory.Create(attr.Value);
-                IVariable var = new Variable() { Name = field.Name, Alias = attr.Value, Public = true, Reference = new ReferenceReadOnly(value) };
-                enum_module.Variables.Add(var.Name, var);
-            }
+            _programm.InternalTypes.Add(new InternalScriptType() { Name = attribute.Name, Alias = attribute.Alias, Description = attribute.Alias, Type = generic_type });
 
             _programm.Modules.Add(enum_module);
             _programm.GlobalVariables.Add(new Variable() { Name = attribute.Name, Alias = attribute.Alias, Reference = new SimpleReference() });
@@ -89,16 +85,19 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.ModuleLoader
 
 
         /// <summary>
-        /// Добавить обьект определенного типа.
+        /// Добавить в программу обьект используя его тип.
         /// </summary>
         /// <param name="type"></param>
         /// <param name="as_global"></param>
-        public void AddObjectOfType(Type type, bool as_global = false)
+        public void AddObjectOfType(Type type, LibraryClassAttribute attribute = null)
         {
-            LibraryClassAttribute attribute = (LibraryClassAttribute)Attribute.GetCustomAttribute(type, typeof(LibraryClassAttribute), false);
+            if (attribute == null)
+                attribute = (LibraryClassAttribute)Attribute.GetCustomAttribute(type, typeof(LibraryClassAttribute), false);
 
-            ScriptModule module = new ScriptModule(attribute.Name, attribute.Alias, ModuleTypeEnum.OBJECT, as_global, true);
-            module.InstanceType = type;
+            ScriptModule module = new ScriptModule(attribute.Name, attribute.Alias, ModuleTypeEnum.OBJECT, attribute.AsGlobal)
+            {
+                InstanceType = type
+            };
 
             foreach (PropertyInfo property in type.GetTypeInfo().GetProperties().Where(m => m.GetCustomAttributes(typeof(LibraryClassPropertyAttribute), false).Length > 0))
             {
@@ -107,7 +106,7 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.ModuleLoader
                 IVariableReference reference = ReferenceFactory.Create(type, property);
                 IVariable var = new Variable() { Name = property_attr.Name, Alias = property_attr.Alias, Public = true, Reference = reference };
                 module.Variables.Add(property_attr.Name, var);
-                if(as_global)
+                if (attribute.AsGlobal)
                     _programm.GlobalVariables.Add(var);
             }
 
@@ -122,12 +121,18 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.ModuleLoader
                 GetFunctionParameters(function, method);
                 function.Method = LibraryMethodFactory.Create(type, method);
 
-                if (as_global)
+                if (attribute.AsGlobal)
                     _programm.GlobalFunctions.Add(function);
             }
 
+            if (module.Variables.Get("ЭтотОбъект") == null && !attribute.AsGlobal)
+                module.Variables.Create("ЭтотОбъект", true, module.ModuleScope);
+
             _programm.Modules.Add(module);
-            if(as_global)
+            if(attribute.RegisterType)
+                _programm.InternalTypes.Add(new InternalScriptType() { Name = attribute.Name, Alias = attribute.Alias, Description = attribute.Alias, Module = module, Type = type });
+
+            if (attribute.AsGlobal)
                 _programm.GlobalVariables.Add(new Variable() { Name = attribute.Name, Alias = attribute.Alias, Reference = new SimpleReference() });
         }
 
@@ -142,26 +147,14 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.ModuleLoader
             {
                 LibraryClassAttribute attribute = (LibraryClassAttribute)Attribute.GetCustomAttribute(type, typeof(LibraryClassAttribute), false);
 
-                // Класс содержит только глобальные функции и процедуры.
-                if (attribute.AsGlobal && !attribute.AsObject)
-                {
-                    AddObjectOfType(type,true);
-                    continue;
-                }
-
                 // Класс содержит объект который добавляется в глобальный модуль.
-                if (attribute.AsGlobal && attribute.AsObject)
-                {
-                    if (type.BaseType.Name == "BaseEnum`1")
-                        LoadEnum(type);
-                    else
-                        AddObjectOfType(type, true);
-                    continue;
-                }
 
-                // Класс содержит объект который возможно создать оператором Новый.
-                if (!attribute.AsGlobal && attribute.AsObject)
-                    AddObjectOfType(type);
+                if (type.BaseType.Name == "BaseEnum`1")
+                    LoadEnum(type);
+                else
+                    AddObjectOfType(type, attribute);
+
+                continue;
             }
         }
     }

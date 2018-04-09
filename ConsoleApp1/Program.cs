@@ -11,77 +11,26 @@ namespace ConsoleApp1
 {
     class Program
     {
-
-        class Helper
-        {
-            private string _path;
-
-            public Helper(string path)
-            {
-                _path = path;
-            }
-
-            private string CheckPath(string path)
-            {
-                return path.Replace('\\', Path.DirectorySeparatorChar);
-            }
-
-            public ScriptProgramm Compile(IDictionary<string, string> file_names)
-            {
-                IDictionary<ScriptModule, string> files = new Dictionary<ScriptModule, string>();
-                string path = Directory.GetCurrentDirectory() + "\\Scripts\\" + _path + "\\";
-
-                foreach (KeyValuePair<string, string> file in file_names)
-                {
-                    string full_name = CheckPath(path + file.Value);
-                    if (File.Exists(full_name))
-                        files.Add(new ScriptModule(file.Key, file.Key, ModuleTypeEnum.STARTUP) { FileName = file.Value }, File.ReadAllText(full_name));
-                    else
-                        throw new Exception($"Файл {full_name} не найден.");
-                }
-
-                ScriptCompiler compiler = new ScriptCompiler();
-                return compiler.Compile(files);
-            }
-
-            public string OpenModule(string file_name)
-            {
-                string path = Directory.GetCurrentDirectory() + "\\Scripts\\" + _path + "\\";
-                string full_name = CheckPath(path + file_name);
-
-                if (File.Exists(full_name))
-                    return File.ReadAllText(full_name);
-                else
-                    throw new Exception($"Файл {full_name} не найден.");
-
-            }
-
-            public ScriptProgramm CompileModules(IDictionary<ScriptModule, string> modules)
-            {
-                ScriptCompiler compiler = new ScriptCompiler();
-                return compiler.Compile(modules);
-            }
-        }
-
         static void Main(string[] args)
         {
-            Helper _helper = new Helper("Interpreter");
+            //IList<ScriptModule> files = new List<ScriptModule>()
+            //{
+            //  new ScriptModule("goto", "goto", ModuleTypeEnum.STARTUP,false, "Exception\\try.scr")
+            //};
 
-            IDictionary<string, string> files = new Dictionary<string, string>();
-            files.Add("goto", "Exception\\try.scr");
 
-            ScriptProgramm programm = _helper.Compile(files);
-            ScriptInterpreter interpreter = new ScriptInterpreter(programm);
-            interpreter.Debugger.AddBreakpoint("goto", 14);
-            interpreter.Debugger.AddBreakpoint("goto", 28);
-            interpreter.Debug();
+            //ScriptProgramm programm = _helper.Compile(files);
+            //ScriptInterpreter interpreter = new ScriptInterpreter(programm);
+            //interpreter.Debugger.AddBreakpoint("goto", 14);
+            //interpreter.Debugger.AddBreakpoint("goto", 28);
+            //interpreter.Debug();
 
-            int line = interpreter.CurrentLine;
-            int data = interpreter.Debugger.RegisterGetValue("ф").AsInt();
-            interpreter.Debugger.Continue();
+            //int line = interpreter.CurrentLine;
+            //int data = interpreter.Debugger.RegisterGetValue("ф").AsInt();
+            //interpreter.Debugger.Continue();
 
-            line = interpreter.CurrentLine;
-            interpreter.Debugger.Continue();
+            //line = interpreter.CurrentLine;
+            //interpreter.Debugger.Continue();
 
         }
     }

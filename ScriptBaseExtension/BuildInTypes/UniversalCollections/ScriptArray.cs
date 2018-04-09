@@ -7,7 +7,7 @@ using System.Collections;
 
 namespace ScriptBaseFunctionsLibrary.BuildInTypes.UniversalCollections
 {
-    [LibraryClassAttribute(Name = "Array", Alias = "Массив", AsGlobal = false, AsObject = true)]
+    [LibraryClassAttribute(Name = "Array", Alias = "Массив", RegisterType = true, AsGlobal = false)]
     public class ScriptArray : LibraryModule<ScriptArray>, IEnumerable<IValue>, IUniversalCollection, ICollectionIndexer
     {
         private readonly List<IValue> _values;
@@ -15,6 +15,11 @@ namespace ScriptBaseFunctionsLibrary.BuildInTypes.UniversalCollections
         public ScriptArray()
         {
             _values = new List<IValue>();
+        }
+
+        public ScriptArray(IEnumerable<IValue> values)
+        {
+            _values = new List<IValue>(values);
         }
 
         [LibraryClassMethod(Alias = "Количество", Name = "Count")]
@@ -78,13 +83,13 @@ namespace ScriptBaseFunctionsLibrary.BuildInTypes.UniversalCollections
         [LibraryClassMethodAttribute(Name = "Constructor", Alias = "Конструктор")]
         public static IValue Constructor(IValue[] parameters)
         {
-            if (parameters.Length == 0)
+            if (parameters == null || parameters.Length == 0)
                 return new ScriptArray();
 
             ScriptArray new_array = null;
             for (int dim = parameters.Length - 1; dim >= 0; dim--)
             {
-                if (parameters[dim].Type != ValueTypeEnum.NULL)
+                if (parameters[dim].BaseType != ValueTypeEnum.NULL)
                 {
                     int bound = parameters[dim].AsInt();
                     var new_instance = new ScriptArray();
@@ -117,7 +122,7 @@ namespace ScriptBaseFunctionsLibrary.BuildInTypes.UniversalCollections
             ScriptArray clone = new ScriptArray();
             foreach (var item in cloneable._values)
             {
-                if (item.Type == ValueTypeEnum.NULL)
+                if (item.BaseType == ValueTypeEnum.NULL)
                     clone._values.Add(ValueFactory.Create());
                 else
                     clone._values.Add(item);

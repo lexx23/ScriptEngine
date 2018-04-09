@@ -4,7 +4,7 @@ using ScriptEngine.EngineBase.Extensions;
 
 namespace ScriptBaseFunctionsLibrary.BuildInTypes
 {
-    [LibraryClassAttribute(Name = "Chars", Alias = "Символы", AsGlobal = true, AsObject = true)]
+    [LibraryClassAttribute(Name = "Chars", Alias = "Символы", RegisterType = true, AsGlobal = true)]
     public class ScriptChars : LibraryModule<ScriptChars>
     {
         /// <summary>

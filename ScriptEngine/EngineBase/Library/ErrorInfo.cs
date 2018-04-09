@@ -3,13 +3,14 @@ using ScriptEngine.EngineBase.Library.Attributes;
 using ScriptEngine.EngineBase.Library.BaseTypes;
 using ScriptEngine.EngineBase.Extensions;
 using System;
+using ScriptEngine.EngineBase.Compiler.Programm.Parts.Module;
 
 namespace ScriptBaseFunctionsLibrary.BuildInTypes
 {
     /// <summary>
     /// Предназначен для представления структурированной информации об ошибке (исключении).
     /// </summary>
-    [LibraryClassAttribute(Name = "ErrorInfo", Alias = "ИнформацияОбОшибке", AsGlobal = false, AsObject = true)]
+    [LibraryClassAttribute(Name = "ErrorInfo", Alias = "ИнформацияОбОшибке", RegisterType = true, AsGlobal = false)]
     public class ErrorInfo : LibraryModule<ErrorInfo>
     {
         [LibraryClassProperty(Alias = "ИмяМодуля", Name = "ModuleName")]
@@ -54,11 +55,24 @@ namespace ScriptBaseFunctionsLibrary.BuildInTypes
 
         public ErrorInfo(Exception exception)
         {
-            ModuleName = ScriptEngine.EngineBase.Interpreter.ScriptInterpreter.Interpreter.CurrentModule.Name;
-            LineNumber = ScriptEngine.EngineBase.Interpreter.ScriptInterpreter.Interpreter.CurrentLine;
-
-            Description = exception.Message;
-            Cause = null;
+            if (exception.Data.Count == 0)
+            {
+                ModuleName = ScriptEngine.EngineBase.Interpreter.ScriptInterpreter.Interpreter.CurrentModule.Name;
+                LineNumber = ScriptEngine.EngineBase.Interpreter.ScriptInterpreter.Interpreter.CurrentLine;
+                SourceLine = ScriptEngine.EngineBase.Interpreter.ScriptInterpreter.Interpreter.CurrentModule.GetCodeLine(LineNumber);
+                Description = exception.Message;
+                Cause = null;
+            }
+            else
+            {
+                ModuleName = Convert.ToString(exception.Data["module"]);
+                LineNumber = Convert.ToInt32(exception.Data["line"]);
+                ScriptModule module = ScriptEngine.EngineBase.Interpreter.ScriptInterpreter.Interpreter.Programm.Modules.Get(ModuleName);
+                if(module != null)
+                    SourceLine = module.GetCodeLine(LineNumber);
+                Description = Convert.ToString(exception.Data["message"]); ;
+                Cause = null;
+            }
         }
 
     }

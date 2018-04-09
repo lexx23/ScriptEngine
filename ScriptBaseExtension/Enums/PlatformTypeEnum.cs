@@ -1,5 +1,5 @@
-﻿using ScriptEngine.EngineBase.Library;
-using ScriptEngine.EngineBase.Library.Attributes;
+﻿using ScriptEngine.EngineBase.Library.Attributes;
+using ScriptEngine.EngineBase.Library;
 
 namespace ScriptBaseFunctionsLibrary.Enums
 {
@@ -14,9 +14,12 @@ namespace ScriptBaseFunctionsLibrary.Enums
     }
 
 
-    [LibraryClassAttribute(Name = "ТипПлатформы", Alias = "PlatformType", AsGlobal = true, AsObject = true)]
+    [LibraryClassAttribute(Name = "PlatformType", Alias = "ТипПлатформы", AsGlobal = true)]
     public class PlatformTypeEnumClass : BaseEnum<PlatformTypeEnum>
     {
-
+        public PlatformTypeEnumClass()
+        {
+            Create();
+        }
     }
 }

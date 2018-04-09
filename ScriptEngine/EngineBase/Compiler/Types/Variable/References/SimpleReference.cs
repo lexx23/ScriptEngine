@@ -7,6 +7,11 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.References
     {
         private IValue _value;
 
+        public SimpleReference()
+        {
+            _value = ValueFactory.Create();
+        }
+
         public IValue Get()
         {
             return _value;

@@ -1,10 +1,9 @@
 ﻿using ScriptEngine.EngineBase.Compiler.Types.Variable.Value.Values;
-using ScriptEngine.EngineBase.Compiler.Programm.Parts.Module;
 using ScriptEngine.EngineBase.Interpreter.Context;
 using ScriptEngine.EngineBase.Library.Attributes;
 using ScriptEngine.EngineBase.Interpreter;
 using System;
-
+using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
 
 namespace ScriptEngine.EngineBase.Library.BaseTypes
 {
@@ -14,8 +13,8 @@ namespace ScriptEngine.EngineBase.Library.BaseTypes
         {
             LibraryClassAttribute attribute = (LibraryClassAttribute)Attribute.GetCustomAttribute(typeof(T), typeof(LibraryClassAttribute), false);
 
-            ScriptModule module = ScriptInterpreter.Interpreter.Programm.Modules.Get(attribute.Name);
-            _value = new ScriptObjectContext(module, this);
+            InternalScriptType type = ScriptInterpreter.Interpreter.Programm.InternalTypes.Get(attribute.Name);
+            _value = new ScriptObjectContext(type.Module, this);
         }
 
     }

@@ -20,14 +20,12 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable
         public VariableTypeEnum Type { get; set; }
 
         public bool Public { get; set; }
-        public int StackNumber { get; set; }
         public int Users { get; set; }
 
 
         public Variable()
         {
             Users = 1;
-            StackNumber = -1;
             Reference = new SimpleReference();
         }
 
