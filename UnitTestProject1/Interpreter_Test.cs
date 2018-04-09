@@ -13,6 +13,7 @@ using ScriptEngine.EngineBase.Exceptions;
 using System.Collections.Generic;
 using System.IO;
 using ScriptEngine.EngineBase.Compiler;
+using System;
 
 namespace UnitTests
 {
@@ -307,7 +308,7 @@ namespace UnitTests
             interpreter.Debugger.AddBreakpoint("string", 5, (interpreater) =>
             {
                 Assert.AreEqual(5, interpreter.CurrentLine);
-                Assert.AreEqual("<xml>\r\n<data>hello</data>\r\n</xml>", interpreter.Debugger.RegisterGetValue("Текст").AsString());
+                Assert.AreEqual($"<xml>{Environment.NewLine}<data>hello</data>{Environment.NewLine}</xml>", interpreter.Debugger.RegisterGetValue("Текст").AsString());
             });
 
 
@@ -569,7 +570,7 @@ namespace UnitTests
         {
             IList<ScriptModule> modules = new List<ScriptModule>()
             {
-                new ScriptModule("if", "if", ModuleTypeEnum.STARTUP,true, _path + "if\\if.scr"),
+                new ScriptModule("if", "if", ModuleTypeEnum.STARTUP,true, _path + "If\\if.scr"),
             };
 
             ScriptCompiler compiler = new ScriptCompiler();

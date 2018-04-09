@@ -485,7 +485,7 @@ namespace UnitTests
         {
             IList<ScriptModule> modules = new List<ScriptModule>()
             {
-                new ScriptModule("if","if", ModuleTypeEnum.STARTUP,false,_path + "if\\short_if.scr")
+                new ScriptModule("if","if", ModuleTypeEnum.STARTUP,false,_path + "If\\short_if.scr")
             };
 
             ScriptCompiler compiler = new ScriptCompiler();
@@ -498,7 +498,7 @@ namespace UnitTests
         {
             IList<ScriptModule> modules = new List<ScriptModule>()
             {
-                new ScriptModule("if","if", ModuleTypeEnum.STARTUP,false,_path + "if\\short_if_error.scr")
+                new ScriptModule("if","if", ModuleTypeEnum.STARTUP,false,_path + "If\\short_if_error.scr")
             };
 
             ScriptCompiler compiler = new ScriptCompiler();
@@ -512,7 +512,7 @@ namespace UnitTests
         {
             IList<ScriptModule> modules = new List<ScriptModule>()
             {
-                new ScriptModule("if","if", ModuleTypeEnum.STARTUP,false,_path + "if\\short_if_error2.scr")
+                new ScriptModule("if","if", ModuleTypeEnum.STARTUP,false,_path + "If\\short_if_error2.scr")
             };
 
             ScriptCompiler compiler = new ScriptCompiler();
@@ -526,7 +526,7 @@ namespace UnitTests
         {
             IList<ScriptModule> modules = new List<ScriptModule>()
             {
-                new ScriptModule("if","if", ModuleTypeEnum.STARTUP,false,_path + "if\\short_if_error3.scr")
+                new ScriptModule("if","if", ModuleTypeEnum.STARTUP,false,_path + "If\\short_if_error3.scr")
             };
 
             ScriptCompiler compiler = new ScriptCompiler();
@@ -540,7 +540,7 @@ namespace UnitTests
         {
             IList<ScriptModule> modules = new List<ScriptModule>()
             {
-                new ScriptModule("if","if", ModuleTypeEnum.STARTUP,false,_path + "if\\short_if_error4.scr")
+                new ScriptModule("if","if", ModuleTypeEnum.STARTUP,false,_path + "If\\short_if_error4.scr")
             };
 
             ScriptCompiler compiler = new ScriptCompiler();
@@ -554,7 +554,7 @@ namespace UnitTests
         {
             IList<ScriptModule> modules = new List<ScriptModule>()
             {
-                new ScriptModule("if","if", ModuleTypeEnum.STARTUP,false,_path + "if\\if.scr")
+                new ScriptModule("if","if", ModuleTypeEnum.STARTUP,false,_path + "If\\if.scr")
             };
 
             ScriptCompiler compiler = new ScriptCompiler();
@@ -568,7 +568,7 @@ namespace UnitTests
         {
             IList<ScriptModule> modules = new List<ScriptModule>()
             {
-                new ScriptModule("if","if", ModuleTypeEnum.STARTUP,false,_path + "if\\if_error.scr")
+                new ScriptModule("if","if", ModuleTypeEnum.STARTUP,false,_path + "If\\if_error.scr")
             };
 
             ScriptCompiler compiler = new ScriptCompiler();
@@ -596,7 +596,7 @@ namespace UnitTests
         {
             IList<ScriptModule> modules = new List<ScriptModule>()
             {
-                new ScriptModule("if","if", ModuleTypeEnum.STARTUP,false,_path + "if\\if_error3.scr")
+                new ScriptModule("if","if", ModuleTypeEnum.STARTUP,false,_path + "If\\if_error3.scr")
             };
 
             ScriptCompiler compiler = new ScriptCompiler();
