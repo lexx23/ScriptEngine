@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ScriptEngine", "ScriptEngin
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EngineTest", "ConsoleApp1\EngineTest.csproj", "{0E740AEB-4E4E-4054-B140-7765D238359A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTests", "UnitTestProject1\UnitTests.csproj", "{80CC4402-F010-46D3-97F4-9EDA77E69556}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ScriptEngineTests", "ScriptEngineTests\ScriptEngineTests.csproj", "{80CC4402-F010-46D3-97F4-9EDA77E69556}"
 	ProjectSection(ProjectDependencies) = postProject
 		{A7E54F72-1C2E-429C-A06C-21A3E5C4128C} = {A7E54F72-1C2E-429C-A06C-21A3E5C4128C}
 	EndProjectSection
