@@ -1,4 +1,11 @@
-﻿using ScriptEngine.EngineBase.Compiler.Types.Function.Parameters;
+﻿/*----------------------------------------------------------
+	This Source Code Form is subject to the terms of the 
+	Mozilla Public License, v.2.0. If a copy of the MPL 
+	was not distributed with this file, You can obtain one 
+	at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+
+using ScriptEngine.EngineBase.Compiler.Types.Function.Parameters;
 using ScriptEngine.EngineBase.Compiler.Programm.Parts.Module;
 using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
 using ScriptEngine.EngineBase.Compiler.Types.Function;
@@ -33,6 +40,7 @@ namespace ScriptEngine.EngineBase.Compiler
 
         private IDictionary<TokenSubTypeEnum, op_code> _expression_op_codes;
         private IDictionary<OP_CODES, op_code> _op_codes;
+        private IVariable _null_variable;
 
         private enum OP_TYPE
         {
@@ -53,7 +61,7 @@ namespace ScriptEngine.EngineBase.Compiler
         {
             LOW = 0,
             WO_LOGIC = 3,
-            TOP = 4
+            TOP = 5
         }
 
         public ScriptCompiler(ScriptProgramm programm = null)
@@ -65,9 +73,11 @@ namespace ScriptEngine.EngineBase.Compiler
 
             _deferred_var = new Dictionary<string, (IVariable, CodeInformation)>();
             _deferred_function = new List<(ScriptModule, IFunction)>();
+
             _loop = new List<IList<int>>();
             _goto_jmp = new List<(string, int)>();
             _goto_labels = new Dictionary<string, int>();
+            _null_variable = new Variable() { Scope = _scope, Name = "<<null>>", Type = VariableTypeEnum.CONSTANTVARIABLE, Reference = null };
 
             _expression_op_codes = new Dictionary<TokenSubTypeEnum, op_code>
             {
@@ -83,7 +93,7 @@ namespace ScriptEngine.EngineBase.Compiler
                 { TokenSubTypeEnum.P_LOGIC_UNEQ, new op_code { code = OP_CODES.OP_UNEQ, type = OP_TYPE.RESULT_OPTIMIZATION, level = 3 } },
                 { TokenSubTypeEnum.P_ASSIGN, new op_code { code = OP_CODES.OP_EQ, type = OP_TYPE.RESULT_OPTIMIZATION, level = 3 } },
                 { TokenSubTypeEnum.I_LOGIC_AND, new op_code { code = OP_CODES.OP_AND, type = OP_TYPE.RESULT_OPTIMIZATION, level = 4 } },
-                { TokenSubTypeEnum.I_LOGIC_OR, new op_code { code = OP_CODES.OP_OR, type = OP_TYPE.RESULT_OPTIMIZATION, level = 4 } }
+                { TokenSubTypeEnum.I_LOGIC_OR, new op_code { code = OP_CODES.OP_OR, type = OP_TYPE.RESULT_OPTIMIZATION, level = 5 } }
             };
 
             _op_codes = new Dictionary<OP_CODES, op_code>
@@ -95,6 +105,7 @@ namespace ScriptEngine.EngineBase.Compiler
                 { OP_CODES.OP_RAISE, new op_code { code = OP_CODES.OP_RAISE, type = OP_TYPE.WO_RESULT } },
                 { OP_CODES.OP_ENDTRY, new op_code { code = OP_CODES.OP_ENDTRY, type = OP_TYPE.WO_RESULT } },
                 { OP_CODES.OP_TRY, new op_code { code = OP_CODES.OP_TRY, type = OP_TYPE.WO_RESULT } },
+                { OP_CODES.OP_EXCEPT, new op_code { code = OP_CODES.OP_EXCEPT, type = OP_TYPE.WO_RESULT } },
 
                 { OP_CODES.OP_ITR_STOP, new op_code { code = OP_CODES.OP_ITR_STOP, type = OP_TYPE.WO_RESULT } },
                 { OP_CODES.OP_ITR_GET, new op_code { code = OP_CODES.OP_ITR_GET, type = OP_TYPE.RESULT } },
@@ -261,6 +272,7 @@ namespace ScriptEngine.EngineBase.Compiler
         /// <returns></returns>
         private IVariable EmitCode(op_code code, IVariable left, IVariable right)
         {
+            bool clear_left = false, clear_right = false;
             IVariable result = null;
 
             if (code.type == OP_TYPE.RESULT_OPTIMIZATION)
@@ -277,9 +289,19 @@ namespace ScriptEngine.EngineBase.Compiler
                 result = _current_module.Variables.Create("", false, _scope);
 
             if (left != null && left.Type != VariableTypeEnum.CONSTANTVARIABLE)
+            {
                 left.Users++;
+
+                if (left.Type == VariableTypeEnum.REFERENCE && left.Name[0] == '<' && left.Users > 1)
+                    clear_left = true;
+            }
             if (right != null && right.Type != VariableTypeEnum.CONSTANTVARIABLE)
+            {
                 right.Users++;
+
+                if (right.Type == VariableTypeEnum.REFERENCE && right.Name[0] == '<' && right.Users > 1)
+                    clear_right = true;
+            }
 
             ScriptStatement statement;
             statement = _current_module.StatementAdd();
@@ -290,10 +312,31 @@ namespace ScriptEngine.EngineBase.Compiler
             statement.Variable2 = left;
             statement.Variable3 = right;
 
+            if (clear_left)
+            {
+                statement = _current_module.StatementAdd();
+                statement.OP_CODE = Interpreter.OP_CODES.OP_VAR_CLR;
+                statement.Variable2 = left;
+                left.Type = VariableTypeEnum.STACKVARIABLE;
+            }
+
+            if (clear_right)
+            {
+                statement = _current_module.StatementAdd();
+                statement.OP_CODE = Interpreter.OP_CODES.OP_VAR_CLR;
+                statement.Variable2 = right;
+                right.Type = VariableTypeEnum.STACKVARIABLE;
+            }
+
             return result;
         }
 
         #region Вычислить(Eval) Выполнить(Execute)
+
+        /// <summary>
+        /// Парсинг оператора Вычислить(Eval)
+        /// </summary>
+        /// <returns></returns>
         private IVariable ParseEval()
         {
             if (_iterator.CheckToken(TokenTypeEnum.IDENTIFIER, TokenSubTypeEnum.I_EVAL))
@@ -344,7 +387,10 @@ namespace ScriptEngine.EngineBase.Compiler
                     _iterator.ExpectToken(TokenTypeEnum.PUNCTUATION, TokenSubTypeEnum.P_PARENTHESESCLOSE);
 
                 // Добавить в код модуля вызов исключения.
-                EmitCode(OP_CODES.OP_RAISE, exception, null);
+                if (stop_type.Contains(TokenSubTypeEnum.I_ENDTRY))
+                    EmitCode(OP_CODES.OP_RAISE, exception, _null_variable);
+                else
+                    EmitCode(OP_CODES.OP_RAISE, exception, null);
 
                 _iterator.IsTokenType(TokenTypeEnum.PUNCTUATION, TokenSubTypeEnum.P_SEMICOLON);
                 return true;
@@ -372,12 +418,16 @@ namespace ScriptEngine.EngineBase.Compiler
                 ParseModuleBody(TokenSubTypeEnum.I_EXCEPT);
                 _iterator.ExpectToken(TokenTypeEnum.IDENTIFIER, TokenSubTypeEnum.I_EXCEPT);
 
+                // Удаляю блок обработки исключений.
+                EmitCode(OP_CODES.OP_EXCEPT, null, null);
                 EmitCode(OP_CODES.OP_JMP, null, null);
                 exit_try = _current_module.ProgrammLine - 1;
                 // Патч перехода в случае исключения.
                 statement = _current_module.StatementGet(try_index);
                 statement.Variable2 = _programm.StaticVariables.Create(ValueFactory.Create(_current_module.ProgrammLine));
 
+                // Удаляю блок обработки исключений.
+                EmitCode(OP_CODES.OP_EXCEPT, null, null);
                 // Парсинг тела блока исключение.
                 ParseModuleBody(TokenSubTypeEnum.I_ENDTRY);
                 _iterator.ExpectToken(TokenTypeEnum.IDENTIFIER, TokenSubTypeEnum.I_ENDTRY);
@@ -386,6 +436,7 @@ namespace ScriptEngine.EngineBase.Compiler
                 // Патч перехода в случае выполнения без ошибки.
                 statement = _current_module.StatementGet(exit_try);
                 statement.Variable2 = _programm.StaticVariables.Create(ValueFactory.Create(_current_module.ProgrammLine));
+                // Очистка текущей информации о исключении.
                 EmitCode(OP_CODES.OP_ENDTRY, null, null);
 
                 return true;
@@ -402,8 +453,6 @@ namespace ScriptEngine.EngineBase.Compiler
         private IVariable ParseExpressionPart()
         {
             IToken sign;
-            IToken not;
-
             IVariable var = new Variable();
 
             // Проверка что есть знак перед переменной
@@ -412,10 +461,12 @@ namespace ScriptEngine.EngineBase.Compiler
                 sign = null;
 
             // Проверка логическое НЕ
-            not = _iterator.Current;
-            if (!_iterator.CheckToken(TokenTypeEnum.IDENTIFIER, TokenSubTypeEnum.I_LOGIC_NOT))
-                not = null;
-
+            if (_iterator.CheckToken(TokenTypeEnum.IDENTIFIER, TokenSubTypeEnum.I_LOGIC_NOT))
+            {
+                var = ParseExpression((int)Priority.WO_LOGIC);
+                var = EmitCode(OP_CODES.OP_NOT, var, null);
+                return var;
+            }
 
             IToken token = _iterator.Current;
 
@@ -459,10 +510,6 @@ namespace ScriptEngine.EngineBase.Compiler
                     var = EmitCode(_expression_op_codes[TokenSubTypeEnum.P_MUL], var, _programm.StaticVariables.Create(ValueFactory.Create(-1)));
             }
 
-            // Обработка логическое НЕ
-            if (not != null)
-                var = EmitCode(OP_CODES.OP_NOT, var, null);
-
             return var;
 
         }
@@ -475,9 +522,10 @@ namespace ScriptEngine.EngineBase.Compiler
         /// <returns></returns>
         private IVariable ParseExpression(int level)
         {
-            op_code work_code = new op_code();
             IVariable left;
             IVariable right;
+            op_code work_code;
+            int index = -1;
 
             if (level == (int)Priority.LOW)
             {
@@ -489,23 +537,94 @@ namespace ScriptEngine.EngineBase.Compiler
 
             left = ParseExpression(level - 1);
 
-            if (_iterator.Current.SubType == TokenSubTypeEnum.P_SEMICOLON)
-                return left;
-
-            if (_expression_op_codes.ContainsKey(_iterator.Current.SubType))
+            while (true)
             {
-                work_code = _expression_op_codes[_iterator.Current.SubType];
-                if (work_code.level == level)
-                    _iterator.MoveNext();
+                if (_iterator.Current.SubType == TokenSubTypeEnum.P_SEMICOLON || left == null)
+                    break;
+
+                if (_expression_op_codes.ContainsKey(_iterator.Current.SubType))
+                {
+                    work_code = _expression_op_codes[_iterator.Current.SubType];
+                    if (work_code.level == level)
+                        _iterator.MoveNext();
+                    else
+                        break;
+                }
                 else
-                    return left;
+                    break;
+
+                // В случае оператора И, если первый операнд равен ложь то вычисление второго не требуется.
+                if (work_code.code == OP_CODES.OP_AND)
+                {
+                    // Для статических переменных. которые известны на этапе компиляции.
+                    if (left.Value != null && left.Value.AsBoolean() == false)
+                    {
+                        // Запомнить линию кода.
+                        index = _current_module.ProgrammLine;
+                        // Перейти в конец условия.
+                        EmitCode(OP_CODES.OP_JMP, null, null);
+                    }
+                    else
+                    // Для не рассчитанных переменных.
+                    if (left.Value == null)
+                    {
+                        // Запомнить линию кода.
+                        index = _current_module.ProgrammLine;
+                        // Проверить переменную, и в случает когда значение Ложь перейти в конец выражения. Не считать второй операнд И.
+                        EmitCode(OP_CODES.OP_IFNOT, left, null);
+                        left.Users = 1;
+                    }
+                }
+
+                // В случае оператора ИЛИ, если первый операнд равен Истина то вычисление второго не требуется.
+                if (work_code.code == OP_CODES.OP_OR)
+                {
+                    // Для статических переменных. которые известны на этапе компиляции.
+                    if (left.Value != null && left.Value.AsBoolean() == true)
+                    {
+                        // Запомнить линию кода.
+                        index = _current_module.ProgrammLine;
+                        // Перейти в конец условия.
+                        EmitCode(OP_CODES.OP_JMP, null, null);
+                    }
+                    else
+                    // Для не рассчитанных переменных.
+                    if (left.Value == null)
+                    {
+                        // Проверить переменную, и в случает когда значение ИСТИНА перейти в конец выражения. Не считать второй операнд ИЛИ.
+                        EmitCode(OP_CODES.OP_IFNOT, left, _programm.StaticVariables.Create(ValueFactory.Create(_current_module.ProgrammLine + 2)));
+                        left.Users = 1;
+                        index = _current_module.ProgrammLine;
+                        EmitCode(OP_CODES.OP_JMP, null, null);
+                    }
+                }
+
+                right = ParseExpression(level - 1);
+                left = EmitCode(work_code, left, right);
+
+                // Патч переходов И,ИЛИ.
+                if (index != -1)
+                {
+                    EmitCode(OP_CODES.OP_JMP, _programm.StaticVariables.Create(ValueFactory.Create(_current_module.ProgrammLine + 2)), null);
+                    // Вслучае И итоговое значение выражения должно быть ЛОЖЬ. А для ИЛИ ИСТИНА.
+                    if (work_code.code == OP_CODES.OP_AND)
+                        EmitCode(OP_CODES.OP_STORE, left, _programm.StaticVariables.Create(ValueFactory.Create(false)));
+                    else
+                        EmitCode(OP_CODES.OP_STORE, left, _programm.StaticVariables.Create(ValueFactory.Create(true)));
+                    left.Users = 1;
+
+                    // Патч переходов для условий и безусловных переходов.
+                    ScriptStatement statement = _current_module.StatementGet(index);
+                    if (statement.OP_CODE == OP_CODES.OP_IFNOT)
+                        statement.Variable3 = _programm.StaticVariables.Create(ValueFactory.Create(_current_module.ProgrammLine - 1));
+                    else
+                        statement.Variable2 = _programm.StaticVariables.Create(ValueFactory.Create(_current_module.ProgrammLine - 1));
+
+                    index = -1;
+                }
             }
-            else
-                return left;
 
-            right = ParseExpression(level);
-
-            return EmitCode(work_code, left, right);
+            return left;
         }
 
         #endregion
@@ -1051,15 +1170,20 @@ namespace ScriptEngine.EngineBase.Compiler
 
             IVariable var = null;
 
+            if (_iterator.Current.Type == TokenTypeEnum.PUNCTUATION && _iterator.Current.SubType == TokenSubTypeEnum.P_PARENTHESESCLOSE)
+                return;
             do
             {
                 // Обработка пустого параметра. Кода стоит просто запятая.
-                if (_iterator.Current.Type == TokenTypeEnum.PUNCTUATION && _iterator.Current.SubType == TokenSubTypeEnum.P_COMMA)
-                    var = new Variable() { Scope = _scope, Name = "<<null>>", Type = VariableTypeEnum.CONSTANTVARIABLE, Value = ValueFactory.Create() };
+                if (_iterator.Current.Type == TokenTypeEnum.PUNCTUATION && (_iterator.Current.SubType == TokenSubTypeEnum.P_COMMA || _iterator.Current.SubType == TokenSubTypeEnum.P_PARENTHESESCLOSE))
+                    var = _null_variable;
                 else
+                {
                     // Получить параметр функции, может быть любое выражение или вызов.
                     var = ParseExpression((int)Priority.TOP);
-
+                    if (var == null)
+                        throw new CompilerException(_iterator.Current.CodeInformation, $"Не удалось получить параметр фунции [{function.Name}]");
+                }
 
                 function.CallParameters.Add(var);
             } while (_iterator.CheckToken(TokenTypeEnum.PUNCTUATION, TokenSubTypeEnum.P_COMMA));
@@ -1086,8 +1210,7 @@ namespace ScriptEngine.EngineBase.Compiler
                     CodeInformation = token.CodeInformation
                 };
 
-                while (_iterator.Current.SubType != TokenSubTypeEnum.P_PARENTHESESCLOSE)
-                    ParseFunctionCallParam(function);
+                ParseFunctionCallParam(function);
 
                 _iterator.ExpectToken(TokenTypeEnum.PUNCTUATION, TokenSubTypeEnum.P_PARENTHESESCLOSE);
 
@@ -1485,7 +1608,7 @@ namespace ScriptEngine.EngineBase.Compiler
                 ScriptStatement statement;
                 IVariable expression, result = null;
                 IList<int> break_list = new List<int>();
-                int continue_line,start_line, patch_if_line;
+                int continue_line, start_line, patch_if_line;
 
                 // Установить точку входа модуля.
                 SetModuleEntryPoint();
@@ -1606,7 +1729,7 @@ namespace ScriptEngine.EngineBase.Compiler
                 ParseModuleBody(TokenSubTypeEnum.I_ENDLOOP);
 
                 _iterator.ExpectToken(TokenTypeEnum.IDENTIFIER, TokenSubTypeEnum.I_ENDLOOP);
-                if(_iterator.Current.SubType != TokenSubTypeEnum.I_ENDLOOP)
+                if (_iterator.Current.SubType != TokenSubTypeEnum.I_ENDLOOP)
                     _iterator.IsTokenType(TokenTypeEnum.PUNCTUATION, TokenSubTypeEnum.P_SEMICOLON);
 
                 // Переход в начало цикла.
@@ -1833,7 +1956,7 @@ namespace ScriptEngine.EngineBase.Compiler
         /// Парсинг меток оператора Перейти ( Goto ).
         /// </summary>
         /// <returns></returns>
-        private bool ParseGotoLabel()
+        private bool ParseGotoLabel(HashSet<TokenSubTypeEnum> stop_type)
         {
             if (_iterator.CheckToken(TokenTypeEnum.PUNCTUATION, TokenSubTypeEnum.P_TILDE))
             {
@@ -1843,6 +1966,9 @@ namespace ScriptEngine.EngineBase.Compiler
 
                 if (_goto_labels.ContainsKey(token.Content + "-" + _scope.Name))
                     throw new CompilerException(_iterator.Current.CodeInformation, $"Метка с указанным именем уже определена [{token.Content}]");
+
+                if (stop_type.Contains(TokenSubTypeEnum.I_EXCEPT) || stop_type.Contains(TokenSubTypeEnum.I_ENDTRY) || _loop.Count > 0)
+                    throw new CompilerException(_iterator.Current.CodeInformation, $"Метка [{token.Content}] находится в недопустимом месте.");
 
                 _goto_labels.Add(token.Content + "-" + _scope.Name, _current_module.ProgrammLine);
                 _iterator.IsTokenType(TokenTypeEnum.PUNCTUATION, TokenSubTypeEnum.P_COLON);
@@ -1906,7 +2032,7 @@ namespace ScriptEngine.EngineBase.Compiler
                     throw new CompilerException(_iterator.Current.CodeInformation, "Встроенная функция может быть использована только в выражении.");
 
                 // Парсинг меток оператора Перейти(Goto ).
-                if (ParseGotoLabel())
+                if (ParseGotoLabel(stop_type))
                     continue;
 
                 _iterator.IsTokenType(TokenTypeEnum.IDENTIFIER);
@@ -1943,7 +2069,7 @@ namespace ScriptEngine.EngineBase.Compiler
                 // Парсим оператор Пока (while).
                 if (ParseWhile())
                 {
-                    if(_iterator.Current.SubType == TokenSubTypeEnum.I_ENDLOOP)
+                    if (_iterator.Current.SubType == TokenSubTypeEnum.I_ENDLOOP)
                         move_next = false;
                     continue;
                 }
@@ -1961,7 +2087,7 @@ namespace ScriptEngine.EngineBase.Compiler
                 _iterator.IsTokenType(TokenTypeEnum.PUNCTUATION, TokenSubTypeEnum.P_SEMICOLON);
 
             }
-            while ((move_next ? _iterator.MoveNext(): true) && !stop_type.Contains(_iterator.Current.SubType));
+            while ((move_next ? _iterator.MoveNext() : true) && !stop_type.Contains(_iterator.Current.SubType));
         }
 
         /// <summary>
@@ -2009,13 +2135,13 @@ namespace ScriptEngine.EngineBase.Compiler
         /// </summary>
         /// <param name="modules"></param>
         /// <returns></returns>
-        public ScriptProgramm CompileProgramm(IList<ScriptModule> modules,bool load_default_types = true)
+        public ScriptProgramm CompileProgramm(IList<ScriptModule> modules, bool load_default_types = true)
         {
             ParserClass parser;
             Dictionary<string, bool> defines = new Dictionary<string, bool>();
             defines.Add("НаКлиенте", true);
 
-            if(load_default_types)
+            if (load_default_types)
                 _programm.LoadDefaultLibraries();
 
             foreach (ScriptModule module in modules)
@@ -2030,8 +2156,8 @@ namespace ScriptEngine.EngineBase.Compiler
                 _current_module = module;
                 _scope = _current_module.ModuleScope;
 
-                if(_current_module.Type == ModuleTypeEnum.OBJECT)
-                    _current_module.Variables.Create("ЭтотОбъект",false,_scope);
+                if (_current_module.Type == ModuleTypeEnum.OBJECT)
+                    _current_module.Variables.Create("ЭтотОбъект", false, _scope);
 
                 _iterator.MoveNext();
                 ParseModuleBody();

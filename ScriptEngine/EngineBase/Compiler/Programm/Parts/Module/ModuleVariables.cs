@@ -1,10 +1,18 @@
-﻿using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
+﻿/*----------------------------------------------------------
+	This Source Code Form is subject to the terms of the 
+	Mozilla Public License, v.2.0. If a copy of the MPL 
+	was not distributed with this file, You can obtain one 
+	at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+
+using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
 using ScriptEngine.EngineBase.Compiler.Types.Variable;
 using ScriptEngine.EngineBase.Compiler.Types;
 using System.Collections.Generic;
 using System.Linq;
 using System;
 using ScriptEngine.EngineBase.Compiler.Types.Variable.References;
+using System.Diagnostics;
 
 namespace ScriptEngine.EngineBase.Compiler.Programm.Parts.Module
 {
@@ -37,12 +45,6 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts.Module
                         continue;
 
                     var.Users = 1;
-                    if (var.Type == VariableTypeEnum.REFERENCE)
-                    {
-                        ScriptStatement statement = _module.StatementAdd();
-                        statement.OP_CODE = Interpreter.OP_CODES.OP_VAR_CLR;
-                        statement.Variable2 = var;
-                    }
 
                     if (!scope.Vars.Contains(var))
                         scope.Vars.Add(var);

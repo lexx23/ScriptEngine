@@ -11,8 +11,8 @@ using ScriptEngine.EngineBase.Compiler.Programm;
 using ScriptEngine.EngineBase.Interpreter;
 using ScriptEngine.EngineBase.Exceptions;
 using System.Collections.Generic;
-using System.IO;
 using ScriptEngine.EngineBase.Compiler;
+using System.IO;
 using System;
 
 namespace UnitTests
@@ -27,7 +27,7 @@ namespace UnitTests
         }
 
         [TestMethod]
-        [Ignore]
+        //[Ignore]
         public void Interpreter_Other()
         {
             IList<ScriptModule> modules = new List<ScriptModule>()
@@ -177,6 +177,23 @@ namespace UnitTests
         }
 
         [TestMethod]
+        [Description("Проверка работы Попытка(Try) блока. При обработке исключения ВызватьИсключение не должен уйти в бесконечный цикл.")]
+        [ExpectedException(typeof(RuntimeException))]
+        public void Interpreter_TryLoop()
+        {
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("try", "try", ModuleTypeEnum.STARTUP,true, _path + "Exception\\try_loop_check.scr"),
+            };
+
+            ScriptCompiler compiler = new ScriptCompiler();
+            ScriptProgramm programm = compiler.CompileProgramm(modules);
+            ScriptInterpreter interpreter = new ScriptInterpreter(programm);
+            interpreter.Debug();
+        }
+
+
+        [TestMethod]
         [Description("Проверка работы Попытка(Try) блока и функции ИнформацияОбОшибке()")]
         public void Interpreter_Try()
         {
@@ -308,7 +325,7 @@ namespace UnitTests
             interpreter.Debugger.AddBreakpoint("string", 5, (interpreater) =>
             {
                 Assert.AreEqual(5, interpreter.CurrentLine);
-                Assert.AreEqual($"<xml>{Environment.NewLine}<data>hello</data>{Environment.NewLine}</xml>", interpreter.Debugger.RegisterGetValue("Текст").AsString());
+                Assert.AreEqual($"<xml>\n<data>hello</data>\n</xml>", interpreter.Debugger.RegisterGetValue("Текст").AsString());
             });
 
 

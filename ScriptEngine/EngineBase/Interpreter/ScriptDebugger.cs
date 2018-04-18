@@ -1,4 +1,11 @@
-﻿using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
+﻿/*----------------------------------------------------------
+	This Source Code Form is subject to the terms of the 
+	Mozilla Public License, v.2.0. If a copy of the MPL 
+	was not distributed with this file, You can obtain one 
+	at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+
+using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
 using ScriptEngine.EngineBase.Compiler.Types.Variable;
 using System.Collections.Generic;
 using System;
@@ -216,6 +223,10 @@ namespace ScriptEngine.EngineBase.Interpreter
                 return ValueFactory.Create("Достигнут конец кода.");
         }
 
+        /// <summary>
+        /// Определяет выход в случае вычисления вражения в дебагере.
+        /// </summary>
+        /// <returns></returns>
         internal bool OnEvalExit()
         {
             if (_eval_break_point == _interpreter.CurrentModule.Name + "_" + _interpreter.IstructionIndex)

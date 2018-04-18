@@ -1,4 +1,11 @@
-﻿using ScriptEngine.EngineBase.Compiler.Types.Variable.Value.Values;
+﻿/*----------------------------------------------------------
+	This Source Code Form is subject to the terms of the 
+	Mozilla Public License, v.2.0. If a copy of the MPL 
+	was not distributed with this file, You can obtain one 
+	at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+
+using ScriptEngine.EngineBase.Compiler.Types.Variable.Value.Values;
 using ScriptEngine.EngineBase.Interpreter.Context;
 using System;
 
@@ -71,6 +78,9 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
         /// <returns></returns>
         public static IValue Create(Type type, object value)
         {
+            if (type == typeof(void) || value == null)
+                return Create();
+
             if (type == typeof(int))
                 return Create(Convert.ToDecimal(value));
 
@@ -82,9 +92,6 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
 
             if (type == typeof(bool))
                 return Create((bool)value);
-
-            if (type == typeof(void) || value == null)
-                return Create();
 
             if (type.IsEnum)
                 return Create(value);
@@ -172,12 +179,12 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
         /// <returns></returns>
         public static IValue ADD(IValue left, IValue right)
         {
-            if (left.BaseType == ValueTypeEnum.NUMBER && right.BaseType == ValueTypeEnum.NUMBER)
-                return Create(left.AsNumber() + right.AsNumber());
+            if (left.BaseType == ValueTypeEnum.STRING)
+                return Create(left.AsString() + right.AsString());
             if (left.BaseType == ValueTypeEnum.DATE && right.BaseType == ValueTypeEnum.NUMBER)
                 return Create(left.AsDate().AddSeconds((double)right.AsNumber()));
 
-            return Create(left.AsString() + right.AsString());
+            return Create(left.AsNumber() + right.AsNumber());
         }
 
 

@@ -39,7 +39,7 @@ namespace UnitTests
             ScriptCompiler compiler = new ScriptCompiler();
             ScriptProgramm programm = compiler.CompileProgramm(modules);
             ScriptInterpreter interpreter = new ScriptInterpreter(programm);
-            interpreter.Debugger.AddBreakpoint("testrunner", 523, (interpreter1) =>
+            interpreter.Debugger.AddBreakpoint("testrunner", 357, (interpreter1) =>
               {
                  IValue val1 =  interpreter1.Debugger.Eval("ПервоеЗначение");
                  IValue val2 = interpreter1.Debugger.Eval("ВтороеЗначение");

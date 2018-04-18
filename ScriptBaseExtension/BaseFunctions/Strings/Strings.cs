@@ -28,11 +28,62 @@ namespace ScriptBaseFunctionsLibrary.BaseFunctions.Strings
             return str.AsString().IndexOf(substring.AsString(), StringComparison.Ordinal) + 1;
         }
 
-        [LibraryClassMethodAttribute(Alias = "НРег", Name = "Lower")]
-        public string Lower(IValue str)
+
+        [LibraryClassMethodAttribute(Alias = "ПустаяСтрока", Name = "IsBlankString")]
+        public bool IsBlankString(string str)
         {
-            return str.AsString().ToLower();
+            return string.IsNullOrWhiteSpace(str);
         }
+
+        [LibraryClassMethodAttribute(Alias = "ТРег", Name = "Title")]
+        public string Title(string str)
+        {
+            char[] array = str.ToCharArray();
+            // Handle the first letter in the string.
+            bool inWord = false;
+            if (array.Length >= 1)
+            {
+                if (char.IsLetter(array[0]))
+                    inWord = true;
+
+                if (char.IsLower(array[0]))
+                {
+                    array[0] = char.ToUpper(array[0]);
+                }
+            }
+            // Scan through the letters, checking for spaces.
+            // ... Uppercase the lowercase letters following spaces.
+            for (int i = 1; i < array.Length; i++)
+            {
+                if (inWord && Char.IsLetter(array[i]))
+                    array[i] = Char.ToLower(array[i]);
+                else if (Char.IsSeparator(array[i]) || Char.IsPunctuation(array[i]))
+                    inWord = false;
+                else if (!inWord && Char.IsLetter(array[i]))
+                {
+                    inWord = true;
+                    if (char.IsLower(array[i]))
+                    {
+                        array[i] = char.ToUpper(array[i]);
+                    }
+                }
+            }
+
+            return new string(array);
+        }
+
+        [LibraryClassMethodAttribute(Alias = "ВРег", Name = "Upper")]
+        public string Upper(string str)
+        {
+            return str.ToUpper();
+        }
+
+        [LibraryClassMethodAttribute(Alias = "НРег", Name = "Lower")]
+        public string Lower(string str)
+        {
+            return str.ToLower();
+        }
+
 
         [LibraryClassMethodAttribute(Alias = "СтрЗаменить", Name = "StrReplace")]
         public IValue StrReplace(IValue str, IValue substring_search, IValue substring_replace)
@@ -42,13 +93,13 @@ namespace ScriptBaseFunctionsLibrary.BaseFunctions.Strings
         }
 
         [LibraryClassMethodAttribute(Alias = "СтрШаблон", Name = "StrTemplate")]
-        private IValue StrTemplate(IValue[] arguments)
+        public IValue StrTemplate(IValue[] arguments)
         {
             if (arguments.Length < 1)
                 throw new Exception("Недостаточно фактических параметров (СтрШаблон)");
 
             var srcFormat = arguments[0].AsString();
-            if (srcFormat == string.Empty)
+            if (srcFormat == null)
                 return ValueFactory.Create("");
 
             var re = new System.Text.RegularExpressions.Regex(@"(%%)|(%\d+)|(%\D)");
@@ -66,7 +117,7 @@ namespace ScriptBaseFunctionsLibrary.BaseFunctions.Strings
                     if (number < 1 || number > 11)
                         throw new Exception("Ошибка при вызове метода контекста (СтрШаблон): Ошибка синтаксиса шаблона в позиции " + (m.Index + 1));
 
-                    if (arguments[number] != null)
+                    if (arguments.Length > number && arguments[number] != null)
                         return arguments[number].AsString();
                     else
                         return "";
@@ -317,6 +368,29 @@ namespace ScriptBaseFunctionsLibrary.BaseFunctions.Strings
                 str = parser.GetParamValue(lang);
 
             return str == null ? string.Empty : str;
+        }
+
+        [LibraryClassMethodAttribute(Alias = "Лев", Name = "Left")]
+        public string Left(string str, int len)
+        {
+            if (len > str.Length)
+                len = str.Length;
+            else if (len < 0)
+                return "";
+
+            return str.Substring(0, len);
+        }
+
+        [LibraryClassMethodAttribute(Alias = "Прав", Name = "Right")]
+        public string Right(string str,int len)
+        {
+            if (len > str.Length)
+                len = str.Length;
+            else if (len < 0)
+                return "";
+
+            int startIdx = str.Length - len;
+            return str.Substring(startIdx, len);
         }
     }
 }

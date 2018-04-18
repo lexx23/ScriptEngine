@@ -44,7 +44,7 @@ namespace ScriptBaseFunctionsLibrary.BuildInTypes.FileSystem
                 if (System.Environment.OSVersion.Platform == PlatformID.Unix || System.Environment.OSVersion.Platform == PlatformID.MacOSX)
                     fallbackEncoding = Encoding.UTF8;
                 else
-                    fallbackEncoding = Encoding.Default;
+                    fallbackEncoding = Encoding.GetEncoding(1251);
             }
 
             var enc = fallbackEncoding;
@@ -85,13 +85,13 @@ namespace ScriptBaseFunctionsLibrary.BuildInTypes.FileSystem
         public void Open(string path, IValue encoding = null, string lineDelimiter = "\n", string eolDelimiter = null, bool? monopoly = null)
         {
             Close();
-            TextReader imReader;
+            TextReader imReader = null;
             var shareMode = (monopoly ?? true) ? FileShare.None : FileShare.ReadWrite;
             if (encoding == null)
-            {
                 imReader = OpenReader(path, shareMode);
-            }
-            else
+            if(encoding != null && encoding.BaseType == ValueTypeEnum.NULL)
+                imReader = OpenReader(path, shareMode);
+            if(imReader == null)
             {
                 var enc = TextEncoding.GetEncoding(encoding);
                 imReader = OpenReader(path, shareMode, enc);
@@ -173,30 +173,6 @@ namespace ScriptBaseFunctionsLibrary.BuildInTypes.FileSystem
             }
         }
 
-
-        /// <summary>
-        /// Открывает текстовый файл для чтения. Работает аналогично методу Открыть.
-        /// </summary>
-        /// <param name="path">Путь к файлу</param>
-        /// <param name="encoding">Кодировка файла</param>
-        /// <param name="lineDelimiter">Разделитель строк</param>
-        /// <param name="eolDelimiter">Разделитель строк в файле</param>
-        /// <param name="monopoly">Открывать файл монопольно</param>
-        /// <returns>ЧтениеТекста</returns>
-        //[LibraryClassMethodAttribute(Name = "Constructor", Alias = "Конструктор")]
-        //public static IValue Constructor(IValue path, IValue encoding = null,IValue lineDelimiter = null, IValue eolDelimiter = null, IValue monopoly = null)
-        //{
-        //    var reader = new ScriptTextReader();
-        //    if (lineDelimiter != null)
-        //        reader.AnalyzeDefaultLineFeed = false;
-
-        //    reader.Open(path.AsString(), encoding,
-        //        lineDelimiter?.GetRawValue().AsString() ?? "\n",
-        //        eolDelimiter?.GetRawValue().AsString(),
-        //        monopoly?.AsBoolean() ?? true);
-
-        //    return reader;
-        //}
 
         /// <summary>
         /// Открывает текстовый файл для чтения. Работает аналогично методу Открыть.

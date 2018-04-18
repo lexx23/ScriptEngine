@@ -245,8 +245,13 @@ namespace ScriptEngine.EngineBase.Interpreter
                             if (stack_param != null)
                                 function_params[i] = Variable.Create(stack_param);
                             else
+                            {
                                 // Пустой параметр, тот который не указан между запятых. Функция Тест(,123) 
-                                function_params[i] = Variable.Create(ValueFactory.Create());
+                                if (function_param.DefaultValue == null)
+                                    function_params[i] = Variable.Create(ValueFactory.Create());
+                                else
+                                    function_params[i] = Variable.Create(function_param.DefaultValue);
+                            }
                         }
                         else
                             // Параметры по умолчанию.
@@ -292,7 +297,10 @@ namespace ScriptEngine.EngineBase.Interpreter
                         else
                         {
                             // Пустой параметр, тот который не указан между запятых. Тест(,123) 
-                            function_param.InternalVariable.Value = ValueFactory.Create();
+                            if (function_param.DefaultValue == null)
+                                function_param.InternalVariable.Value = ValueFactory.Create();
+                            else
+                                function_param.InternalVariable.Value = function_param.DefaultValue;
                         }
                     }
                     else
@@ -453,14 +461,17 @@ namespace ScriptEngine.EngineBase.Interpreter
                             _context.TryBlockAdd(statement.Variable2.Value.AsInt());
                             break;
                         case OP_CODES.OP_ENDTRY:
-                            _context.TryBlockRemove();
                             _error_info = new ErrorInfo();
                             break;
+                        case OP_CODES.OP_EXCEPT:
+                            _context.TryBlockRemove();
+                            break;
+
                         case OP_CODES.OP_RAISE:
-                            // Если нет сообщения значить это исключение в блоке обработки исключений. Удаляем этот обработчик.
-                            if (statement.Variable2 == null)
-                                _context.TryBlockRemove();
-                            throw new RuntimeException(this, statement.Variable2.Value.AsString());
+                            if (statement.Variable2 != null)
+                                throw new RuntimeException(this, statement.Variable2.Value.AsString());
+                            else
+                                throw new RuntimeException(this, "");
 
 
                         case OP_CODES.OP_OBJ_CALL:
@@ -666,8 +677,10 @@ namespace ScriptEngine.EngineBase.Interpreter
                         message = Convert.ToString(ex.Data["message"]);
                     }
 
-                    _stack.Clear();
                     _error_info = new ErrorInfo(ex);
+                    ex.Data.Clear();
+
+                    _stack.Clear();
                     int instruction = _context.Exception();
                     if (instruction != -1)
                     {

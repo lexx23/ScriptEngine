@@ -28,7 +28,7 @@ namespace ScriptBaseFunctionsLibrary.BuildInTypes.FileSystem
         /// <param name="ext">Расширение будущего файла. Если не указано, то по умолчанию расширение равно ".tmp"</param>
         /// <returns>Строка. Полный путь ко временному файлу.</returns>
         [LibraryClassMethodAttribute(Alias = "ПолучитьИмяВременногоФайла", Name = "GetTempFileName")]
-        public string GetTempFilename(string ext)
+        public string GetTempFilename(string ext = null)
         {
             // примитивная реализация "в лоб"
             var fn = Path.GetRandomFileName();
@@ -42,6 +42,15 @@ namespace ScriptBaseFunctionsLibrary.BuildInTypes.FileSystem
 
             return Path.Combine(TempFilesDir(), fn);
 
+        }
+
+        /// <summary>
+        /// Получает разделитель пути в соответствии с текущей операционной системой
+        /// </summary>
+        [LibraryClassMethodAttribute(Alias = "ПолучитьРазделительПути", Name = "GetPathSeparator")]
+        public string GetPathSeparator()
+        {
+            return new string(new char[] { Path.DirectorySeparatorChar });
         }
 
         public static void DeleteDirectory(string path, bool recursive)
@@ -71,6 +80,16 @@ namespace ScriptBaseFunctionsLibrary.BuildInTypes.FileSystem
         public string CurrentDirectory()
         {
             return System.IO.Directory.GetCurrentDirectory();
+        }
+
+        /// <summary>
+        /// Создать каталог
+        /// </summary>
+        /// <param name="path">Имя нового каталога</param>
+        [LibraryClassMethodAttribute(Alias = "СоздатьКаталог", Name = "CreateDirectory")]
+        public void CreateDirectory(string path)
+        {
+            System.IO.Directory.CreateDirectory(path);
         }
 
         /// <summary>
@@ -189,7 +208,7 @@ namespace ScriptBaseFunctionsLibrary.BuildInTypes.FileSystem
         /// <param name="path">Каталог из которого удаляются файлы, или сам файл.</param>
         /// <param name="mask">Маска файлов. Необязательный параметр. Если указан, то первый параметр трактуется, как каталог.</param>
         [LibraryClassMethodAttribute(Alias = "УдалитьФайлы", Name = "DeleteFiles")]
-        public void DeleteFiles(string path, string mask = "")
+        public void DeleteFiles(string path, string mask = null)
         {
             if (mask == null)
             {

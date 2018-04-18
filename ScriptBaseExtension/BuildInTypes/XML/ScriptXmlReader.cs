@@ -328,7 +328,7 @@ namespace ScriptBaseFunctionsLibrary.BuildInTypes.XML
             }
             else if (indexOrName.BaseType == ValueTypeEnum.STRING)
             {
-                if (URIIfGiven == String.Empty)
+                if (URIIfGiven == null)
                     attributeValue = _reader.GetAttribute(indexOrName.AsString());
                 else
                     attributeValue = _reader.GetAttribute(indexOrName.AsString(), URIIfGiven);

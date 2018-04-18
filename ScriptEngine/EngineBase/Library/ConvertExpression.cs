@@ -1,4 +1,11 @@
-﻿using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
+﻿/*----------------------------------------------------------
+	This Source Code Form is subject to the terms of the 
+	Mozilla Public License, v.2.0. If a copy of the MPL 
+	was not distributed with this file, You can obtain one 
+	at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+
+using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
 using ScriptEngine.EngineBase.Compiler.Types.Variable;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -48,7 +55,10 @@ namespace ScriptEngine.EngineBase.Library
                     return Expression.Call(value, typeof(IValue).GetMethod("AsInt"));
 
                 case "String":
-                    return Expression.Call(value, typeof(IValue).GetMethod("AsString"));
+                    return SafeCall<string>(value, typeof(IValue).GetMethod("AsString"));//Expression.Call(value, typeof(IValue).GetMethod("AsString"));
+
+                case "ScriptObjectContext":
+                    return Expression.Call(value, typeof(IValue).GetMethod("AsScriptObject"));
 
                 case "Boolean":
                     return Expression.Call(value, typeof(IValue).GetMethod("AsBoolean"));
@@ -56,15 +66,36 @@ namespace ScriptEngine.EngineBase.Library
                 case "IVariable":
                     return Expression.ArrayIndex(variable, Expression.Constant(index));
 
-                case "ScriptObjectContext":
-                    return Expression.Call(value, typeof(IValue).GetMethod("AsScriptObject"));
-
                 default:
-                    Expression call = Expression.Call(value, typeof(IValue).GetMethod("AsObject"));
-                    return Expression.Convert(call, to_type);
+                    //Expression call = Expression.Call(value, typeof(IValue).GetMethod("AsObject"));
+                    //return Expression.Convert(call, to_type);
+                    //value = Expression.Call(value, typeof(IVariable).GetProperty("Value").GetGetMethod());
+                    return Expression.Convert(SafeCall<object>(value, typeof(IValue).GetMethod("AsObject")), to_type);
 
             }
         }
+
+        private static Expression SafeCall<T>(Expression value,MethodInfo method)
+        {
+            var value_internal = Expression.Parameter(typeof(IValue));
+
+            Expression base_type = Expression.Call(value_internal, typeof(IValue).GetProperty("BaseType").GetGetMethod());
+            Expression method_call = Expression.Call(value_internal, method);
+            LabelTarget return_value = Expression.Label(typeof(T));
+            Expression if_expression = Expression.IfThenElse(
+                Expression.Equal(base_type, Expression.Constant(ValueTypeEnum.NULL)),
+                Expression.Return(return_value,Expression.Convert(Expression.Constant(null),typeof(T))),
+                Expression.Return(return_value, method_call)
+                );
+
+            var ex = Expression.Block(
+                if_expression,
+                Expression.Label(return_value, Expression.Convert(Expression.Constant(null), typeof(T))));
+
+            Expression func = Expression.Lambda<Func<IValue,T>>(ex, value_internal);
+            return Expression.Invoke(func, value);
+        }
+
 
         public static IValue[] CreateValueArray(IVariable[] array)
         {

@@ -1,4 +1,11 @@
-﻿using ScriptEngine.EngineBase.Compiler.Types.Function.LibraryMethods;
+﻿/*----------------------------------------------------------
+	This Source Code Form is subject to the terms of the 
+	Mozilla Public License, v.2.0. If a copy of the MPL 
+	was not distributed with this file, You can obtain one 
+	at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+
+using ScriptEngine.EngineBase.Compiler.Types.Function.LibraryMethods;
 using ScriptEngine.EngineBase.Library.BaseTypes.UniversalCollections;
 using ScriptEngine.EngineBase.Compiler.Types.Variable.References;
 using ScriptEngine.EngineBase.Compiler.Programm.Parts.Module;
@@ -58,7 +65,7 @@ namespace ScriptEngine.EngineBase.Interpreter.Context
                 _functions[i] = new ContextMethodReferenceHolder(functions_array[i], wrapper);
             }
 
-             // Инициализация переменной ЭтотОбъект.
+            // Инициализация переменной ЭтотОбъект.
             if (module.Variables.Get("ЭтотОбъект") != null)
                 GetAnyVaribale("ЭтотОбъект").Set(ValueFactory.Create(this));
 
@@ -73,14 +80,11 @@ namespace ScriptEngine.EngineBase.Interpreter.Context
         /// </summary>
         public void Set()
         {
-            if (!_module.AsGlobal && Instance == null)
-            {
-                for (int i = 0; i < _functions.Length; i++)
-                    _functions[i].Set();
+            for (int i = 0; i < _functions.Length; i++)
+                _functions[i].Set();
 
-                for (int i = 0; i < _properties.Length; i++)
-                    _properties[i].Set();
-            }
+            for (int i = 0; i < _properties.Length; i++)
+                _properties[i].Set();
         }
 
 
@@ -140,7 +144,7 @@ namespace ScriptEngine.EngineBase.Interpreter.Context
         {
             for (int i = 0; i < _functions.Length; i++)
             {
-                if (String.Equals(_functions[i].Function.Name,name,StringComparison.OrdinalIgnoreCase) || String.Equals(_functions[i].Function.Alias,name,StringComparison.OrdinalIgnoreCase))
+                if (String.Equals(_functions[i].Function.Name, name, StringComparison.OrdinalIgnoreCase) || String.Equals(_functions[i].Function.Alias, name, StringComparison.OrdinalIgnoreCase))
                     return _functions[i];
             }
             return null;
@@ -151,7 +155,7 @@ namespace ScriptEngine.EngineBase.Interpreter.Context
         /// </summary>
         public IVariableReference GetPublicVariable(string name)
         {
-            IVariableReference context_variable = GetContextVariable(name,true);
+            IVariableReference context_variable = GetContextVariable(name, true);
             return context_variable;
         }
 
@@ -160,7 +164,7 @@ namespace ScriptEngine.EngineBase.Interpreter.Context
         /// </summary>
         public ContextVariableReferenceHolder GetPublicVariable(int index)
         {
-            return _properties[index]; 
+            return _properties[index];
         }
 
         /// <summary>
@@ -184,13 +188,13 @@ namespace ScriptEngine.EngineBase.Interpreter.Context
         /// <summary>
         /// Получить свойство из контекста объекта, по его имени.
         /// </summary>
-        private IVariableReference GetContextVariable(string name,bool only_public)
+        private IVariableReference GetContextVariable(string name, bool only_public)
         {
             // Поиск в статических свойствах обьекта.
             for (int i = 0; i < _properties.Length; i++)
             {
                 ContextVariableReferenceHolder context_variable = _properties[i];
-                if (String.Equals(context_variable.Variable.Name,name,StringComparison.OrdinalIgnoreCase) || String.Equals(context_variable.Variable.Alias,name,StringComparison.OrdinalIgnoreCase))
+                if (String.Equals(context_variable.Variable.Name, name, StringComparison.OrdinalIgnoreCase) || String.Equals(context_variable.Variable.Alias, name, StringComparison.OrdinalIgnoreCase))
                 {
                     if (!context_variable.Variable.Public && only_public)
                         throw new Exception($"Свойство [{name}] не имеет оператора Экспорт, и не доступно.");
@@ -202,11 +206,11 @@ namespace ScriptEngine.EngineBase.Interpreter.Context
             // Поиск в динамических свойствах обьекта.
             if (typeof(IScriptDynamicProperties).IsAssignableFrom(Instance.GetType()))
             {
-                if((Instance as IScriptDynamicProperties).Exist(name))
+                if ((Instance as IScriptDynamicProperties).Exist(name))
                     return new DynamicPropertiesReference(name, Instance as IScriptDynamicProperties);
             }
 
-           throw new Exception($"У объекта [{Module.Name}] нет свойства [{name}].");
+            throw new Exception($"У объекта [{Module.Name}] нет свойства [{name}].");
         }
     }
 }

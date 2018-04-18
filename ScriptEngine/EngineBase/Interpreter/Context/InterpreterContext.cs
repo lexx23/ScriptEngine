@@ -1,4 +1,11 @@
-﻿using ScriptEngine.EngineBase.Compiler.Types.Variable.References;
+﻿/*----------------------------------------------------------
+	This Source Code Form is subject to the terms of the 
+	Mozilla Public License, v.2.0. If a copy of the MPL 
+	was not distributed with this file, You can obtain one 
+	at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+
+using ScriptEngine.EngineBase.Compiler.Types.Variable.References;
 using ScriptEngine.EngineBase.Compiler.Programm.Parts.Module;
 using ScriptEngine.EngineBase.Compiler.Types.Function;
 using ScriptEngine.EngineBase.Compiler.Types.Variable;
@@ -63,7 +70,8 @@ namespace ScriptEngine.EngineBase.Interpreter.Context
             if (_current != context)
             {
                 _history.Push((position, _current, _function_context, _function, _catch_blocks));
-                context.Set();
+                if(!context.Module.AsGlobal)
+                    context.Set();
                 _current = context;
             }
             else
@@ -129,7 +137,8 @@ namespace ScriptEngine.EngineBase.Interpreter.Context
         /// </summary>
         public void TryBlockRemove()
         {
-            _catch_blocks.RemoveAt(_catch_blocks.Count - 1);
+            if(_catch_blocks.Count > 0)
+                _catch_blocks.RemoveAt(_catch_blocks.Count - 1);
         }
 
         /// <summary>

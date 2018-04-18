@@ -1,4 +1,11 @@
-﻿using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
+﻿/*----------------------------------------------------------
+	This Source Code Form is subject to the terms of the 
+	Mozilla Public License, v.2.0. If a copy of the MPL 
+	was not distributed with this file, You can obtain one 
+	at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+
+using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
 using System.Linq.Expressions;
 using System.Reflection;
 using System;
@@ -65,7 +72,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.References
             Expression call;
             // Если свойство только для чтения, то вызов функции выдаст ошибку.
             if (setter == null)
-                call = Expression.Throw(Expression.Constant(new Exception("Поле объекта недоступно для записи")));
+                call = Expression.Throw(Expression.Constant(new Exception($"Поле [{property_info.Name}] объекта недоступно для записи")));
             else
                 call = Expression.Call(instance_parameter, setter, ConvertExpression.ConvertFromScript(argument_parameter, property_info.PropertyType,0));
 

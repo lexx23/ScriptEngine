@@ -1,4 +1,11 @@
-﻿using ScriptEngine.EngineBase.Exceptions;
+﻿/*----------------------------------------------------------
+	This Source Code Form is subject to the terms of the 
+	Mozilla Public License, v.2.0. If a copy of the MPL 
+	was not distributed with this file, You can obtain one 
+	at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+
+using ScriptEngine.EngineBase.Exceptions;
 using ScriptEngine.EngineBase.Parser.Token;
 using System;
 
@@ -10,23 +17,6 @@ namespace ScriptEngine.EngineBase.Parser.TokenParser.Parsers
     public class LiteralTokenParser : ITokenParser
     {
         /// <summary>
-        /// Проверка формата даты.
-        /// </summary>
-        /// <param name="date"></param>
-        /// <returns></returns>
-        private void IsValidDate(string date, CodeInformation information)
-        {
-            if (date.Length > 14)
-                throw new CompilerException(information, "Дата не может быть длинной более 14 символов.");
-
-            foreach (char symbol in date)
-            {
-                if (!Char.IsNumber(symbol))
-                    throw new CompilerException(information, String.Format("Не верный формат даты, символ '{0}' .", symbol));
-            }
-        }
-
-        /// <summary>
         /// Парсинг даты.
         /// </summary>
         /// <param name="iterator"></param>
@@ -34,16 +24,17 @@ namespace ScriptEngine.EngineBase.Parser.TokenParser.Parsers
         /// <returns></returns>
         private bool ParseDate(SourceIterator iterator, out string date)
         {
-            CodeInformation inforamtion;
+            CodeInformation information;
             date = string.Empty;
 
             if (iterator.Current == '\'')
             {
-                inforamtion = iterator.CodeInformation.Clone();
+                information = iterator.CodeInformation.Clone();
                 do
                 {
-                    date += iterator.Current;
-                    if (iterator.Current == '\'' && iterator.CodeInformation.ColumnNumber != inforamtion.ColumnNumber)
+                    if (Char.IsNumber(iterator.Current))
+                        date += iterator.Current;
+                    if (iterator.Current == '\'' && iterator.CodeInformation.ColumnNumber != information.ColumnNumber)
                     {
                         iterator.MoveNext();
                         break;
@@ -52,14 +43,8 @@ namespace ScriptEngine.EngineBase.Parser.TokenParser.Parsers
                 }
                 while (iterator.MoveNext());
 
-
-                if (date[date.Length - 1] != '\'')
-                    throw new CompilerException(iterator.CodeInformation, "Ожидается символ \'.");
-
-                date = date.Remove(0, 1);
-                date = date.Remove(date.Length - 1, 1);
-
-                IsValidDate(date, inforamtion);
+                if (date.Length > 14)
+                    throw new CompilerException(information, "Дата не может быть длинной более 14 символов.");
 
                 return true;
             }

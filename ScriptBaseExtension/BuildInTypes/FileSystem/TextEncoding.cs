@@ -15,7 +15,7 @@ namespace ScriptBaseFunctionsLibrary.BuildInTypes.FileSystem
         public static Encoding GetEncodingByName(string encoding, bool addBOM = true)
         {
             Encoding enc;
-            if (encoding == string.Empty)
+            if (encoding == null)
                 enc = new UTF8Encoding(addBOM);
             else
             {

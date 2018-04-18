@@ -1,8 +1,0 @@
-version: '3'
-
-services:
-  enginetest:
-    image: enginetest
-    build:
-      context: .
-      dockerfile: ConsoleApp1/Dockerfile

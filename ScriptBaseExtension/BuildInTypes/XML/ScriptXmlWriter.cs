@@ -89,7 +89,7 @@ namespace ScriptBaseFunctionsLibrary.BuildInTypes
         [LibraryClassMethodAttribute(Name = "WriteAttribute", Alias = "ЗаписатьАтрибут")]
         public void WriteAttribute(string localName, string valueOrNamespace, string value = null)
         {
-            if (value == string.Empty)
+            if (value == null)
             {
                 _writer.WriteAttributeString(localName, valueOrNamespace);
             }
@@ -134,7 +134,7 @@ namespace ScriptBaseFunctionsLibrary.BuildInTypes
         [LibraryClassMethodAttribute(Name = "WriteStartAttribute", Alias = "ЗаписатьНачалоАтрибута")]
         public void WriteStartAttribute(string name, string ns = null)
         {
-            if (ns == string.Empty)
+            if (ns == null)
             {
                 _writer.WriteStartAttribute(name);
             }
@@ -148,7 +148,7 @@ namespace ScriptBaseFunctionsLibrary.BuildInTypes
         [LibraryClassMethodAttribute(Name = "WriteStartElement", Alias = "ЗаписатьНачалоЭлемента")]
         public void WriteStartElement(string name, string ns = null)
         {
-            if (ns == string.Empty)
+            if (ns == null)
             {
                 _writer.WriteStartElement(name);
             }
@@ -199,11 +199,11 @@ namespace ScriptBaseFunctionsLibrary.BuildInTypes
         [LibraryClassMethodAttribute(Name = "WriteDocumentType", Alias = "ЗаписатьТипДокумента")]
         public void WriteDocumentType(string name, string varArg2, string varArg3 = null, string varArg4 = null)
         {
-            if (varArg4 != string.Empty)
+            if (varArg4 != null)
             {
                 _writer.WriteDocType(name, varArg2, varArg3, varArg4);
             }
-            else if (varArg3 != string.Empty)
+            else if (varArg3 != null)
             {
                 _writer.WriteDocType(name, null, varArg2, varArg3);
             }

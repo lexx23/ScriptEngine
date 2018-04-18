@@ -51,7 +51,7 @@ namespace UnitTests
             interpreter.Run();
             sw.Stop();
 
-            Assert.AreEqual(2300, sw.ElapsedMilliseconds, 200);
+            Assert.AreEqual(2000, sw.ElapsedMilliseconds, 200);
         }
 
         /// <summary>
@@ -224,14 +224,14 @@ namespace UnitTests
             sw.Start();
             ScriptProgramm programm = compiler.CompileProgramm(modules);
             sw.Stop();
-            Assert.AreEqual(60, sw.ElapsedMilliseconds, 80);
+            Assert.AreEqual(250, sw.ElapsedMilliseconds, 100);
 
             sw.Reset();
             sw.Start();
             ScriptInterpreter interpreter = new ScriptInterpreter(programm);
             interpreter.Run();
             sw.Stop();
-            Assert.AreEqual(20, sw.ElapsedMilliseconds, 20);
+            Assert.AreEqual(200, sw.ElapsedMilliseconds, 20);
         }
 
         [TestMethod]

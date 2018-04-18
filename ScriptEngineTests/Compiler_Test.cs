@@ -251,6 +251,48 @@ namespace UnitTests
             ScriptCompiler compiler = new ScriptCompiler();
             compiler.CompileProgramm(modules);
         }
+
+        [TestMethod]
+        [ExpectedException(typeof(CompilerException))]
+        [Description("Проверяет запрещенные места (цикл) расположения меток переходов.")]
+        public void Compile_GotoError5()
+        {
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("goto","goto", ModuleTypeEnum.STARTUP,false,_path + "Goto\\goto_error5.scr")
+            };
+
+            ScriptCompiler compiler = new ScriptCompiler();
+            compiler.CompileProgramm(modules);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(CompilerException))]
+        [Description("Проверяет запрещенные места (попытка) расположения меток переходов.")]
+        public void Compile_GotoError6()
+        {
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("goto","goto", ModuleTypeEnum.STARTUP,false,_path + "Goto\\goto_error6.scr")
+            };
+
+            ScriptCompiler compiler = new ScriptCompiler();
+            compiler.CompileProgramm(modules);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(CompilerException))]
+        [Description("Проверяет запрещенные места (исключение) расположения меток переходов.")]
+        public void Compile_GotoError7()
+        {
+            IList<ScriptModule> modules = new List<ScriptModule>()
+            {
+                new ScriptModule("goto","goto", ModuleTypeEnum.STARTUP,false,_path + "Goto\\goto_error7.scr")
+            };
+
+            ScriptCompiler compiler = new ScriptCompiler();
+            compiler.CompileProgramm(modules);
+        }
         #endregion
 
 

@@ -259,7 +259,7 @@ namespace ScriptEngine.EngineBase
             CodeInformation inforamtion = CodeInformation.Clone();
             do
             {
-                if (_current_symbol != '|' && _current_symbol != '\t')
+                if (_current_symbol != '|' && _current_symbol != '\t' && _current_symbol != '\r')
                     buffer += _current_symbol;
                 if (_current_symbol == '"')
                 {

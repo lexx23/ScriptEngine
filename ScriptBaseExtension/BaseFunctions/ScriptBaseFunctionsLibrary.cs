@@ -185,7 +185,7 @@ namespace ScriptBaseLibrary
             IEnumerable<string> sourceProperties;
             IEnumerable<string> ignoredPropCollection;
 
-            if (properties == String.Empty)
+            if (properties == null)
             {
                 IList<string> names = new List<string>();
                 for (int i = 0; i < source.VariablesCount(); i++)
@@ -205,7 +205,7 @@ namespace ScriptBaseLibrary
 
             }
 
-            if (ignored_properties != String.Empty)
+            if (ignored_properties != null)
             {
                 ignoredPropCollection = ignored_properties.Split(',')
                     .Select(x => x.Trim())

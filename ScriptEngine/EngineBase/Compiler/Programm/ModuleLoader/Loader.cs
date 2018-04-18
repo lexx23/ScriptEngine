@@ -1,4 +1,11 @@
-﻿using ScriptEngine.EngineBase.Compiler.Types.Function.LibraryMethods;
+﻿/*----------------------------------------------------------
+	This Source Code Form is subject to the terms of the 
+	Mozilla Public License, v.2.0. If a copy of the MPL 
+	was not distributed with this file, You can obtain one 
+	at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+
+using ScriptEngine.EngineBase.Compiler.Types.Function.LibraryMethods;
 using ScriptEngine.EngineBase.Compiler.Types.Variable.References;
 using ScriptEngine.EngineBase.Compiler.Types.Function.Parameters;
 using ScriptEngine.EngineBase.Compiler.Programm.Parts.Module;
@@ -116,6 +123,9 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.ModuleLoader
                 LibraryClassMethodAttribute method_attr = method.GetCustomAttribute<LibraryClassMethodAttribute>(false);
 
                 IFunction function = module.Functions.Create(method_attr.Name, true);
+                if(function == null)
+                    throw new Exception($"Функция с именем {method_attr.Name} уже существует.");
+
                 function.Alias = method_attr.Alias;
                 function.Type = method.ReturnType == typeof(void) ? FunctionTypeEnum.PROCEDURE : FunctionTypeEnum.FUNCTION;
                 GetFunctionParameters(function, method);
