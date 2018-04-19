@@ -20,7 +20,7 @@ WINDOWS ![Build Status](https://lexx23.visualstudio.com/_apis/public/build/defin
 
 ## Пример использования:
 
-	// Модуля для компиляции.
+	// Модули для компиляции.
 	IList<ScriptModule> modules = new List<ScriptModule>()
 	{
 		new ScriptModule("global", "global", ModuleTypeEnum.STARTUP,true, _path + "main_module.scr"),
@@ -34,12 +34,11 @@ WINDOWS ![Build Status](https://lexx23.visualstudio.com/_apis/public/build/defin
 	ScriptProgramm programm = compiler.CompileProgramm(modules);
 	// Передача программы интепретатору.
 	ScriptInterpreter interpreter = new ScriptInterpreter(programm);
-	// Добавляю точку останова для модуля testrunner строка 37.
-	interpreter.Debugger.AddBreakpoint("testrunner", 357, (interpreter1) =>
+	// Добавляю точку останова для модуля testrunner строка 358.
+	interpreter.Debugger.AddBreakpoint("testrunner", 358, (interpreter1) =>
 	{
 		// Получить значение переменных.
-		IValue val1 =  interpreter1.Debugger.Eval("ПервоеЗначение");
-		IValue val2 = interpreter1.Debugger.Eval("ВтороеЗначение");
+		IValue val1 =  interpreter1.Debugger.Eval("ИмяКлассаТеста");
 	});
 	// Запуск отладки.
 	interpreter.Debug();
