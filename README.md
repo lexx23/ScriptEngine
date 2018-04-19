@@ -10,9 +10,36 @@ WINDOWS ![Build Status](https://lexx23.visualstudio.com/_apis/public/build/defin
 
 ## Ближайшие цели:
 
-[ ] 1. Компилятор/интерпритатор (backend C#).
+[ ] 1. Компилятор/интерпретатор (backend C#).
 
       [X] Реализация всех конструкций языка.
       [ ] Поддержка многопоточности.
       
-[ ] 2. Компилятор интерпритатор (frontend JavaScript).
+[ ] 2. Компилятор интерпретатор (frontend JavaScript).
+
+
+## Пример использования:
+
+	// Модуля для компиляции.
+	IList<ScriptModule> modules = new List<ScriptModule>()
+	{
+		new ScriptModule("global", "global", ModuleTypeEnum.STARTUP,true, _path + "main_module.scr"),
+		new ScriptModule("testrunner", "testrunner", ModuleTypeEnum.OBJECT,true, _path + "testrunner.scr"),
+		new ScriptModule("Утверждения", "Approval", ModuleTypeEnum.OBJECT, true, _path + "xunit.scr"),
+		new ScriptModule("Ожидаем", "Expect", ModuleTypeEnum.OBJECT, true, _path + "bdd.scr")
+	};
+
+	ScriptCompiler compiler = new ScriptCompiler();
+	// Компиляция программы.
+	ScriptProgramm programm = compiler.CompileProgramm(modules);
+	// Передача программы интепретатору.
+	ScriptInterpreter interpreter = new ScriptInterpreter(programm);
+	// Добавляю точку останова для модуля testrunner строка 37.
+	interpreter.Debugger.AddBreakpoint("testrunner", 357, (interpreter1) =>
+	{
+		// Получить значение переменных.
+		IValue val1 =  interpreter1.Debugger.Eval("ПервоеЗначение");
+		IValue val2 = interpreter1.Debugger.Eval("ВтороеЗначение");
+	});
+	// Запуск отладки.
+	interpreter.Debug();
