@@ -26,7 +26,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
         public static IValue Create(DateTime value) => new DateValue(value);
         public static IValue Create(object value) => new ObjectValue(value);
         public static IValue Create(InternalScriptType value) => new TypeValue(value);
-        public static IValue Create(ScriptObjectContext value) => new ScriptObjectValue(value);
+        public static IValue Create(IScriptObjectContext value) => new ScriptObjectValue(value);
         public static IValue Create(bool value) => value == true ? _bool_value_true : _bool_value_false;
         public static IValue Create(IValue value) => value ?? Create();
 

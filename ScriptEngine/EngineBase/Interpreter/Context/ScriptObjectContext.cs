@@ -15,7 +15,7 @@ using System;
 
 namespace ScriptEngine.EngineBase.Interpreter.Context
 {
-    public class ScriptObjectContext
+    class ScriptObjectContext : IScriptObjectContext
     {
         private ScriptModule _module;
         private ContextMethodReferenceHolder[] _functions;

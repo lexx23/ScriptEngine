@@ -142,7 +142,7 @@ namespace ScriptEngine.EngineBase.Interpreter
         /// Вызов функции.
         /// </summary>
         /// <param name="name"></param>
-        public IValue FunctionCall(ScriptObjectContext context, IFunction function, IVariable[] param = null)
+        public IValue FunctionCall(IScriptObjectContext context, IFunction function, IVariable[] param = null)
         {
             int tmp_instruction;
             InterpreterContext tmp_context;
@@ -180,7 +180,7 @@ namespace ScriptEngine.EngineBase.Interpreter
         /// </summary>
         /// <param name="function"></param>
         /// <returns></returns>
-        private void FunctionCall(IFunction function, ScriptObjectContext context)
+        private void FunctionCall(IFunction function, IScriptObjectContext context)
         {
             if (function.Method == null)
             {
@@ -349,7 +349,7 @@ namespace ScriptEngine.EngineBase.Interpreter
                 if (value.BaseType == ValueTypeEnum.SCRIPT_OBJECT)
                 {
                     // Если это массив то забираем параметры из массива.
-                    ScriptObjectContext script_object = value.AsScriptObject();
+                    IScriptObjectContext script_object = value.AsScriptObject();
                     if (typeof(ICollectionIndexer).IsAssignableFrom(script_object.Instance.GetType()) && typeof(IEnumerable<IValue>).IsAssignableFrom(script_object.Instance.GetType()))
                         foreach (IValue array_value in script_object.Instance as IEnumerable<IValue>)
                             _stack.Enqueue(ReferenceFactory.Create(array_value));
@@ -381,6 +381,19 @@ namespace ScriptEngine.EngineBase.Interpreter
             _eval.Add((_context.CurrentFunction.Scope.Vars.Count, _code.Count, _instruction));
             ScriptCompiler compiler = new ScriptCompiler(_programm);
             _instruction = compiler.CompileEval(expression, result);
+            compiler = null;
+        }
+
+        /// <summary>
+        /// Оператор Выполнить(Execute)
+        /// </summary>
+        /// <param name="expression"></param>
+        /// <param name="result"></param>
+        public void Execute(string expression)
+        {
+            _eval.Add((_context.CurrentFunction.Scope.Vars.Count, _code.Count, _instruction));
+            ScriptCompiler compiler = new ScriptCompiler(_programm);
+            _instruction = compiler.CompileExecute(expression);
             compiler = null;
         }
 
@@ -429,7 +442,7 @@ namespace ScriptEngine.EngineBase.Interpreter
                             continue;
 
                         case OP_CODES.OP_CALL:
-                            ScriptObjectContext context;
+                            IScriptObjectContext context;
                             if (statement.Variable3 != null)
                             {
                                 IVariable var = null;
@@ -460,7 +473,7 @@ namespace ScriptEngine.EngineBase.Interpreter
                         case OP_CODES.OP_TRY:
                             _context.TryBlockAdd(statement.Variable2.Value.AsInt());
                             break;
-                        case OP_CODES.OP_ENDTRY:
+                        case OP_CODES.OP_END_TRY:
                             _error_info = new ErrorInfo();
                             break;
                         case OP_CODES.OP_EXCEPT:
@@ -480,7 +493,7 @@ namespace ScriptEngine.EngineBase.Interpreter
                                 throw new RuntimeException(this, $"Значение не является значением объектного типа [{statement.Variable2.Name}]");
                             else
                             {
-                                ScriptObjectContext script_object = object_call.AsScriptObject();
+                                IScriptObjectContext script_object = object_call.AsScriptObject();
                                 IFunction function = script_object.CheckFunction(CurrentModule.ObjectCallGet(statement.Variable3.Value.AsInt()));
                                 FunctionCall(function, script_object);
                             }
@@ -492,7 +505,7 @@ namespace ScriptEngine.EngineBase.Interpreter
                                 throw new RuntimeException(this, $"Значение не является значением объектного типа [{statement.Variable2.Name}]");
                             else
                             {
-                                ScriptObjectContext script_object = var_object.AsScriptObject();
+                                IScriptObjectContext script_object = var_object.AsScriptObject();
 
                                 IVariableReference var_ref = script_object.GetPublicVariable(statement.Variable3.Value.AsString());
                                 _context.Update(statement.Variable1, var_ref);
@@ -505,7 +518,7 @@ namespace ScriptEngine.EngineBase.Interpreter
                                 throw new RuntimeException(this, $"Значение не является значением объектного типа [{statement.Variable2.Name}]");
                             else
                             {
-                                ScriptObjectContext script_object = array_object.AsScriptObject();
+                                IScriptObjectContext script_object = array_object.AsScriptObject();
 
                                 bool indexed = false;
                                 if (typeof(ICollectionIndexer).IsAssignableFrom(script_object.Instance.GetType()))
@@ -544,7 +557,7 @@ namespace ScriptEngine.EngineBase.Interpreter
                                 throw new RuntimeException(this, $"Значение не является значением объектного типа [{statement.Variable2.Name}]");
                             else
                             {
-                                ScriptObjectContext script_object = foreach_object.AsScriptObject();
+                                IScriptObjectContext script_object = foreach_object.AsScriptObject();
                                 if (!typeof(IEnumerable<IValue>).IsAssignableFrom(script_object.Instance.GetType()))
                                     throw new RuntimeException(this, $"Итератор для значения не определен [{statement.Variable2.Name}]");
 
@@ -582,10 +595,15 @@ namespace ScriptEngine.EngineBase.Interpreter
                             Eval(statement.Variable2.Value.AsString(), statement.Variable1);
                             continue;
 
-                        case OP_CODES.OP_EVAL_EXIT:
+                        case OP_CODES.OP_EXECUTE:
+                            Execute(statement.Variable2.Value.AsString());
+                            continue;
+
+                        case OP_CODES.OP_END_EVEX:
+                            int i;
                             (int, int, int) eval_exit = _eval[_eval.Count - 1];
                             _eval.RemoveAt(_eval.Count - 1);
-                            int i;
+
                             for (i = eval_exit.Item1; i < _context.CurrentFunction.Scope.Vars.Count; i++)
                             {
                                 _context.CurrentModule.Variables.Remove(_context.CurrentFunction.Scope.Vars[i]);
@@ -596,7 +614,8 @@ namespace ScriptEngine.EngineBase.Interpreter
                             while (i < _code.Count)
                                 _code.RemoveAt(i);
 
-                            statement.Variable2.Value = statement.Variable3.Value;
+                            if(statement.Variable3 != null)
+                                statement.Variable2.Value = statement.Variable3.Value;
 
                             _instruction = eval_exit.Item3;
                             if (_debugger.Debug && _debugger.OnEvalExit())

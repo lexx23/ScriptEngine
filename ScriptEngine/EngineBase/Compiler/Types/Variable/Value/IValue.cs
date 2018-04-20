@@ -21,7 +21,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value
         DateTime AsDate();
         decimal AsNumber();
         object AsObject();
-        ScriptObjectContext AsScriptObject();
+        IScriptObjectContext AsScriptObject();
     }
 
 }

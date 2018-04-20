@@ -54,7 +54,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value.Values
             throw new Exception($"Невозможно преобразовать [{_value}] в число.");
         }
 
-        public ScriptObjectContext AsScriptObject()
+        public IScriptObjectContext AsScriptObject()
         {
             throw new NotImplementedException();
         }

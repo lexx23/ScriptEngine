@@ -150,7 +150,6 @@ namespace ScriptEngine.EngineBase.Interpreter
         public void Continue()
         {
             _step_break_point = int.MaxValue;
-            //_interpreter.Execute();
         }
 
         /// <summary>
@@ -224,7 +223,7 @@ namespace ScriptEngine.EngineBase.Interpreter
         }
 
         /// <summary>
-        /// Определяет выход в случае вычисления вражения в дебагере.
+        /// Определяет выход в случае вычисления выражения в дебагере.
         /// </summary>
         /// <returns></returns>
         internal bool OnEvalExit()

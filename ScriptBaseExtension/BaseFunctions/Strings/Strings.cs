@@ -1,9 +1,9 @@
 ﻿using ScriptBaseFunctionsLibrary.BuildInTypes.UniversalCollections;
-using ScriptBaseFunctionsLibrary.Enums;
 using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
 using ScriptEngine.EngineBase.Library.Attributes;
-using System;
+using ScriptBaseFunctionsLibrary.Enums;
 using System.Linq;
+using System;
 
 namespace ScriptBaseFunctionsLibrary.BaseFunctions.Strings
 {
@@ -15,6 +15,43 @@ namespace ScriptBaseFunctionsLibrary.BaseFunctions.Strings
         {
             return ValueFactory.Create(value.AsString());
         }
+
+        [LibraryClassMethodAttribute(Alias = "Сред", Name = "Mid")]
+        public string Mid(string str,int start = -1,int len = -1)
+        {
+            if (len == -1)
+                len = str.Length - start + 1;
+
+            if (start < 1)
+                start = 1;
+
+            if (start + len > str.Length || len < 0)
+                len = str.Length - start + 1;
+
+            string result;
+
+            if (start > str.Length || len == 0)
+                result = "";
+            else
+                result = str.Substring(start - 1, len);
+
+            return result;
+        }
+
+        [LibraryClassMethodAttribute(Alias = "КодСимвола", Name = "CharCode")]
+        private int CharCode(string str, int position = 0)
+        {
+            int result;
+            if (str.Length == 0)
+                result = 0;
+            else if (position >= 0 && position < str.Length)
+                result = (int)str[position];
+            else
+                throw new Exception("Неверное значение аргумента");
+
+            return result;
+        }
+
 
         [LibraryClassMethodAttribute(Alias = "Формат", Name = "Format")]
         public string Format(IValue value, string format)

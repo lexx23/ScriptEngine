@@ -12,7 +12,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value.Values
 {
     public class ScriptObjectValue : IValue
     {
-        protected ScriptObjectContext _value;
+        protected IScriptObjectContext _value;
 
         public ValueTypeEnum BaseType => ValueTypeEnum.SCRIPT_OBJECT;
 
@@ -23,7 +23,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value.Values
         }
 
 
-        public ScriptObjectValue(ScriptObjectContext value)
+        public ScriptObjectValue(IScriptObjectContext value)
         {
             _value = value;
         }
@@ -49,7 +49,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value.Values
             throw new NotImplementedException();
         }
 
-        public ScriptObjectContext AsScriptObject()
+        public IScriptObjectContext AsScriptObject()
         {
             return _value;
         }

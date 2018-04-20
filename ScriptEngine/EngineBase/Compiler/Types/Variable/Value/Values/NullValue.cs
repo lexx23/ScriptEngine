@@ -36,7 +36,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value.Values
             throw new Exception("Преобразование значения к типу Число не может быть выполнено");
         }
 
-        public ScriptObjectContext AsScriptObject()
+        public IScriptObjectContext AsScriptObject()
         {
             throw new Exception("Преобразование значения к типу Обьект не может быть выполнено");
         }

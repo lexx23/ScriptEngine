@@ -19,14 +19,14 @@ namespace ScriptEngine.EngineBase.Interpreter.Context
         private IFunction _function;
         private ScriptProgramm _programm;
         private IList<int> _catch_blocks;
-        private ScriptObjectContext _current;
+        private IScriptObjectContext _current;
         private IVariableReference[] _current_function_context { get; set; }
 
-        private Stack<(int, ScriptObjectContext, IVariableReference[], IFunction, IList<int>)> _history;
+        private Stack<(int, IScriptObjectContext, IVariableReference[], IFunction, IList<int>)> _history;
 
 
         public ScriptModule CurrentModule { get => _current?.Module; }
-        public ScriptObjectContext Current { get => _current; }
+        public IScriptObjectContext Current { get => _current; }
         public IFunction CurrentFunction { get => _function; }
 
 
@@ -34,7 +34,7 @@ namespace ScriptEngine.EngineBase.Interpreter.Context
         {
             _catch_blocks = new List<int>();
             _programm = programm;
-            _history = new Stack<(int, ScriptObjectContext, IVariableReference[], IFunction, IList<int>)>();
+            _history = new Stack<(int, IScriptObjectContext, IVariableReference[], IFunction, IList<int>)>();
         }
 
         /// <summary>
@@ -54,7 +54,7 @@ namespace ScriptEngine.EngineBase.Interpreter.Context
         /// <param name="context"></param>
         /// <param name="function"></param>
         /// <param name="position"></param>
-        public void Set(ScriptObjectContext context, IFunction function, int position)
+        public void Set(IScriptObjectContext context, IFunction function, int position)
         {
             IVariableReference[] _function_context = _current_function_context;
 
@@ -105,7 +105,7 @@ namespace ScriptEngine.EngineBase.Interpreter.Context
         /// <returns></returns>
         public int Restore()
         {
-            (int, ScriptObjectContext, IVariableReference[], IFunction, IList<int>) data = _history.Pop();
+            (int, IScriptObjectContext, IVariableReference[], IFunction, IList<int>) data = _history.Pop();
 
             if (data.Item2 != null)
                 _current = data.Item2;

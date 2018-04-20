@@ -13,7 +13,7 @@ using System.Text;
 
 namespace ScriptEngine.EngineBase.Interpreter
 {
-    public enum OP_CODES
+    enum OP_CODES
     {
         // Добавить значение в стек
         OP_PUSH = 0,
@@ -80,14 +80,15 @@ namespace ScriptEngine.EngineBase.Interpreter
         // Начало блока обработки исключения.
         OP_EXCEPT,
         // Завершение блока исключения.
-        OP_ENDTRY,
+        OP_END_TRY,
         // Вызвать исключение.
         OP_RAISE,
 
         // Вычислить
         OP_EVAL,
-        OP_EVAL_EXIT,
         // Выполнить
-        OP_EXECUTE
+        OP_EXECUTE,
+        // Выход из блока EVAL/EXECUTE
+        OP_END_EVEX
     }
 }

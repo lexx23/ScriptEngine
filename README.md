@@ -20,6 +20,7 @@ WINDOWS ![Build Status](https://lexx23.visualstudio.com/_apis/public/build/defin
 
 ## Пример использования:
 
+	string _path = Directory.GetCurrentDirectory() + "\\Scripts\\OneScript\\";
 	// Модули для компиляции.
 	IList<ScriptModule> modules = new List<ScriptModule>()
 	{

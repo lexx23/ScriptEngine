@@ -87,7 +87,7 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>
-        public InternalScriptType Get(ScriptObjectContext context)
+        public InternalScriptType Get(IScriptObjectContext context)
         {
             if (context.Module.Type == Module.ModuleTypeEnum.COMMON)
                 return _types[6];

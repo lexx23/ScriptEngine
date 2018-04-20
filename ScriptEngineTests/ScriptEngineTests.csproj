@@ -276,7 +276,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Scripts\OneScript\Tests\eval.os">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Scripts\OneScript\Tests\file-object.os">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

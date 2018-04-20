@@ -44,7 +44,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value.Values
             return _value == true ? 1 : 0;
         }
 
-        public ScriptObjectContext AsScriptObject()
+        public IScriptObjectContext AsScriptObject()
         {
             throw new NotImplementedException();
         }

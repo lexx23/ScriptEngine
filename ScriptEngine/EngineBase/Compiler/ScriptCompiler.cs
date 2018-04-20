@@ -28,6 +28,7 @@ namespace ScriptEngine.EngineBase.Compiler
         private ScriptProgramm _programm;
         private ScriptScope _scope;
         private ScriptModule _current_module;
+        private IList<OP_CODES> _exit_block;
         private IDictionary<string, (IVariable, CodeInformation)> _deferred_var;
         private IList<(ScriptModule, IFunction)> _deferred_function;
         private IList<IList<int>> _loop;
@@ -76,6 +77,7 @@ namespace ScriptEngine.EngineBase.Compiler
 
             _loop = new List<IList<int>>();
             _goto_jmp = new List<(string, int)>();
+            _exit_block = new List<OP_CODES>();
             _goto_labels = new Dictionary<string, int>();
             _null_variable = new Variable() { Scope = _scope, Name = "<<null>>", Type = VariableTypeEnum.CONSTANTVARIABLE, Reference = null };
 
@@ -99,11 +101,11 @@ namespace ScriptEngine.EngineBase.Compiler
             _op_codes = new Dictionary<OP_CODES, op_code>
             {
                 { OP_CODES.OP_EVAL, new op_code { code = OP_CODES.OP_EVAL, type = OP_TYPE.RESULT } },
-                { OP_CODES.OP_EVAL_EXIT, new op_code { code = OP_CODES.OP_EVAL_EXIT, type = OP_TYPE.WO_RESULT } },
+                { OP_CODES.OP_END_EVEX, new op_code { code = OP_CODES.OP_END_EVEX, type = OP_TYPE.WO_RESULT } },
                 { OP_CODES.OP_EXECUTE, new op_code { code = OP_CODES.OP_EXECUTE, type = OP_TYPE.WO_RESULT } },
 
                 { OP_CODES.OP_RAISE, new op_code { code = OP_CODES.OP_RAISE, type = OP_TYPE.WO_RESULT } },
-                { OP_CODES.OP_ENDTRY, new op_code { code = OP_CODES.OP_ENDTRY, type = OP_TYPE.WO_RESULT } },
+                { OP_CODES.OP_END_TRY, new op_code { code = OP_CODES.OP_END_TRY, type = OP_TYPE.WO_RESULT } },
                 { OP_CODES.OP_TRY, new op_code { code = OP_CODES.OP_TRY, type = OP_TYPE.WO_RESULT } },
                 { OP_CODES.OP_EXCEPT, new op_code { code = OP_CODES.OP_EXCEPT, type = OP_TYPE.WO_RESULT } },
 
@@ -333,6 +335,36 @@ namespace ScriptEngine.EngineBase.Compiler
 
         #region Вычислить(Eval) Выполнить(Execute)
 
+        private bool ParseExecute()
+        {
+            if (_iterator.CheckToken(TokenTypeEnum.IDENTIFIER, TokenSubTypeEnum.I_EXECUTE))
+            {
+                // Установить точку входа модуля.
+                SetModuleEntryPoint();
+
+                bool parentheses = false;
+                if (_iterator.CheckToken(TokenTypeEnum.PUNCTUATION, TokenSubTypeEnum.P_PARENTHESESOPEN))
+                    parentheses = true;
+
+                // Забрать выражение.
+                IVariable expression = ParseExpression((int)Priority.TOP);
+                if (expression == null || expression.Value?.BaseType == ValueTypeEnum.NULL)
+                    throw new CompilerException(_iterator.Current.CodeInformation, "Ожидается выражение.");
+
+                if (parentheses)
+                    _iterator.ExpectToken(TokenTypeEnum.PUNCTUATION, TokenSubTypeEnum.P_PARENTHESESCLOSE);
+
+                _iterator.IsTokenType(TokenTypeEnum.PUNCTUATION, TokenSubTypeEnum.P_SEMICOLON);
+                
+                // Добавить в код модуля компиляцию выражения.
+                EmitCode(OP_CODES.OP_EXECUTE, expression, null);
+
+                return true;
+            }
+
+            return false;
+        }
+
         /// <summary>
         /// Парсинг оператора Вычислить(Eval)
         /// </summary>
@@ -409,6 +441,8 @@ namespace ScriptEngine.EngineBase.Compiler
                 int try_index, exit_try;
                 ScriptStatement statement;
 
+                _exit_block.Add(OP_CODES.OP_END_TRY);
+
                 // Установить точку входа модуля.
                 SetModuleEntryPoint();
 
@@ -437,7 +471,9 @@ namespace ScriptEngine.EngineBase.Compiler
                 statement = _current_module.StatementGet(exit_try);
                 statement.Variable2 = _programm.StaticVariables.Create(ValueFactory.Create(_current_module.ProgrammLine));
                 // Очистка текущей информации о исключении.
-                EmitCode(OP_CODES.OP_ENDTRY, null, null);
+                EmitCode(OP_CODES.OP_END_TRY, null, null);
+
+                _exit_block.RemoveAt(_exit_block.Count - 1);
 
                 return true;
             }
@@ -637,7 +673,7 @@ namespace ScriptEngine.EngineBase.Compiler
         /// <returns></returns>
         private IVariable ParseConstantVariable(IToken token)
         {
-            Nullable<ValueTypeEnum> type = null;
+            ValueTypeEnum? type = null;
 
             // Это число.
             if (_iterator.CheckToken(TokenTypeEnum.NUMBER))
@@ -968,8 +1004,6 @@ namespace ScriptEngine.EngineBase.Compiler
             return false;
         }
 
-
-
         /// <summary>
         /// Парсер параметров процедуры или функции.
         /// </summary>
@@ -998,7 +1032,6 @@ namespace ScriptEngine.EngineBase.Compiler
                 param_list.CreateByVal(param_name.Content, _scope, var?.Value);
             else
                 param_list.CreateByRef(param_name.Content, _scope, var?.Value);
-
 
             if (_iterator.CheckToken(TokenTypeEnum.PUNCTUATION, TokenSubTypeEnum.P_COMMA))
                 ParseFunctionDefineParam(param_list);
@@ -2082,6 +2115,10 @@ namespace ScriptEngine.EngineBase.Compiler
                 if (ParseLoopCommands())
                     continue;
 
+                // Парсим оператор Для (for).
+                if (ParseExecute())
+                    continue;
+
                 // Парсим вызов методов, свойств, а так же присвоение значений.
                 Parse(token);
                 _iterator.IsTokenType(TokenTypeEnum.PUNCTUATION, TokenSubTypeEnum.P_SEMICOLON);
@@ -2115,10 +2152,10 @@ namespace ScriptEngine.EngineBase.Compiler
                 _scope = Interpreter.ScriptInterpreter.Interpreter.CurrentFunction.Scope;
 
                 IVariable result = ParseExpression((int)Priority.TOP);
-                if (result == null || result.Value?.BaseType == ValueTypeEnum.NULL)
+                if (result == null)
                     throw new CompilerException(_iterator.Current.CodeInformation, "Выражение Вычислить не может использоваться без аргументов.");
 
-                EmitCode(OP_CODES.OP_EVAL_EXIT, return_value, result);
+                EmitCode(OP_CODES.OP_END_EVEX, return_value, result);
 
                 ProcessDifferedVars();
                 ProcessDifferedFunctions();
@@ -2129,6 +2166,46 @@ namespace ScriptEngine.EngineBase.Compiler
                 throw new Exception("Оператор Вычислить(Eval) возможно компилировать только из интерпретатора.");
         }
 
+
+        /// <summary>
+        /// Компилирование оператора Выполнить(Execute).
+        /// </summary>
+        /// <param name="expression"></param>
+        /// <returns></returns>
+        public int CompileExecute(string expression)
+        {
+            if (Interpreter.ScriptInterpreter.Interpreter != null)
+            {
+                ParserClass parser;
+                Dictionary<string, bool> defines = new Dictionary<string, bool>();
+                defines.Add("НаКлиенте", true);
+
+                if (expression[expression.Length-1] != ';')
+                    expression += ';';
+
+                parser = new ParserClass(Interpreter.ScriptInterpreter.Interpreter.CurrentModule.Name, expression);
+                PrecompilerClass precompiler = new PrecompilerClass(parser.GetEnumerator(), defines);
+                _iterator = precompiler.GetEnumerator();
+
+                _current_module = Interpreter.ScriptInterpreter.Interpreter.CurrentModule;
+
+                _iterator.MoveNext();
+
+                int entry_point = _current_module.ProgrammLine;
+                _scope = Interpreter.ScriptInterpreter.Interpreter.CurrentFunction.Scope;
+
+                ParseModuleBody();
+
+                EmitCode(OP_CODES.OP_END_EVEX, null,null);
+
+                ProcessDifferedVars();
+                ProcessDifferedFunctions();
+
+                return entry_point;
+            }
+            else
+                throw new Exception("Оператор Вычислить(Execute) возможно компилировать только из интерпретатора.");
+        }
 
         /// <summary>
         /// Компилирует группу модулей в программу.

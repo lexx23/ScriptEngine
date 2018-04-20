@@ -30,7 +30,7 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts.Module
         public ModuleVariables Variables { get => _vars; set => _vars = value; }
         public ModuleFunctions Functions { get => _functions; }
         public ModuleTypeEnum Type { get; set; }
-        public IList<ScriptStatement> Code { get => _code; }
+        internal IList<ScriptStatement> Code { get => _code; }
         public ScriptScope ModuleScope { get => _module_scope; }
 
         public Type InstanceType { get; set; }
@@ -151,7 +151,7 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts.Module
         /// Добавить инструкцию.
         /// </summary>
         /// <returns></returns>
-        public ScriptStatement StatementAdd()
+        internal ScriptStatement StatementAdd()
         {
             ScriptStatement statement = new ScriptStatement
             {
@@ -164,7 +164,7 @@ namespace ScriptEngine.EngineBase.Compiler.Programm.Parts.Module
         /// <summary>
         /// Получить инструкцию.
         /// </summary>
-        public ScriptStatement StatementGet(int index)
+        internal ScriptStatement StatementGet(int index)
         {
             return _code[index];
         }

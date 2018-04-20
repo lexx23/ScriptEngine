@@ -11,7 +11,7 @@ using ScriptEngine.EngineBase.Interpreter;
 
 namespace ScriptEngine.EngineBase.Compiler.Programm
 {
-    public class ScriptStatement
+    class ScriptStatement
     {
         public OP_CODES OP_CODE { get; set; }
         public IVariable Variable1 { get; set; }

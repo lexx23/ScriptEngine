@@ -1,28 +1,32 @@
 ﻿using ScriptEngine.EngineBase.Library.BaseTypes.UniversalCollections;
+using ScriptEngine.EngineBase.Compiler.Programm.Parts.Module;
 using ScriptEngine.EngineBase.Compiler.Types.Variable.Value;
+using ScriptEngine.EngineBase.Interpreter.Context;
 using ScriptEngine.EngineBase.Library.Attributes;
 using ScriptEngine.EngineBase.Interpreter;
 using ScriptEngine.EngineBase.Extensions;
 using ScriptBaseFunctionsLibrary.Enums;
-using System;
-using System.Xml;
-using ScriptBaseFunctionsLibrary.BuildInTypes;
-using ScriptEngine.EngineBase.Compiler.Programm.Parts.Module;
 using System.Collections.Generic;
-using ScriptEngine.EngineBase.Interpreter.Context;
 using System.Linq;
+using System.Xml;
+using System;
 
 namespace ScriptBaseLibrary
 {
     [LibraryClassAttribute(AsGlobal = true, Name = "global_library")]
     public class ScriptBaseFunctionsLibrary
     {
-        private string test = "";
-
         [LibraryClassProperty(Alias = "ПараметрЗапуска", Name = "LaunchParameter")]
         public string LaunchParameter
         {
-            get => test;
+            get {
+                int start_index = System.Environment.CommandLine.IndexOf("/C", 0, StringComparison.OrdinalIgnoreCase);
+                if (start_index > 0)
+                    return System.Environment.CommandLine.Substring(start_index + 2, System.Environment.CommandLine.Length);
+                else
+                    return "";
+            }
+            
         }
 
 
@@ -30,24 +34,6 @@ namespace ScriptBaseLibrary
         public void Message(string text, MessageStatusEnumInner type = MessageStatusEnumInner.WithoutStatus)
         {
             Console.WriteLine(text);
-        }
-
-        [LibraryClassMethodAttribute(Alias = "ТекущаяУниверсальнаяДатаВМиллисекундах", Name = "CurrentUniversalDateInMilliseconds")]
-        public IValue CurrentUniversalDateInMilliseconds()
-        {
-            return ValueFactory.Create(DateTime.UtcNow.Ticks / TimeSpan.TicksPerMillisecond);
-        }
-
-        [LibraryClassMethodAttribute(Alias = "ИнформацияОбОшибке", Name = "ErrorInfo")]
-        public IValue ErrorInfo()
-        {
-            return ScriptInterpreter.Interpreter.ErrorInfo;
-        }
-
-        [LibraryClassMethodAttribute(Alias = "ОписаниеОшибки", Name = "ErrorDescription")]
-        public IValue ErrorDescription()
-        {
-            return ValueFactory.Create(ScriptInterpreter.Interpreter.ErrorInfo.Description);
         }
 
         [LibraryClassMethodAttribute(Alias = "ПодключитьСценарий", Name = "AttachScript")]
@@ -84,45 +70,6 @@ namespace ScriptBaseLibrary
             return ValueFactory.Create(script_type);
         }
 
-        [LibraryClassMethodAttribute(Alias = "ПодробноеПредставлениеОшибки", Name = "DetailErrorDescription")]
-        public IValue DetailErrorDescription(ErrorInfo error_info)
-        {
-            return ValueFactory.Create($"{{{error_info.ModuleName}({error_info.LineNumber})}} : " + error_info.Description + "\n" + error_info.SourceLine);
-        }
-
-        [LibraryClassMethodAttribute(Alias = "Макс", Name = "Max")]
-        public IValue MaxValue(IValue[] values)
-        {
-            if (values.Length == 0 || values == null)
-                throw new Exception("sdfsdf");
-
-            IValue max = values[0];
-            int i = 1;
-            while (i < values.Length)
-            {
-                var current = values[i];
-                if (current.CompareTo(max) > 0)
-                    max = current;
-                i++;
-            }
-            return max;
-        }
-
-        [LibraryClassMethodAttribute(Alias = "Число", Name = "Number")]
-        public decimal Number(IValue value)
-        {
-            return value.AsNumber();
-        }
-
-        /// <summary>
-        /// Текущая дата машины
-        /// </summary>
-        /// <returns>Дата</returns>
-        [LibraryClassMethodAttribute(Alias = "ТекущаяДата", Name = "CurrentDate")]
-        public DateTime CurrentDate()
-        {
-            return DateTime.Now;
-        }
 
         [LibraryClassMethodAttribute(Alias = "ЗначениеЗаполнено", Name = "ValueIsFilled")]
         public bool ValueIsFilled(IValue value)
@@ -180,7 +127,7 @@ namespace ScriptBaseLibrary
         /// <param name="filledProperties">Заполняемые свойства (строка, через запятую)</param>
         /// <param name="ignoredProperties">Игнорируемые свойства (строка, через запятую)</param>
         [LibraryClassMethodAttribute(Alias = "ЗаполнитьЗначенияСвойств", Name = "FillPropertyValues")]
-        public void FillPropertyValues(ScriptObjectContext acceptor, ScriptObjectContext source, string properties = null, string ignored_properties = null)
+        public void FillPropertyValues(IScriptObjectContext acceptor, IScriptObjectContext source, string properties = null, string ignored_properties = null)
         {
             IEnumerable<string> sourceProperties;
             IEnumerable<string> ignoredPropCollection;
@@ -194,6 +141,7 @@ namespace ScriptBaseLibrary
                     names.Add(source.GetPublicVariable(i).Variable.Alias);
                 }
 
+                names.Remove("ЭтотОбъект");
                 sourceProperties = names;
             }
             else
@@ -212,9 +160,7 @@ namespace ScriptBaseLibrary
                     .Where(x => x.Length > 0);
             }
             else
-            {
                 ignoredPropCollection = new string[0];
-            }
 
             foreach (var srcProperty in sourceProperties.Where(x => !ignoredPropCollection.Contains(x)))
             {

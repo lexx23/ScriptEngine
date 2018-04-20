@@ -68,7 +68,7 @@ namespace ScriptEngine.EngineBase.Parser.TokenParser.Parsers
                 forward_symbol = iterator.GetForwardSymbol();
                 content += iterator.Current;
 
-                if (forward_symbol == '>' || forward_symbol == '=')
+                if ((forward_symbol == '>' || forward_symbol == '=') && (iterator.Current == '<' || iterator.Current == '>'))
                 {
                     content = iterator.Current + forward_symbol.ToString();
                     _punctuation_table.TryGetValue(content, out subtype);

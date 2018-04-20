@@ -47,7 +47,7 @@ namespace ScriptEngine.EngineBase.Compiler.Types.Variable.Value.Values
             throw new NotImplementedException();
         }
 
-        public ScriptObjectContext AsScriptObject()
+        public IScriptObjectContext AsScriptObject()
         {
             throw new NotImplementedException();
         }
