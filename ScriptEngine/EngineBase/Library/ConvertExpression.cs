@@ -11,6 +11,8 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Linq;
 using System;
+using System.Diagnostics;
+using ScriptEngine.EngineBase.Interpreter.Context;
 
 namespace ScriptEngine.EngineBase.Library
 {
@@ -57,6 +59,7 @@ namespace ScriptEngine.EngineBase.Library
                 case "String":
                     return SafeCall<string>(value, typeof(IValue).GetMethod("AsString"));//Expression.Call(value, typeof(IValue).GetMethod("AsString"));
 
+                case "IScriptObjectContext":
                 case "ScriptObjectContext":
                     return Expression.Call(value, typeof(IValue).GetMethod("AsScriptObject"));
 
